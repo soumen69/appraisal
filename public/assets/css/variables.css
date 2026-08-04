@@ -1,0 +1,46 @@
+:root {
+
+    /* Colors */
+
+    --app-primary: #2563eb;
+    --app-primary-hover: #1d4ed8;
+
+    --app-success: #16a34a;
+    --app-danger: #dc2626;
+    --app-warning: #f59e0b;
+    --app-info: #0ea5e9;
+
+    --app-bg: #f5f7fb;
+
+    --app-white: #ffffff;
+
+    --app-border: #e5e7eb;
+
+    --app-text: #111827;
+    --app-text-light: #6b7280;
+
+    /* Sidebar */
+
+    --sidebar-width: 270px;
+    --sidebar-collapse-width: 90px;
+
+    /* Navbar */
+
+    --navbar-height: 70px;
+
+    /* Radius */
+
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+
+    /* Shadow */
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, .05);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, .08);
+
+    /* Animation */
+
+    --transition: .25s ease;
+
+}

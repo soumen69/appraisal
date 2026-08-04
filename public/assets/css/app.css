@@ -1,0 +1,51 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: Inter, "Segoe UI", sans-serif;
+    background: var(--app-bg);
+    color: var(--app-text);
+    font-size: 14px;
+    overflow-x: hidden;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+button {
+    border: none;
+    outline: none;
+}
+
+.form-control {
+    border-radius: var(--radius-sm);
+}
+
+.form-select {
+    border-radius: var(--radius-sm);
+}
+
+.card {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}

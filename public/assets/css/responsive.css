@@ -1,0 +1,45 @@
+@media(max-width:991px) {
+
+    .app-sidebar {
+
+        transform: translateX(-100%);
+
+    }
+
+    .app-main {
+
+        margin-left: 0;
+
+        width: 100%;
+
+    }
+
+    .app-navbar {
+
+        left: 0;
+
+    }
+
+    .app-search {
+
+        display: none;
+
+    }
+
+}
+
+@media(max-width:576px) {
+
+    .app-content {
+
+        padding: 15px;
+
+    }
+
+    .user-dropdown div {
+
+        display: none;
+
+    }
+
+}
