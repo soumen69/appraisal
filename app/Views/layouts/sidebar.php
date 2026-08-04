@@ -3,9 +3,24 @@
     <div class="sidebar-logo">
         <h4>APPRAISAL</h4>
     </div>
+    <div class="sidebar-search px-3 py-3">
+
+    <div class="position-relative">
+
+        <i class="bi bi-search sidebar-search-icon"></i>
+
+        <input
+            type="text"
+            class="form-control"
+            id="sidebarSearch"
+            placeholder="Search menu...">
+
+    </div>
+
+</div>
     <ul class="sidebar-menu">
         <li>
-            <a href="#">
+            <a href="<?= base_url('dashboard') ?>" title="Dashboard">
                 <i class="bi bi-grid"></i>
                 <span>Dashboard</span>
             </a>
@@ -37,5 +52,12 @@
         <li><a href="#"><i class="bi bi-bar-chart"></i> <span>Reports</span></a></li>
         <li><a href="#"><i class="bi bi-clock-history"></i> <span>Audit Logs</span></a></li>
         <li><a href="#"><i class="bi bi-gear"></i> <span>Settings</span></a></li>
+
+        <li>
+            <a href="<?= base_url('modules') ?>" title="Modules">
+                <i class="bi bi-box"></i>
+                <span>Modules</span>
+            </a>
+        </li>
     </ul>
 </aside>

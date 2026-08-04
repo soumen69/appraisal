@@ -185,3 +185,41 @@
     left: 90px;
 
 }
+
+.sidebar-search {
+
+    border-bottom: 1px solid var(--app-border);
+
+}
+
+.sidebar-search input {
+
+    padding-left: 38px;
+
+    border-radius: 10px;
+
+    font-size: 14px;
+
+}
+
+.sidebar-search-icon {
+
+    position: absolute;
+
+    left: 12px;
+
+    top: 50%;
+
+    transform: translateY(-50%);
+
+    color: #94a3b8;
+
+    z-index: 2;
+
+}
+
+.app-sidebar.collapsed .sidebar-search {
+
+    display: none;
+
+}
