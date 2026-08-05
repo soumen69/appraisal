@@ -1,6 +1,7 @@
 <?php
 
 use CodeIgniter\Router\RouteCollection;
+use App\Controllers\Admin\ModuleController;
 
 /** @var RouteCollection $routes */
 // $routes->get('/', 'Home::index');
@@ -21,11 +22,13 @@ $routes->get('/logout', 'AuthController::logout');
 // $routes->get('/', 'Dashboard::index');
 $routes->get('/dashboard', 'Dashboard::index');
 
-$routes->group('modules', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/', 'Admin\ModuleController::index');
-    $routes->get('list', 'Admin\ModuleController::list');
-    $routes->post('store', 'Admin\ModuleController::store');
-    $routes->post('update/(:num)', 'Admin\ModuleController::update/$1');
-    $routes->post('delete/(:num)', 'Admin\ModuleController::delete/$1');
-    $routes->get('edit/(:num)', 'Admin\ModuleController::edit/$1');
+// $routes->group('modules', ['filter' => 'auth'], function ($routes) {
+$routes->group('modules', ['namespace' => 'App\Controllers\Admin'], function ($routes) {
+
+    $routes->get('/', 'ModuleController::index');
+    $routes->get('list', 'ModuleController::list');
+    $routes->post('store', 'ModuleController::store');
+    $routes->post('update/(:num)', 'ModuleController::update/$1');
+    $routes->post('delete/(:num)', 'ModuleController::delete/$1');
+    $routes->get('edit/(:num)', 'ModuleController::edit/$1');
 });

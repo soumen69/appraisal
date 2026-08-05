@@ -1,53 +1,39 @@
 const CrudApi = {
 
     list(crud) {
-
         crud.body.innerHTML = CrudUtils.loadingRows(
             crud.columns.length + 2
         );
 
         $.ajax({
-
             url: crud.endpoint + '/list',
-
             type: 'GET',
-
             data: {
-
                 page: crud.page,
-
                 pageSize: crud.pageSize,
-
                 search: crud.search,
-
                 status: crud.status,
-
                 orderBy: crud.orderBy,
-
                 direction: crud.direction
-
             },
-
             success(response) {
-
-                crud.data = response.data || [];
-
-                crud.total = response.total || 0;
-
+                if (!response.success) {
+                    APP.error(response.message);
+                    return;
+                }
+                crud.data = response.data.data || [];
+                crud.total = response.data.total || 0;
+                crud.page = response.data.page || 1;
+                crud.lastPage = response.data.lastPage || 1;
                 CrudTable.render(crud);
-
                 CrudPagination.render(crud);
-
+                $('#crudSummary').html(
+                    `Showing ${crud.data.length} of ${crud.total} records`
+                );
             },
-
             error() {
-
                 APP.error('Unable to load data.');
-
             }
-
         });
-
     }
-
 };

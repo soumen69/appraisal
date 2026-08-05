@@ -16,40 +16,16 @@ class SidebarService
     public function getSidebar(array $permissions): array
     {
         $menus = $this->menuModel
-
-            ->where('status','active')
-
-            ->orderBy('sort_order','ASC')
-
+            ->where('status', 'active')
+            ->orderBy('sort_order', 'ASC')
             ->findAll();
-
         $sidebar = [];
 
-        foreach ($menus as $menu){
-
-            if(
-
-                empty($menu['permission_slug'])
-
-                ||
-
-                in_array(
-
-                    $menu['permission_slug'],
-
-                    $permissions
-
-                )
-
-            ){
-
+        foreach ($menus as $menu) {
+            if (empty($menu['permission_slug']) || in_array($menu['permission_slug'], $permissions)) {
                 $sidebar[] = $menu;
-
             }
-
         }
-
         return $sidebar;
     }
-
 }

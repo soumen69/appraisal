@@ -3,28 +3,30 @@
     <div class="table-responsive">
 
         <table
-            class="app-table"
+            class="table align-middle mb-0 app-table"
             id="crudTable">
 
             <thead>
 
-            <tr id="crudHeader">
-
-            </tr>
+                <tr id="crudHeader"></tr>
 
             </thead>
 
-            <tbody id="crudBody">
-
-            </tbody>
+            <tbody id="crudBody"></tbody>
 
         </table>
 
     </div>
 
-    <div
-        class="crud-pagination"
-        id="crudPagination">
+    <div class="crud-pagination">
+
+        <div id="crudSummary" class="text-muted small">
+
+            Showing 0 records
+
+        </div>
+
+        <div id="crudPagination"></div>
 
     </div>
 

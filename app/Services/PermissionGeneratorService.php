@@ -9,19 +9,12 @@ class PermissionGeneratorService
     protected PermissionModel $permissionModel;
 
     protected array $defaultPermissions = [
-
         'view',
-
         'create',
-
         'edit',
-
         'delete',
-
         'import',
-
         'export'
-
     ];
 
     public function __construct()
@@ -30,40 +23,48 @@ class PermissionGeneratorService
     }
 
     public function generate(
-        string $module,
+        int $moduleId,
+        string $moduleSlug,
+        string $moduleName,
         array $permissions = []
-    )
-    {
+    ): bool {
+
         if (empty($permissions)) {
 
             $permissions = $this->defaultPermissions;
-
         }
 
         foreach ($permissions as $permission) {
 
-            $slug = strtolower($module) . '.' . strtolower($permission);
+            $permissionSlug = strtolower($moduleSlug) . '.' . strtolower($permission);
 
             $exists = $this->permissionModel
-                ->where('slug', $slug)
+                ->where('slug', $permissionSlug)
                 ->first();
 
             if ($exists) {
-
                 continue;
-
             }
 
             $this->permissionModel->insert([
 
-                'name' => ucfirst($permission),
+                'name' => $moduleName . ' ' . ucfirst($permission),
 
-                'slug' => $slug,
+                'slug' => $permissionSlug,
 
-                'module' => strtolower($module)
+                'module_id' => $moduleId
 
             ]);
         }
+
+        return true;
+    }
+
+    public function remove(int $moduleId): bool
+    {
+        $this->permissionModel
+            ->where('module_id', $moduleId)
+            ->delete();
 
         return true;
     }

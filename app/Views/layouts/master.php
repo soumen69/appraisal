@@ -38,6 +38,7 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/cards.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/forms.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/table.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/crud.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/modal.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/utilities.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/dashboard.css') ?>">
@@ -94,7 +95,13 @@
 
     <!-- Chart.js -->
     <script src="<?= base_url('assets/vendor/chartjs/chart.umd.js') ?>"></script>
-
+    <script>
+        window.APP = {
+            baseUrl: "<?= base_url() ?>",
+            csrfName: "<?= csrf_token() ?>",
+            csrfHash: "<?= csrf_hash() ?>"
+        };
+    </script>
     <!-- App JS -->
     <script src="<?= base_url('assets/js/common.js') ?>"></script>
     <script src="<?= base_url('assets/js/ajax.js') ?>"></script>

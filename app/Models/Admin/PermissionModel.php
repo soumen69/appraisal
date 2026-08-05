@@ -15,13 +15,9 @@ class PermissionModel extends Model
     protected $protectFields = true;
 
     protected $allowedFields = [
-
         'name',
-
         'slug',
-
         'module'
-
     ];
 
     protected $useTimestamps = true;

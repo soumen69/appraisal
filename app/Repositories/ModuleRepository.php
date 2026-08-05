@@ -59,70 +59,67 @@ class ModuleRepository
     }
 
     public function exists(string $slug, ?int $ignoreId = null): bool
-{
-    $builder = $this->model
-        ->where('slug', $slug);
+    {
+        $builder = $this->model
+            ->where('slug', $slug);
 
-    if ($ignoreId !== null) {
+        if ($ignoreId !== null) {
 
-        $builder->where('id !=', $ignoreId);
+            $builder->where('id !=', $ignoreId);
+        }
 
+        return $builder->countAllResults() > 0;
     }
 
-    return $builder->countAllResults() > 0;
-}
+    public function paginate(array $filters): array
+    {
+        $builder = $this->model;
 
-public function paginate(array $filters): array
-{
-    $builder = $this->model;
+        if (!empty($filters['search'])) {
 
-    if (!empty($filters['search'])) {
+            $builder->groupStart()
 
-        $builder->groupStart()
+                ->like('name', $filters['search'])
 
-            ->like('name', $filters['search'])
+                ->orLike('slug', $filters['search'])
 
-            ->orLike('slug', $filters['search'])
+                ->orLike('route', $filters['search'])
 
-            ->orLike('route', $filters['search'])
+                ->groupEnd();
+        }
 
-            ->groupEnd();
+        if (!empty($filters['status'])) {
 
+            $builder->where('status', $filters['status']);
+        }
+
+        $sortBy = $filters['sortBy'] ?? 'sort_order';
+
+        $direction = $filters['direction'] ?? 'ASC';
+
+        $builder->orderBy($sortBy, $direction);
+
+        $page = (int) ($filters['page'] ?? 1);
+
+        $perPage = (int) ($filters['perPage'] ?? 10);
+
+        $total = $builder->countAllResults(false);
+
+        $rows = $builder
+            ->findAll($perPage, ($page - 1) * $perPage);
+
+        return [
+
+            'data' => $rows,
+
+            'total' => $total,
+
+            'page' => $page,
+
+            'perPage' => $perPage,
+
+            'lastPage' => (int) ceil($total / $perPage)
+
+        ];
     }
-
-    if (!empty($filters['status'])) {
-
-        $builder->where('status', $filters['status']);
-
-    }
-
-    $sortBy = $filters['sortBy'] ?? 'sort_order';
-
-    $direction = $filters['direction'] ?? 'ASC';
-
-    $builder->orderBy($sortBy, $direction);
-
-    $page = (int) ($filters['page'] ?? 1);
-
-    $perPage = (int) ($filters['perPage'] ?? 10);
-
-    $total = $builder->countAllResults(false);
-
-    $rows = $builder
-        ->findAll($perPage, ($page - 1) * $perPage);
-
-    return [
-
-        'data' => $rows,
-
-        'total' => $total,
-
-        'page' => $page,
-
-        'perPage' => $perPage,
-
-        'lastPage' => (int) ceil($total / $perPage)
-
-    ];
-}
 }

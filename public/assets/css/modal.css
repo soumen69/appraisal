@@ -1,0 +1,19 @@
+.drawer-row {
+    margin-bottom: 18px;
+}
+
+.drawer-row label {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.drawer-row div {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0f172a;
+    word-break: break-word;
+}

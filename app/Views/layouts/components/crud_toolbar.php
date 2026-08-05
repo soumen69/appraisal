@@ -1,80 +1,87 @@
-<div class="crud-toolbar">
+<div class="crud-card mb-4">
 
-    <div class="crud-toolbar-left">
+    <div class="card-body">
 
-        <div class="crud-search">
+        <div class="row g-3 align-items-center">
 
-            <i class="bi bi-search"></i>
+            <div class="col-xl-6 col-lg-12">
 
-            <input
+                <div class="d-flex flex-wrap gap-2 align-items-center">
 
-                type="text"
+                    <div class="crud-search flex-grow-1">
 
-                id="crudSearch"
+                        <i class="bi bi-search"></i>
 
-                class="form-control"
+                        <input
+                            type="text"
+                            id="crudSearch"
+                            class="form-control"
+                            placeholder="Search modules...">
 
-                placeholder="Search...">
+                    </div>
+
+                    <select
+                        class="form-select crud-filter"
+                        id="crudStatus">
+
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+
+                    </select>
+
+                    <select
+                        class="form-select crud-filter"
+                        id="crudPageSize">
+
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+            <div class="col-xl-6 col-lg-12">
+
+                <div class="d-flex justify-content-xl-end justify-content-start gap-2">
+
+                    <button
+                        class="btn app-btn-light"
+                        id="btnRefresh">
+
+                        <i class="bi bi-arrow-clockwise"></i>
+
+                    </button>
+
+                    <button
+                        class="btn app-btn-light"
+                        id="btnExport">
+
+                        <i class="bi bi-download"></i>
+
+                        Export
+
+                    </button>
+
+                    <button
+                        class="btn app-btn-primary"
+                        id="btnAdd">
+
+                        <i class="bi bi-plus-lg"></i>
+
+                        New Module
+
+                    </button>
+
+                </div>
+
+            </div>
 
         </div>
-
-        <select
-            class="form-select"
-            id="crudStatus">
-
-            <option value="">All Status</option>
-
-            <option value="active">Active</option>
-
-            <option value="inactive">Inactive</option>
-
-        </select>
-
-        <select
-            class="form-select"
-            id="crudPageSize">
-
-            <option value="10">10 Rows</option>
-
-            <option value="25">25 Rows</option>
-
-            <option value="50">50 Rows</option>
-
-            <option value="100">100 Rows</option>
-
-        </select>
-
-    </div>
-
-    <div class="crud-toolbar-right">
-
-        <button
-            class="btn app-btn-light"
-            id="btnRefresh">
-
-            <i class="bi bi-arrow-clockwise"></i>
-
-        </button>
-
-        <button
-            class="btn app-btn-light"
-            id="btnExport">
-
-            <i class="bi bi-download"></i>
-
-            Export
-
-        </button>
-
-        <button
-            class="btn app-btn-primary"
-            id="btnAdd">
-
-            <i class="bi bi-plus-lg"></i>
-
-            Add New
-
-        </button>
 
     </div>
 

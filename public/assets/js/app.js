@@ -1,33 +1,33 @@
-window.APP = {
-    success(message) {
-        toastr.success(message);
-    },
+window.APP = window.APP || {};
 
-    error(message) {
-        toastr.error(message);
-    },
+APP.success = function (message) {
+    toastr.success(message);
+};
 
-    warning(message) {
-        toastr.warning(message);
-    },
+APP.error = function (message) {
+    toastr.error(message);
+};
 
-    info(message) {
-        toastr.info(message);
-    },
+APP.warning = function (message) {
+    toastr.warning(message);
+};
 
-    confirm(title, text, callback) {
-        Swal.fire({
-            title: title,
-            text: text,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Yes',
-            cancelButtonText: 'Cancel',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                callback();
-            }
-        });
-    }
+APP.info = function (message) {
+    toastr.info(message);
+};
+
+APP.confirm = function (title, text, callback) {
+    Swal.fire({
+        title: title,
+        text: text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes',
+        cancelButtonText: 'Cancel',
+        reverseButtons: true
+    }).then((result) => {
+        if (result.isConfirmed) {
+            callback();
+        }
+    });
 };

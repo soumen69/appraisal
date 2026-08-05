@@ -17,158 +17,133 @@ class ModuleController extends BaseCrudController
     public function index()
     {
         return view('modules/index', [
-
-            'title' => 'Modules'
-
+            'title'          => 'Modules',
+            'page_title'     => 'Module Management',
+            'page_subtitle'  => 'Manage application modules and access foundation.'
         ]);
     }
 
     public function list()
-{
-    $filters = [
+    {
+        $filters = [
+            'page'      => $this->request->getGet('page'),
+            'perPage'   => $this->request->getGet('pageSize'),
+            'search'    => $this->request->getGet('search'),
+            'status'    => $this->request->getGet('status'),
+            'sortBy'    => $this->request->getGet('orderBy'),
+            'direction' => $this->request->getGet('direction')
+        ];
 
-        'page'      => $this->request->getGet('page'),
-
-        'perPage'   => $this->request->getGet('pageSize'),
-
-        'search'    => $this->request->getGet('search'),
-
-        'status'    => $this->request->getGet('status'),
-
-        'sortBy'    => $this->request->getGet('orderBy'),
-
-        'direction' => $this->request->getGet('direction')
-
-    ];
-
-    return $this->success(
-
-        '',
-
-        $this->moduleService->getPaginated($filters)
-
-    );
-}
+        $data = $this->moduleService->getPaginated($filters);
+        return $this->success(
+            '',
+            $data
+        );
+    }
 
     public function store()
-{
-    if (! $this->validate(ModuleRequest::rules())) {
+    {
+        if (! $this->validate(ModuleRequest::rules())) {
 
-        return $this->validationFailed();
+            return $this->validationFailed();
+        }
 
+        try {
+
+            $id = $this->moduleService->create(
+
+                $this->request->getPost()
+
+            );
+
+            return $this->success(
+                'Module created successfully.',
+                [
+                    'id'      => $id,
+                    'reload'  => true
+                ],
+                ResponseInterface::HTTP_CREATED
+            );
+        } catch (\Throwable $e) {
+
+            return $this->error(
+
+                $e->getMessage()
+
+            );
+        }
     }
-
-    try {
-
-        $id = $this->moduleService->create(
-
-            $this->request->getPost()
-
-        );
-
-        return $this->success(
-
-            'Module created successfully.',
-
-            ['id' => $id],
-
-            ResponseInterface::HTTP_CREATED
-
-        );
-
-    } catch (\Throwable $e) {
-
-        return $this->error(
-
-            $e->getMessage()
-
-        );
-
-    }
-}
 
     public function edit($id)
-{
-    $module = $this->moduleService->getById($id);
+    {
+        $module = $this->moduleService->getById($id);
+        if (! $module) {
+            return $this->error(
+                'Module not found.',
+                [],
+                ResponseInterface::HTTP_NOT_FOUND
+            );
+        }
 
-    if (! $module) {
+        return $this->success(
 
-        return $this->error(
+            '',
 
-            'Module not found.',
-
-            [],
-
-            ResponseInterface::HTTP_NOT_FOUND
+            $module
 
         );
-
     }
-
-    return $this->success(
-
-        '',
-
-        $module
-
-    );
-}
 
     public function update($id)
-{
-    if (! $this->validate(ModuleRequest::rules($id))) {
+    {
+        if (! $this->validate(ModuleRequest::rules($id))) {
 
-        return $this->validationFailed();
+            return $this->validationFailed();
+        }
 
+        try {
+
+            $this->moduleService->update(
+
+                $id,
+
+                $this->request->getPost()
+
+            );
+
+            return $this->success(
+                'Module updated successfully.',
+                [
+                    'reload' => true
+                ]
+            );
+        } catch (\Throwable $e) {
+
+            return $this->error(
+
+                $e->getMessage()
+
+            );
+        }
     }
-
-    try {
-
-        $this->moduleService->update(
-
-            $id,
-
-            $this->request->getPost()
-
-        );
-
-        return $this->success(
-
-            'Module updated successfully.'
-
-        );
-
-    } catch (\Throwable $e) {
-
-        return $this->error(
-
-            $e->getMessage()
-
-        );
-
-    }
-}
 
     public function delete($id)
-{
-    try {
+    {
+        try {
+            $this->moduleService->delete($id);
+            return $this->success(
+                'Module deleted successfully.',
+                [
+                    'reload' => true
+                ]
+            );
+        } catch (\Throwable $e) {
 
-        $this->moduleService->delete($id);
+            return $this->error(
 
-        return $this->success(
+                $e->getMessage()
 
-            'Module deleted successfully.'
-
-        );
-
-    } catch (\Throwable $e) {
-
-        return $this->error(
-
-            $e->getMessage()
-
-        );
-
+            );
+        }
     }
-}
 }
