@@ -13,24 +13,42 @@ class PermissionRepository
         $this->model = new PermissionModel();
     }
 
-    public function getAll(): array
+    protected function baseQuery()
     {
-        return $this->model
-            ->orderBy('module', 'ASC')
-            ->orderBy('name', 'ASC')
-            ->findAll();
+        return db_connect()
+            ->table('permissions p')
+            ->select([
+                'p.*',
+                'm.name AS module_name',
+                'm.slug AS module_slug'
+            ])
+            ->join('modules m', 'm.id = p.module_id');
     }
 
-    public function getByModule(string $module): array
+    public function getAll(): array
     {
-        return $this->model
-            ->where('module', $module)
-            ->findAll();
+        return $this->baseQuery()
+            ->orderBy('m.sort_order', 'ASC')
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getByModule(int $moduleId): array
+    {
+        return $this->baseQuery()
+            ->where('p.module_id', $moduleId)
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 
     public function find(int $id): ?array
     {
-        return $this->model->find($id);
+        return $this->baseQuery()
+            ->where('p.id', $id)
+            ->get()
+            ->getRowArray();
     }
 
     public function findBySlug(string $slug): ?array
@@ -47,8 +65,49 @@ class PermissionRepository
         return (int) $this->model->getInsertID();
     }
 
+    public function update(int $id, array $data): bool
+    {
+        return $this->model->update($id, $data);
+    }
+
     public function delete(int $id): bool
     {
         return $this->model->delete($id);
+    }
+
+    public function exists(string $slug, ?int $ignoreId = null): bool
+    {
+        $builder = $this->model
+            ->where('slug', $slug);
+
+        if ($ignoreId !== null) {
+            $builder->where('id !=', $ignoreId);
+        }
+
+        return $builder->countAllResults() > 0;
+    }
+
+    public function search(array $filters): array
+    {
+        $builder = $this->baseQuery();
+
+        if (!empty($filters['search'])) {
+
+            $builder->groupStart()
+                ->like('p.name', $filters['search'])
+                ->orLike('p.slug', $filters['search'])
+                ->orLike('m.name', $filters['search'])
+                ->groupEnd();
+        }
+
+        if (!empty($filters['module_id'])) {
+            $builder->where('p.module_id', $filters['module_id']);
+        }
+
+        return $builder
+            ->orderBy('m.sort_order', 'ASC')
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
     }
 }

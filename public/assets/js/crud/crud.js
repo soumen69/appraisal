@@ -9,6 +9,7 @@ class Crud {
         this.modal = document.querySelector(options.modal);
         this.form = document.querySelector(options.form);
         this.columns = options.columns || [];
+        this.onInit = options.onInit || null;
         this.page = 1;
         this.pageSize = 10;
         this.search = '';
@@ -19,12 +20,17 @@ class Crud {
         this.data = [];
         this.editId = null;
         this.lastPage = 1;
+        this.entity = options.entity || 'Record';
+        this.entityPlural = options.entityPlural || `${this.entity}s`;
         this.init();
     }
 
     init() {
         this.renderHeader();
         this.registerEvents();
+        if (typeof this.onInit === 'function') {
+            this.onInit(this);
+        }
         this.load();
     }
 

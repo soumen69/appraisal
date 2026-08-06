@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Services\ModuleService;
 use App\Validation\Requests\ModuleRequest;
+use CodeIgniter\HTTP\ResponseInterface;
 
 class ModuleController extends BaseCrudController
 {
@@ -97,32 +98,17 @@ class ModuleController extends BaseCrudController
     public function update($id)
     {
         if (! $this->validate(ModuleRequest::rules($id))) {
-
             return $this->validationFailed();
         }
-
         try {
-
-            $this->moduleService->update(
-
-                $id,
-
-                $this->request->getPost()
-
-            );
-
+            $this->moduleService->update($id, $this->request->getPost());
             return $this->success(
                 'Module updated successfully.',
-                [
-                    'reload' => true
-                ]
+                ['reload' => true]
             );
         } catch (\Throwable $e) {
-
             return $this->error(
-
                 $e->getMessage()
-
             );
         }
     }
@@ -138,12 +124,17 @@ class ModuleController extends BaseCrudController
                 ]
             );
         } catch (\Throwable $e) {
-
             return $this->error(
-
                 $e->getMessage()
-
             );
         }
+    }
+
+    public function options()
+    {
+        return $this->success(
+            '',
+            $this->moduleService->getActive()
+        );
     }
 }

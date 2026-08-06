@@ -13,25 +13,34 @@ class MenuRepository
         $this->model = new MenuModel();
     }
 
-    public function getSidebarMenus(): array
-    {
-        return $this->model
-            ->where('status', 'active')
-            ->where('is_sidebar', 1)
-            ->orderBy('sort_order', 'ASC')
-            ->findAll();
-    }
-
     public function getAll(): array
     {
-        return $this->model
-            ->orderBy('sort_order', 'ASC')
-            ->findAll();
+        return $this->baseQuery()
+            ->orderBy('m.sort_order', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    public function getParents(?int $ignoreId = null): array
+    {
+        $builder = $this->model
+            ->select('id,title')
+            ->where('parent_id', null)
+            ->orderBy('title', 'ASC');
+
+        if ($ignoreId) {
+            $builder->where('id !=', $ignoreId);
+        }
+
+        return $builder->findAll();
     }
 
     public function find(int $id): ?array
     {
-        return $this->model->find($id);
+        return $this->baseQuery()
+            ->where('m.id', $id)
+            ->get()
+            ->getRowArray();
     }
 
     public function create(array $data): int
@@ -49,5 +58,113 @@ class MenuRepository
     public function delete(int $id): bool
     {
         return $this->model->delete($id);
+    }
+
+    public function hasChildren(int $id): bool
+    {
+        return $this->model
+            ->where('parent_id', $id)
+            ->countAllResults() > 0;
+    }
+
+    public function existsRoute(string $route, ?int $ignoreId = null): bool
+    {
+        if ($route === '') {
+            return false;
+        }
+
+        $builder = $this->model
+            ->where('route', $route);
+
+        if ($ignoreId) {
+            $builder->where('id !=', $ignoreId);
+        }
+
+        return $builder->countAllResults() > 0;
+    }
+
+    public function paginate(array $filters): array
+    {
+        $builder = $this->baseQuery();
+
+        if (!empty($filters['search'])) {
+
+            $builder->groupStart()
+                ->like('m.title', $filters['search'])
+                ->orLike('m.route', $filters['search'])
+                ->orLike('mod.name', $filters['search'])
+                ->orLike('p.name', $filters['search'])
+                ->groupEnd();
+        }
+
+        if (!empty($filters['status'])) {
+            $builder->where('m.status', $filters['status']);
+        }
+
+        if (!empty($filters['module_id'])) {
+            $builder->where('m.module_id', $filters['module_id']);
+        }
+
+        $sortBy = $filters['sortBy'] ?? 'm.sort_order';
+        $direction = $filters['direction'] ?? 'ASC';
+
+        $builder->orderBy($sortBy, $direction);
+
+        $page = (int) ($filters['page'] ?? 1);
+        $perPage = (int) ($filters['perPage'] ?? 10);
+
+        $total = $builder->countAllResults(false);
+
+        $rows = $builder
+            ->limit($perPage, ($page - 1) * $perPage)
+            ->get()
+            ->getResultArray();
+
+        return [
+
+            'data' => $rows,
+
+            'total' => $total,
+
+            'page' => $page,
+
+            'perPage' => $perPage,
+
+            'lastPage' => (int) ceil($total / $perPage)
+
+        ];
+    }
+
+    // protected function baseQuery()
+    // {
+    //     return $this->model
+    //         ->builder()
+    //         ->from('menus m')
+    //         ->select([
+    //             'm.*',
+    //             'mod.name AS module_name',
+    //             'parent.title AS parent_name',
+    //             'p.name AS permission_name'
+    //         ])
+    //         ->join('modules mod', 'mod.id = m.module_id')
+    //         ->join('menus parent', 'parent.id = m.parent_id', 'left')
+    //         ->join('permissions p', 'p.id = m.permission_id', 'left');
+    // }
+    protected function baseQuery()
+    {
+        $builder = db_connect()->table('menus m');
+
+        $builder->select([
+            'm.*',
+            'mod.name AS module_name',
+            'parent.title AS parent_name',
+            'p.name AS permission_name'
+        ]);
+
+        $builder->join('modules mod', 'mod.id = m.module_id');
+        $builder->join('menus parent', 'parent.id = m.parent_id', 'left');
+        $builder->join('permissions p', 'p.id = m.permission_id', 'left');
+
+        return $builder;
     }
 }

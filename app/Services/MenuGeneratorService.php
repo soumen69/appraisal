@@ -14,7 +14,6 @@ class MenuGeneratorService
     public function __construct()
     {
         $this->menuModel = new MenuModel();
-
         $this->permissionModel = new PermissionModel();
     }
 

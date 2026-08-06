@@ -85,137 +85,84 @@
 }
 
 .app-table th {
-
     padding: 18px;
-
     font-size: 13px;
-
     text-transform: uppercase;
-
     letter-spacing: .05em;
-
     color: #64748b;
-
     font-weight: 600;
-
     white-space: nowrap;
-
 }
 
 .app-table td {
-
     padding: 18px;
-
     border-top: 1px solid #edf2f7;
-
     vertical-align: middle;
-
 }
 
 .app-table tbody tr {
-
     transition: .2s;
-
 }
 
 .app-table tbody tr:hover {
-
     background: #f8fbff;
-
 }
 
 .crud-pagination {
-
     padding: 20px;
-
     border-top: 1px solid #edf2f7;
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
 }
 
 .status-badge {
-
     padding: 6px 12px;
-
     border-radius: 30px;
-
     font-size: 12px;
-
     font-weight: 600;
-
 }
 
 .status-active {
-
     background: #dcfce7;
-
     color: #166534;
-
 }
 
 .status-inactive {
-
     background: #fee2e2;
-
     color: #991b1b;
-
 }
 
 .app-btn-primary {
-
     background: #2563eb;
-
     color: #fff;
-
     border: none;
-
 }
 
 .app-btn-primary:hover {
-
     background: #1d4ed8;
-
     color: #fff;
-
 }
 
 .app-btn-light {
-
     background: #fff;
-
     border: 1px solid #dbe4ee;
-
 }
 
 .app-btn-light:hover {
-
     background: #f8fafc;
-
 }
 
 .table-empty {
-
     padding: 70px;
-
     text-align: center;
-
     color: #94a3b8;
-
 }
 
 .table-empty i {
-
     font-size: 48px;
-
     display: block;
-
     margin-bottom: 18px;
-
 }
 
 .action-btn {

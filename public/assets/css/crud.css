@@ -1,32 +1,38 @@
-/* ===========================
-   CRUD TOOLBAR
-=========================== */
+/* ==========================
+   Toolbar
+========================== */
 
-.crud-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 18px;
-    margin-bottom: 18px;
-    padding: 18px 20px;
+.crud-card {
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
     background: #fff;
-    border: 1px solid #e9edf3;
-    border-radius: 14px;
-    box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
-    flex-wrap: wrap;
+    box-shadow: none;
 }
 
-.crud-toolbar-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
+.crud-card .card-body {
+    padding: 14px 18px;
 }
 
-.crud-toolbar-right {
-    display: flex;
-    align-items: center;
+.crud-filter {
+    height: 40px;
+    border-radius: 8px;
+    font-size: 14px;
+    border: 1px solid #dbe3ec;
+    box-shadow: none;
+}
+
+.crud-filter-group {
+    display: grid;
+    grid-template-columns: 1fr 170px 90px;
     gap: 10px;
+    align-items: center;
+}
+
+.crud-action-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
 }
 
 /* ===========================
@@ -35,86 +41,63 @@
 
 .crud-search {
     position: relative;
-    width: 340px;
 }
 
 .crud-search input {
-    height: 42px;
-    padding-left: 42px;
-    border-radius: 10px;
+    height: 40px;
+    border-radius: 8px;
+    padding-left: 38px;
     font-size: 14px;
+    border: 1px solid #dbe3ec;
+    box-shadow: none;
+}
+
+.crud-search input:focus {
+    border-color: #b8c6d9;
+    box-shadow: none;
 }
 
 .crud-search i {
     position: absolute;
-    left: 15px;
+    left: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 15px;
-}
-
-.crud-filter {
-    width: 160px;
-    height: 42px;
-    border-radius: 10px;
+    color: #9aa6b2;
+    font-size: 14px;
 }
 
 /* ===========================
    BUTTONS
 =========================== */
 
-.app-btn-primary,
-.app-btn-light {
-
-    height: 42px;
-
-    padding: 0 18px;
-
-    border-radius: 10px;
-
-    font-size: 14px;
-
-    font-weight: 600;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-}
-
 .app-btn-primary {
-
-    background: #2563eb;
-
-    border: none;
-
+    background: #3f556b;
+    border: 1px solid #3f556b;
     color: #fff;
-
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 18px;
+    font-size: 14px;
+    font-weight: 600;
 }
 
 .app-btn-primary:hover {
-
-    background: #1d4ed8;
-
-    color: #fff;
-
+    background: #324658;
+    border-color: #324658;
 }
 
 .app-btn-light {
-
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #dbe3ec;
     background: #fff;
-
-    border: 1px solid #dbe4ee;
-
+    color: #344054;
+    padding: 0 16px;
+    font-size: 14px;
 }
 
 .app-btn-light:hover {
-
     background: #f8fafc;
-
 }
 
 /* ===========================
@@ -122,17 +105,11 @@
 =========================== */
 
 .crud-card {
-
     background: #fff;
-
     border: 1px solid #e9edf3;
-
     border-radius: 14px;
-
     overflow: hidden;
-
     box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
-
 }
 
 /* ===========================
@@ -140,61 +117,35 @@
 =========================== */
 
 .app-table {
-
     width: 100%;
-
     border-collapse: collapse;
-
 }
 
 .app-table thead {
-
     background: #f8fafc;
-
 }
 
 .app-table th {
-
-    padding: 16px 18px;
-
+    padding: 14px 18px;
     font-size: 12px;
-
-    text-transform: uppercase;
-
-    letter-spacing: .08em;
-
-    color: #64748b;
-
     font-weight: 700;
-
+    color: #667085;
+    background: #fafbfc;
     border-bottom: 1px solid #edf2f7;
-
 }
 
 .app-table td {
-
-    padding: 14px 18px;
-
-    border-top: 1px solid #edf2f7;
-
+    padding: 13px 18px;
     font-size: 14px;
-
-    color: #334155;
-
-    vertical-align: middle;
-
+    border-color: #edf2f7;
 }
 
 .app-table tbody tr {
-
     transition: .2s;
-
 }
 
 .app-table tbody tr:hover {
-
     background: #f8fbff;
-
 }
 
 /* ===========================
@@ -202,41 +153,25 @@
 =========================== */
 
 .status-badge {
-
     display: inline-flex;
-
     align-items: center;
-
     justify-content: center;
-
     min-width: 82px;
-
     height: 28px;
-
     padding: 0 12px;
-
     border-radius: 30px;
-
     font-size: 12px;
-
     font-weight: 600;
-
 }
 
 .status-active {
-
     background: #dcfce7;
-
     color: #166534;
-
 }
 
 .status-inactive {
-
     background: #fee2e2;
-
     color: #991b1b;
-
 }
 
 /* ===========================
@@ -244,25 +179,16 @@
 =========================== */
 
 .action-btn {
-
     width: 34px;
-
     height: 34px;
-
     border: none;
-
     border-radius: 8px;
-
     background: #f1f5f9;
-
     transition: .2s;
-
 }
 
 .action-btn:hover {
-
     background: #e2e8f0;
-
 }
 
 /* ===========================
@@ -270,43 +196,33 @@
 =========================== */
 
 .table-empty {
-
-    padding: 55px 20px;
-
+    padding: 70px;
     text-align: center;
-
     color: #94a3b8;
-
 }
 
 .table-empty i {
-
-    font-size: 52px;
-
-    margin-bottom: 14px;
-
+    font-size: 28px;
     display: block;
-
 }
 
 .table-empty h5 {
-
-    font-size: 30px;
-
+    font-size: 28px;
     font-weight: 700;
-
-    color: #334155;
-
-    margin-bottom: 8px;
-
+    color: #344054;
+    margin-bottom: 6px;
 }
 
 .table-empty p {
-
     font-size: 15px;
+    color: #667085;
+    margin-bottom: 20px;
+}
 
-    margin-bottom: 24px;
-
+.table-empty .btn {
+    height: 40px;
+    border-radius: 8px;
+    padding: 0 18px;
 }
 
 /* ===========================
@@ -314,19 +230,12 @@
 =========================== */
 
 .crud-pagination {
-
     display: flex;
-
     justify-content: space-between;
-
     align-items: center;
-
     padding: 14px 18px;
-
     border-top: 1px solid #edf2f7;
-
     background: #fff;
-
 }
 
 /* ===========================
@@ -334,33 +243,20 @@
 =========================== */
 
 .dropdown-menu {
-
-    border: none;
-
-    border-radius: 12px;
-
+    border: none border-radius: 12px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
-
     padding: 8px;
-
     min-width: 180px;
-
 }
 
 .dropdown-item {
-
     border-radius: 8px;
-
     padding: 10px 12px;
-
     font-size: 14px;
-
 }
 
 .dropdown-item:hover {
-
     background: #f1f5f9;
-
 }
 
 /* ===========================
@@ -368,29 +264,19 @@
 =========================== */
 
 .app-table tbody tr {
-
     animation: fadeIn .2s ease;
-
 }
 
 @keyframes fadeIn {
-
     from {
-
         opacity: 0;
-
         transform: translateY(6px);
-
     }
 
     to {
-
         opacity: 1;
-
         transform: translateY(0);
-
     }
-
 }
 
 /* ===========================
@@ -399,36 +285,13 @@
 
 @media(max-width:992px) {
 
-    .crud-toolbar {
-
-        align-items: stretch;
-
+    .crud-filter-group {
+        grid-template-columns: 1fr;
     }
 
-    .crud-toolbar-left,
-
-    .crud-toolbar-right {
-
-        width: 100%;
-
+    .crud-action-group {
+        justify-content: flex-start;
+        margin-top: 10px;
+        flex-wrap: wrap;
     }
-
-    .crud-search {
-
-        width: 100%;
-
-    }
-
-    .crud-filter {
-
-        width: 100%;
-
-    }
-
-    .crud-toolbar-right .btn {
-
-        flex: 1;
-
-    }
-
 }

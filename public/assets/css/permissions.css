@@ -1,0 +1,71 @@
+.permission-group {
+    background: #fff;
+    border: 1px solid #e8edf3;
+    border-radius: 12px;
+    margin-bottom: 18px;
+    overflow: hidden;
+}
+
+.permission-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #eef2f6;
+    background: #fafbfd;
+}
+
+.permission-group-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #344054;
+}
+
+.permission-count {
+    font-size: 13px;
+    color: #667085;
+}
+
+.permission-list {
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.permission-card {
+    width: 270px;
+    border: 1px solid #e7ecf2;
+    border-radius: 10px;
+    padding: 14px;
+    transition: .2s;
+    background: #fff;
+}
+
+.permission-card:hover {
+    border-color: #b9c5d5;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .04);
+}
+
+.permission-name {
+    font-weight: 600;
+    color: #344054;
+}
+
+.permission-slug {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #98a2b3;
+    word-break: break-word;
+}
+
+.permission-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.permission-badge {
+    font-size: 11px;
+}

@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     new Crud({
+        entity: 'Module',
+        entityPlural: 'Modules',
         endpoint: `${APP.baseUrl.replace(/\/$/, '')}/modules`,
         table: '#crudTable',
         modal: '#crudModal',

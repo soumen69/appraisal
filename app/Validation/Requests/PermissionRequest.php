@@ -9,35 +9,24 @@ class PermissionRequest
         $slugRule = 'required|max_length[150]|is_unique[permissions.slug]';
 
         if ($id) {
-
             $slugRule = "required|max_length[150]|is_unique[permissions.slug,id,{$id}]";
-
         }
 
         return [
 
+            'module_id' => [
+                'label' => 'Module',
+                'rules' => 'required|integer'
+            ],
+
             'name' => [
-
                 'label' => 'Permission Name',
-
-                'rules' => 'required|max_length[150]'
-
+                'rules' => 'required|min_length[3]|max_length[150]'
             ],
 
             'slug' => [
-
-                'label' => 'Permission Slug',
-
+                'label' => 'Slug',
                 'rules' => $slugRule
-
-            ],
-
-            'module' => [
-
-                'label' => 'Module',
-
-                'rules' => 'required|max_length[100]'
-
             ]
 
         ];

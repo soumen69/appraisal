@@ -6,39 +6,24 @@
 
             <div class="col-xl-6 col-lg-12">
 
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-
+                <!-- <div class="d-flex flex-wrap gap-2 align-items-center"> -->
+                <div class="crud-filter-group">
                     <div class="crud-search flex-grow-1">
-
                         <i class="bi bi-search"></i>
-
-                        <input
-                            type="text"
-                            id="crudSearch"
-                            class="form-control"
-                            placeholder="Search modules...">
-
+                        <input type="text" id="crudSearch" class="form-control" placeholder="Search <?= strtolower($entityPlural ?? 'records') ?>...">
                     </div>
 
-                    <select
-                        class="form-select crud-filter"
-                        id="crudStatus">
-
+                    <select class="form-select crud-filter" id="crudStatus">
                         <option value="">All Status</option>
                         <option value="active">Active</option>
                         <option value="inactive">Inactive</option>
-
                     </select>
 
-                    <select
-                        class="form-select crud-filter"
-                        id="crudPageSize">
-
+                    <select class="form-select crud-filter" id="crudPageSize">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
                         <option value="100">100</option>
-
                     </select>
 
                 </div>
@@ -47,14 +32,10 @@
 
             <div class="col-xl-6 col-lg-12">
 
-                <div class="d-flex justify-content-xl-end justify-content-start gap-2">
-
-                    <button
-                        class="btn app-btn-light"
-                        id="btnRefresh">
-
+                <!-- <div class="d-flex justify-content-xl-end justify-content-start gap-2"> -->
+                <div class="crud-action-group">
+                    <button class="btn app-btn-light" id="btnRefresh">
                         <i class="bi bi-arrow-clockwise"></i>
-
                     </button>
 
                     <button
@@ -67,22 +48,12 @@
 
                     </button>
 
-                    <button
-                        class="btn app-btn-primary"
-                        id="btnAdd">
-
+                    <button class="btn app-btn-primary" id="btnAdd">
                         <i class="bi bi-plus-lg"></i>
-
-                        New Module
-
+                        New <?= esc($entity ?? 'Record') ?>
                     </button>
-
                 </div>
-
             </div>
-
         </div>
-
     </div>
-
 </div>

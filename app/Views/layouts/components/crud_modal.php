@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="fw-bold" id="crudModalTitle">
-                    Create Module
+                    <?= esc($modalTitle ?? ('Create ' . ($entity ?? 'Record'))) ?>
                 </h5>
                 <button
                     class="btn-close"
