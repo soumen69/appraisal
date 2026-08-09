@@ -53,12 +53,6 @@ class UserModel extends Model
 
     ];
 
-    /*
-    |--------------------------------------------------------------------------
-    | Timestamps
-    |--------------------------------------------------------------------------
-    */
-
     protected $useTimestamps = true;
 
     protected $dateFormat = 'datetime';
@@ -66,12 +60,6 @@ class UserModel extends Model
     protected $createdField = 'created_at';
 
     protected $updatedField = 'updated_at';
-
-    /*
-    |--------------------------------------------------------------------------
-    | Validation
-    |--------------------------------------------------------------------------
-    */
 
     protected $validationRules = [];
 
@@ -81,19 +69,11 @@ class UserModel extends Model
 
     protected $cleanValidationRules = true;
 
-    /*
-    |--------------------------------------------------------------------------
-    | Callbacks
-    |--------------------------------------------------------------------------
-    */
-
     protected $allowCallbacks = true;
 
     protected $beforeInsert = [
-
         'hashPassword',
         'generateFullName'
-
     ];
 
     protected $beforeUpdate = [
@@ -102,12 +82,6 @@ class UserModel extends Model
         'generateFullName'
 
     ];
-
-    /*
-    |--------------------------------------------------------------------------
-    | Password Hashing
-    |--------------------------------------------------------------------------
-    */
 
     protected function hashPassword(array $data)
     {
@@ -130,12 +104,6 @@ class UserModel extends Model
         return $data;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Full Name Generator
-    |--------------------------------------------------------------------------
-    */
-
     protected function generateFullName(array $data)
     {
         $first = $data['data']['first_name'] ?? '';
@@ -147,12 +115,6 @@ class UserModel extends Model
         }
         return $data;
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Custom Methods
-    |--------------------------------------------------------------------------
-    */
 
     public function findByEmail(string $email)
     {
@@ -210,5 +172,241 @@ class UserModel extends Model
             'password_reset_token'  => null,
             'password_reset_expiry' => null
         ]);
+    }
+
+    public function getEmployees(
+        int $page = 1,
+        int $pageSize = 10,
+        string $search = '',
+        string $status = '',
+        string $orderBy = 'id',
+        string $direction = 'desc'
+    ): array {
+        $builder = $this->builder();
+
+        $builder
+            ->select([
+                'users.id',
+                'users.organization_id',
+                'users.branch_id',
+                'users.department_id',
+                'users.designation_id',
+                'users.employee_code',
+                'users.first_name',
+                'users.last_name',
+                'users.full_name',
+                'users.email',
+                'users.phone',
+                'users.gender',
+                'users.dob',
+                'users.joining_date',
+                'users.reporting_manager_id',
+                'users.profile_photo',
+                'users.status',
+                'users.created_at',
+
+                'organizations.name AS organization_name',
+                'branches.name AS branch_name',
+                'departments.name AS department_name',
+                'designations.title AS designation_name',
+
+                'manager.full_name AS reporting_manager_name'
+            ])
+            ->join(
+                'organizations',
+                'organizations.id = users.organization_id',
+                'left'
+            )
+            ->join(
+                'branches',
+                'branches.id = users.branch_id',
+                'left'
+            )
+            ->join(
+                'departments',
+                'departments.id = users.department_id',
+                'left'
+            )
+            ->join(
+                'designations',
+                'designations.id = users.designation_id',
+                'left'
+            )
+            ->join(
+                'users manager',
+                'manager.id = users.reporting_manager_id',
+                'left'
+            );
+
+        if ($search !== '') {
+            $builder->groupStart()
+                ->like('users.employee_code', $search)
+                ->orLike('users.first_name', $search)
+                ->orLike('users.last_name', $search)
+                ->orLike('users.full_name', $search)
+                ->orLike('users.email', $search)
+                ->orLike('users.phone', $search)
+                ->groupEnd();
+        }
+
+        if ($status !== '') {
+            $builder->where('users.status', $status);
+        }
+
+        $allowedOrderBy = [
+            'id'              => 'users.id',
+            'employee_code'   => 'users.employee_code',
+            'full_name'       => 'users.full_name',
+            'email'           => 'users.email',
+            'joining_date'    => 'users.joining_date',
+            'status'          => 'users.status',
+            'created_at'      => 'users.created_at'
+        ];
+
+        $orderColumn = $allowedOrderBy[$orderBy]
+            ?? 'users.id';
+
+        $direction = strtolower($direction) === 'asc'
+            ? 'ASC'
+            : 'DESC';
+
+        $builder->orderBy($orderColumn, $direction);
+
+        $totalBuilder = clone $builder;
+
+        $total = $totalBuilder->countAllResults();
+
+        $offset = max(0, ($page - 1) * $pageSize);
+
+        $data = $builder
+            ->limit($pageSize, $offset)
+            ->get()
+            ->getResultArray();
+
+        return [
+            'data' => $data,
+            'total' => $total,
+            'page' => $page,
+            'pageSize' => $pageSize,
+            'lastPage' => $total > 0
+                ? (int) ceil($total / $pageSize)
+                : 1
+        ];
+    }
+
+    // public function getEmployee(int $id): ?array
+    // {
+    //     return $this->builder()
+    //         ->select([
+    //             'users.*',
+
+    //             'organizations.name AS organization_name',
+    //             'branches.name AS branch_name',
+    //             'departments.name AS department_name',
+    //             'designations.name AS designation_name',
+
+    //             'manager.full_name AS reporting_manager_name'
+    //         ])
+    //         ->join(
+    //             'organizations',
+    //             'organizations.id = users.organization_id',
+    //             'left'
+    //         )
+    //         ->join(
+    //             'branches',
+    //             'branches.id = users.branch_id',
+    //             'left'
+    //         )
+    //         ->join(
+    //             'departments',
+    //             'departments.id = users.department_id',
+    //             'left'
+    //         )
+    //         ->join(
+    //             'designations',
+    //             'designations.id = users.designation_id',
+    //             'left'
+    //         )
+    //         ->join(
+    //             'users manager',
+    //             'manager.id = users.reporting_manager_id',
+    //             'left'
+    //         )
+    //         ->where('users.id', $id)
+    //         ->get()
+    //         ->getRowArray();
+    // }
+    public function getEmployee(int $id): ?array
+    {
+        return $this->builder()
+            ->select([
+                'users.id',
+
+                'users.organization_id',
+                'users.branch_id',
+                'users.department_id',
+                'users.designation_id',
+
+                'users.employee_code',
+
+                'users.first_name',
+                'users.last_name',
+                'users.full_name',
+
+                'users.email',
+                'users.phone',
+
+                'users.gender',
+                'users.dob',
+                'users.joining_date',
+
+                'users.reporting_manager_id',
+
+                'users.avatar',
+                'users.profile_photo',
+
+                'users.status',
+
+                'users.created_at',
+                'users.updated_at',
+
+                'organizations.name AS organization_name',
+                'branches.name AS branch_name',
+                'departments.name AS department_name',
+                'designations.title AS designation_name',
+
+                'manager.full_name AS reporting_manager_name'
+            ])
+            ->join(
+                'organizations',
+                'organizations.id = users.organization_id',
+                'left'
+            )
+            ->join(
+                'branches',
+                'branches.id = users.branch_id',
+                'left'
+            )
+            ->join(
+                'departments',
+                'departments.id = users.department_id',
+                'left'
+            )
+            ->join(
+                'designations',
+                'designations.id = users.designation_id',
+                'left'
+            )
+            ->join(
+                'users manager',
+                'manager.id = users.reporting_manager_id',
+                'left'
+            )
+            ->where(
+                'users.id',
+                $id
+            )
+            ->get()
+            ->getRowArray();
     }
 }

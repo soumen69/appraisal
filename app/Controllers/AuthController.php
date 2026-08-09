@@ -2,8 +2,17 @@
 
 namespace App\Controllers;
 
+use App\Services\AuthService;
+
 class AuthController extends BaseController
 {
+    protected AuthService $authService;
+
+    public function __construct()
+    {
+        $this->authService = new AuthService();
+    }
+
     public function login()
     {
         return view('auth/login', [
@@ -13,7 +22,27 @@ class AuthController extends BaseController
 
     public function authenticate()
     {
+        try {
+            $this->authService->login(
 
+                $this->request->getPost('email'),
+
+                $this->request->getPost('password'),
+
+                $this->request->getIPAddress()
+
+            );
+
+            return redirect()->to('/dashboard');
+        } catch (\Throwable $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with(
+                    'error',
+                    $e->getMessage()
+                );
+        }
     }
 
     public function forgotPassword()
@@ -40,6 +69,8 @@ class AuthController extends BaseController
 
     public function logout()
     {
+        $this->authService->logout();
 
+        return redirect()->to('/');
     }
 }

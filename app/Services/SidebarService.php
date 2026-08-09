@@ -2,30 +2,48 @@
 
 namespace App\Services;
 
-use App\Models\Admin\MenuModel;
-
 class SidebarService
 {
-    protected MenuModel $menuModel;
+    protected MenuService $menus;
 
     public function __construct()
     {
-        $this->menuModel = new MenuModel();
+        $this->menus = new MenuService();
     }
 
-    public function getSidebar(array $permissions): array
+    public function get(): array
     {
-        $menus = $this->menuModel
-            ->where('status', 'active')
-            ->orderBy('sort_order', 'ASC')
-            ->findAll();
+        $rows = $this->menus->getSidebarMenus();
+
+        $isSuper = (bool) session('is_super');
+
+        $permissions = session('permissions') ?? [];
+
         $sidebar = [];
 
-        foreach ($menus as $menu) {
-            if (empty($menu['permission_slug']) || in_array($menu['permission_slug'], $permissions)) {
-                $sidebar[] = $menu;
+        foreach ($rows as $row) {
+
+            if (
+                !$isSuper &&
+                !empty($row['permission_slug']) &&
+                !in_array($row['permission_slug'], $permissions, true)
+            ) {
+                continue;
             }
+
+            $module = $row['module_name'];
+
+            if (!isset($sidebar[$module])) {
+
+                $sidebar[$module] = [
+                    'module' => $module,
+                    'menus'  => []
+                ];
+            }
+
+            $sidebar[$module]['menus'][] = $row;
         }
-        return $sidebar;
+
+        return array_values($sidebar);
     }
 }

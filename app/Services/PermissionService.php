@@ -95,4 +95,17 @@ class PermissionService
     {
         return $this->repository->delete($id);
     }
+
+    public function getGrouped(): array
+    {
+        return $this->repository->getGroupedByModule();
+    }
+
+    public function getRolePermissionIds(int $roleId): array
+    {
+        return array_column(
+            $this->repository->getRolePermissions($roleId),
+            'permission_id'
+        );
+    }
 }

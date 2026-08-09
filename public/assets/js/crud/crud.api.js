@@ -31,8 +31,12 @@ const CrudApi = {
                     `Showing ${crud.data.length} of ${crud.total} records`
                 );
             },
-            error() {
-                APP.error('Unable to load data.');
+            error(xhr) {
+                if (xhr.status === 403) {
+                    APP.error('You are not authorized.');
+                    return;
+                }
+                APP.error('Request failed.');
             }
         });
     }

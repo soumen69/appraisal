@@ -1,0 +1,283 @@
+.permission-workspace {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    min-height: calc(100vh - 120px);
+}
+
+/* =======================================================
+   Header
+======================================================= */
+
+.permission-header {
+    background: #fff;
+    border: 1px solid #e9edf5;
+    border-radius: 18px;
+    padding: 26px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, .05);
+}
+
+.permission-back {
+    color: #64748b;
+    font-size: .9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.permission-back:hover {
+    color: var(--bs-primary);
+}
+
+.permission-role-name {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.permission-role-description {
+    margin-top: 8px;
+    color: #64748b;
+}
+
+/* =======================================================
+   Toolbar
+======================================================= */
+
+.permission-toolbar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+}
+
+.permission-search {
+    position: relative;
+}
+
+.permission-search i {
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    color: #94a3b8;
+}
+
+.permission-search input {
+    height: 46px;
+    padding-left: 42px;
+    border-radius: 12px;
+}
+
+/* =======================================================
+   Layout
+======================================================= */
+
+.permission-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 22px;
+    flex: 1;
+}
+
+/* =======================================================
+   Sidebar
+======================================================= */
+
+.permission-sidebar {
+    background: #fff;
+    border: 1px solid #e9edf5;
+    border-radius: 18px;
+    overflow: hidden;
+    height: calc(100vh - 270px);
+    position: sticky;
+    top: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+#moduleList {
+    overflow: auto;
+}
+
+.permission-module {
+    padding: 16px 18px;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: .18s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.permission-module:hover {
+    background: #f8fafc;
+}
+
+.permission-module.active {
+    background: #eef5ff;
+    border-left-color: #0d6efd;
+}
+
+.permission-module-name {
+    font-weight: 600;
+}
+
+.permission-module-count {
+    font-size: .78rem;
+    background: #edf2f7;
+    color: #334155;
+    padding: 3px 9px;
+    border-radius: 50px;
+}
+
+/* =======================================================
+   Content
+======================================================= */
+
+.permission-content {
+    min-height: 500px;
+}
+
+.permission-card {
+    background: #fff;
+    border: 1px solid #e9edf5;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 8px 25px rgba(15, 23, 42, .04);
+}
+
+.permission-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.permission-card-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+}
+
+.permission-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+}
+
+/* =======================================================
+   Permission Item
+======================================================= */
+
+.permission-item {
+    border: 1px solid #e8edf5;
+    border-radius: 14px;
+    padding: 18px;
+    transition: .18s;
+    background: #fff;
+}
+
+.permission-item:hover {
+    border-color: #0d6efd;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(13, 110, 253, .08);
+}
+
+.permission-item-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.permission-item-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.permission-item small {
+    color: #64748b;
+    display: block;
+    margin-top: 8px;
+    line-height: 1.5;
+}
+
+.permission-system {
+    font-size: .7rem;
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 4px 10px;
+    border-radius: 40px;
+    font-weight: 600;
+}
+
+/* =======================================================
+   Footer
+======================================================= */
+
+.permission-footer {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border: 1px solid #e9edf5;
+    border-radius: 18px;
+    padding: 18px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, .04);
+    z-index: 20;
+}
+
+/* =======================================================
+   Scrollbar
+======================================================= */
+
+.permission-sidebar::-webkit-scrollbar,
+#moduleList::-webkit-scrollbar {
+    width: 7px;
+}
+
+.permission-sidebar::-webkit-scrollbar-thumb,
+#moduleList::-webkit-scrollbar-thumb {
+    background: #d4d8df;
+    border-radius: 10px;
+}
+
+/* =======================================================
+   Responsive
+======================================================= */
+
+@media(max-width:992px) {
+    .permission-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .permission-sidebar {
+        height: auto;
+        position: relative;
+    }
+
+    .permission-toolbar {
+        grid-template-columns: 1fr;
+    }
+
+    .permission-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .permission-header {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .permission-footer {
+        flex-direction: column;
+        gap: 15px;
+    }
+}

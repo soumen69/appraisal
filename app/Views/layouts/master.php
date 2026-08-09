@@ -44,7 +44,8 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/dashboard.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/responsive.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
-
+    <link rel="stylesheet" href="<?= base_url('assets/css/employees.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('assets/css/branches.css') ?>">
 </head>
 
 <body>

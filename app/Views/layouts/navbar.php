@@ -1,3 +1,17 @@
+<?php
+
+$userName = session('full_name') ?? 'Guest';
+
+$roleName = session('primary_role') ?? 'User';
+
+$avatar = session('avatar');
+
+$avatar = !empty($avatar)
+    ? base_url($avatar)
+    : base_url('assets/images/avatar/default.png');
+
+?>
+
 <nav class="app-navbar">
     <div class="app-navbar-left">
         <button class="btn-toggle-sidebar">
@@ -19,11 +33,11 @@
                 class="user-dropdown"
                 data-bs-toggle="dropdown">
                 <img
-                    src="<?= base_url('assets/images/avatar/default.png') ?>"
-                    class="user-avatar">
+                    src="<?= esc($avatar) ?>"
+                    class="user-avatar" alt="<?= esc($userName) ?>">
                 <div>
-                    <strong>Super Admin</strong>
-                    <small>Administrator</small>
+                    <strong><?= esc($userName) ?></strong>
+                    <small><?= esc($roleName) ?></small>
                 </div>
                 <i class="bi bi-chevron-down"></i>
             </button>
@@ -35,7 +49,7 @@
                     </a>
                 </li>
                 <li>
-                    <a class="dropdown-item" href="#">
+                    <a class="dropdown-item" href="<?= base_url('logout') ?>">
                         <i class="bi bi-box-arrow-right"></i>
                         Logout
                     </a>

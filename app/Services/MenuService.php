@@ -37,11 +37,11 @@ class MenuService
     {
         $this->validateRoute($data);
 
-        $this->validateParent($data);
+        // $this->validateParent($data);
 
-        if (empty($data['parent_id'])) {
-            $data['parent_id'] = null;
-        }
+        // if (empty($data['parent_id'])) {
+        //     $data['parent_id'] = null;
+        // }
 
         if (empty($data['permission_id'])) {
             $data['permission_id'] = null;
@@ -54,11 +54,11 @@ class MenuService
     {
         $this->validateRoute($data, $id);
 
-        $this->validateParent($data, $id);
+        // $this->validateParent($data, $id);
 
-        if (empty($data['parent_id'])) {
-            $data['parent_id'] = null;
-        }
+        // if (empty($data['parent_id'])) {
+        //     $data['parent_id'] = null;
+        // }
 
         if (empty($data['permission_id'])) {
             $data['permission_id'] = null;
@@ -79,11 +79,11 @@ class MenuService
             throw new \RuntimeException('System menus cannot be deleted.');
         }
 
-        if ($this->repository->hasChildren($id)) {
-            throw new \RuntimeException(
-                'This menu contains child menus. Remove or reassign them first.'
-            );
-        }
+        // if ($this->repository->hasChildren($id)) {
+        //     throw new \RuntimeException(
+        //         'This menu contains child menus. Remove or reassign them first.'
+        //     );
+        // }
 
         return $this->repository->delete($id);
     }
@@ -101,26 +101,32 @@ class MenuService
         }
     }
 
-    protected function validateParent(array $data, ?int $id = null): void
+    // protected function validateParent(array $data, ?int $id = null): void
+    // {
+    //     if (empty($data['parent_id'])) {
+    //         return;
+    //     }
+
+    //     $parentId = (int) $data['parent_id'];
+
+    //     if ($id !== null && $parentId === $id) {
+    //         throw new \RuntimeException(
+    //             'A menu cannot be its own parent.'
+    //         );
+    //     }
+
+    //     $parent = $this->repository->find($parentId);
+
+    //     if (!$parent) {
+    //         throw new \RuntimeException(
+    //             'Selected parent menu does not exist.'
+    //         );
+    //     }
+    // }
+
+    public function getSidebarMenus(): array
     {
-        if (empty($data['parent_id'])) {
-            return;
-        }
-
-        $parentId = (int) $data['parent_id'];
-
-        if ($id !== null && $parentId === $id) {
-            throw new \RuntimeException(
-                'A menu cannot be its own parent.'
-            );
-        }
-
-        $parent = $this->repository->find($parentId);
-
-        if (!$parent) {
-            throw new \RuntimeException(
-                'Selected parent menu does not exist.'
-            );
-        }
+        return $this->repository
+            ->getSidebarMenus();
     }
 }

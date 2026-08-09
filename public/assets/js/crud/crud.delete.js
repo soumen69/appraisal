@@ -35,8 +35,12 @@ const CrudDelete = {
                             crud.reload();
                         },
 
-                        error() {
-                            APP.error(`Unable to delete ${crud.entity.toLowerCase()}.`);
+                        error(xhr) {
+                            if (xhr.status === 403) {
+                                APP.error('You are not authorized.');
+                                return;
+                            }
+                            APP.error('Request failed.');
                         }
                     });
                 });

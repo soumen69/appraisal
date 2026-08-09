@@ -10,6 +10,7 @@ class Crud {
         this.form = document.querySelector(options.form);
         this.columns = options.columns || [];
         this.onInit = options.onInit || null;
+        this.drawerRenderer = options.drawerRenderer || null;
         this.page = 1;
         this.pageSize = 10;
         this.search = '';
@@ -37,9 +38,9 @@ class Crud {
     registerEvents() {
         CrudSearch.bind(this);
         CrudModal.bind(this);
-        CrudForm.bind(this);
         CrudDelete.bind(this);
         CrudView.bind(this);
+        CrudForm.bind(this);
     }
 
     load() {

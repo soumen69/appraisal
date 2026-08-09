@@ -60,12 +60,12 @@ class MenuRepository
         return $this->model->delete($id);
     }
 
-    public function hasChildren(int $id): bool
-    {
-        return $this->model
-            ->where('parent_id', $id)
-            ->countAllResults() > 0;
-    }
+    // public function hasChildren(int $id): bool
+    // {
+    //     return $this->model
+    //         ->where('parent_id', $id)
+    //         ->countAllResults() > 0;
+    // }
 
     public function existsRoute(string $route, ?int $ignoreId = null): bool
     {
@@ -135,21 +135,6 @@ class MenuRepository
         ];
     }
 
-    // protected function baseQuery()
-    // {
-    //     return $this->model
-    //         ->builder()
-    //         ->from('menus m')
-    //         ->select([
-    //             'm.*',
-    //             'mod.name AS module_name',
-    //             'parent.title AS parent_name',
-    //             'p.name AS permission_name'
-    //         ])
-    //         ->join('modules mod', 'mod.id = m.module_id')
-    //         ->join('menus parent', 'parent.id = m.parent_id', 'left')
-    //         ->join('permissions p', 'p.id = m.permission_id', 'left');
-    // }
     protected function baseQuery()
     {
         $builder = db_connect()->table('menus m');
@@ -157,14 +142,71 @@ class MenuRepository
         $builder->select([
             'm.*',
             'mod.name AS module_name',
-            'parent.title AS parent_name',
+            // 'parent.title AS parent_name',
             'p.name AS permission_name'
         ]);
 
         $builder->join('modules mod', 'mod.id = m.module_id');
-        $builder->join('menus parent', 'parent.id = m.parent_id', 'left');
+        // $builder->join('menus parent', 'parent.id = m.parent_id', 'left');
         $builder->join('permissions p', 'p.id = m.permission_id', 'left');
 
         return $builder;
     }
+
+    public function getSidebarMenus(): array
+    {
+        return db_connect()
+            ->table('menus m')
+            ->select([
+                'm.id',
+                'm.title',
+                'm.icon',
+                'm.route',
+                'm.sort_order',
+
+                'mod.name AS module_name',
+                'mod.sort_order AS module_sort_order',
+
+                'p.slug AS permission_slug'
+            ])
+            ->join('modules mod', 'mod.id = m.module_id')
+            ->join('permissions p', 'p.id = m.permission_id', 'left')
+
+            ->where('m.status', 'active')
+            ->where('m.is_sidebar', 1)
+            ->where('m.is_visible', 1)
+
+            ->orderBy('mod.sort_order', 'ASC')
+            ->orderBy('m.sort_order', 'ASC')
+
+            ->get()
+            ->getResultArray();
+    }
+
+    // public function getSidebarMenus(): array
+    // {
+    //     return db_connect()
+    //         ->table('menus m')
+    //         ->select([
+    //             'm.id',
+    //             'm.parent_id',
+    //             'm.title',
+    //             'm.icon',
+    //             'm.route',
+    //             'm.sort_order',
+    //             'p.slug AS permission_slug'
+    //         ])
+
+    //         ->join(
+    //             'permissions p',
+    //             'p.id=m.permission_id',
+    //             'left'
+    //         )
+    //         ->where('m.status', 'active')
+    //         ->where('m.is_sidebar', 1)
+    //         ->where('m.is_visible', 1)
+    //         ->orderBy('m.sort_order', 'ASC')
+    //         ->get()
+    //         ->getResultArray();
+    // }
 }

@@ -14,7 +14,8 @@ class PermissionGeneratorService
         'edit',
         'delete',
         'import',
-        'export'
+        'export',
+        'permission'
     ];
 
     public function __construct()
@@ -28,14 +29,11 @@ class PermissionGeneratorService
         string $moduleName,
         array $permissions = []
     ): bool {
-
         if (empty($permissions)) {
-
             $permissions = $this->defaultPermissions;
         }
 
         foreach ($permissions as $permission) {
-
             $permissionSlug = strtolower($moduleSlug) . '.' . strtolower($permission);
 
             $exists = $this->permissionModel
@@ -48,9 +46,9 @@ class PermissionGeneratorService
 
             $this->permissionModel->insert([
 
-                'name' => $moduleName . ' ' . ucfirst($permission),
+                'name'      => $moduleName . ' ' . ucfirst($permission),
 
-                'slug' => $permissionSlug,
+                'slug'      => $permissionSlug,
 
                 'module_id' => $moduleId
 

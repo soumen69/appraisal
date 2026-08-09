@@ -15,15 +15,17 @@ class RoleModel extends Model
     protected $protectFields = true;
 
     protected $allowedFields = [
-
         'name',
-
         'slug',
-
+        'display_name',
+        'parent_role_id',
+        'icon',
+        'color',
+        'sort_order',
+        'status',
+        'created_by',
         'description',
-
         'is_system'
-
     ];
 
     protected $useTimestamps = true;

@@ -110,4 +110,37 @@ class PermissionRepository
             ->get()
             ->getResultArray();
     }
+
+    public function getGroupedByModule(): array
+    {
+        $rows = $this->baseQuery()
+            ->orderBy('m.sort_order', 'ASC')
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
+
+        $grouped = [];
+
+        foreach ($rows as $row) {
+
+            $grouped[$row['module_name']][] = $row;
+        }
+
+        return $grouped;
+    }
+
+    public function getRolePermissions(int $roleId): array
+    {
+        return $this->baseQuery()
+            ->select('rp.permission_id')
+            ->join(
+                'role_permissions rp',
+                "rp.permission_id = p.id AND rp.role_id = {$roleId}",
+                'inner'
+            )
+            ->orderBy('m.sort_order', 'ASC')
+            ->orderBy('p.name', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
 }
