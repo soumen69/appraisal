@@ -22,16 +22,9 @@
             <p class="branch-form-subtitle">
                 Add a new branch to an organization.
             </p>
-
         </div>
-
     </div>
-
-
-    <?= $this->include(
-        'admin/branches/_form'
-    ) ?>
-
+    <?= $this->include('branches/_form') ?>
 </div>
 
 <?= $this->endSection() ?>

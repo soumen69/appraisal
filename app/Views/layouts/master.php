@@ -74,6 +74,18 @@
 
     <!-- jQuery -->
     <script src="<?= base_url('assets/vendor/jquery/jquery.min.js') ?>"></script>
+    <!-- jQuery -->
+    <script src="<?= base_url('assets/vendor/jquery/jquery.min.js') ?>"></script>
+
+    <!-- Bootstrap -->
+    <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
+
+    <!-- DataTables -->
+    <script src="<?= base_url('assets/vendor/datatables-core/dataTables.min.js') ?>"></script>
+    <script src="<?= base_url('assets/vendor/datatables/js/dataTables.bootstrap5.min.js') ?>"></script>
+
+    <!-- Select2 -->
+    <script src="<?= base_url('assets/vendor/select2/js/select2.full.min.js') ?>"></script>
 
     <!-- Bootstrap -->
     <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>

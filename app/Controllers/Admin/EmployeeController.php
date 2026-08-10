@@ -22,7 +22,9 @@ class EmployeeController extends BaseController
     public function index()
     {
         return view('employees/index', [
-            'title' => 'Employees'
+            'title' => 'Employees',
+            'page_title' => 'Employees',
+            'page_subtitle' => 'Manage your employees and their actions.'
         ]);
     }
 

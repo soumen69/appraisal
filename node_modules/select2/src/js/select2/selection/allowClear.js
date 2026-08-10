@@ -92,21 +92,34 @@ define([
   AllowClear.prototype.update = function (decorated, data) {
     decorated.call(this, data);
 
+    this.$selection.find('.select2-selection__clear').remove();
+    this.$selection[0].classList.remove('select2-selection--clearable');
+
     if (this.$selection.find('.select2-selection__placeholder').length > 0 ||
         data.length === 0) {
       return;
     }
 
+    var rendered = this.$selection.find('.select2-selection__rendered')[0];
+    var selectionId = null;
+    if(rendered != null) {
+      selectionId = rendered.getAttribute('id');
+    }
+
     var removeAll = this.options.get('translations').get('removeAllItems');
 
     var $remove = $(
-      '<span class="select2-selection__clear" title="' + removeAll() +'">' +
-        '&times;' +
-      '</span>'
+      '<button type="button" class="select2-selection__clear" tabindex="-1">' +
+        '<span aria-hidden="true">&times;</span>' +
+      '</button>'
     );
+    $remove[0].setAttribute('title', removeAll());
+    $remove[0].setAttribute('aria-label', removeAll());
+    $remove[0].setAttribute('aria-describedby', selectionId);
     Utils.StoreData($remove[0], 'data', data);
 
-    this.$selection.find('.select2-selection__rendered').prepend($remove);
+    this.$selection.prepend($remove);
+    this.$selection[0].classList.add('select2-selection--clearable');
   };
 
   return AllowClear;

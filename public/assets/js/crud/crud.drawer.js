@@ -35,14 +35,12 @@ const CrudDrawer = {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Generic Drawer
-        |--------------------------------------------------------------------------
-        */
 
         const hidden = [
             'id',
+            'group_id',
+            'organization_id',
+            'organization_ids',
             'created_at',
             'updated_at'
         ];
@@ -67,20 +65,30 @@ const CrudDrawer = {
             switch (key) {
                 case 'status':
 
-                    value =
-                        value === 'active'
+                    if (value === 'active') {
 
-                            ? `
-                                <span class="status-badge status-active">
-                                    Active
-                                </span>
-                            `
+                        value = `
+            <span class="status-badge status-active">
+                Active
+            </span>
+        `;
 
-                            : `
-                                <span class="status-badge status-inactive">
-                                    Inactive
-                                </span>
-                            `;
+                    } else if (value === 'inactive') {
+
+                        value = `
+            <span class="status-badge status-inactive">
+                Inactive
+            </span>
+        `;
+
+                    } else {
+
+                        value = `
+            <span class="badge bg-warning text-dark">
+                Mixed
+            </span>
+        `;
+                    }
 
                     break;
 

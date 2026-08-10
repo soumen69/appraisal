@@ -108,7 +108,7 @@
     background: #fff;
     border: 1px solid #e9edf3;
     border-radius: 14px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 2px 10px rgba(15, 23, 42, .04);
 }
 
@@ -239,24 +239,35 @@
 }
 
 /* ===========================
-   DROPDOWN
+DROPDOWN
 =========================== */
 
-.dropdown-menu {
-    border: none border-radius: 12px;
+.crud-card .dropdown {
+    position: relative;
+}
+
+.crud-card .dropdown-menu {
+    border: none;
+    border-radius: 12px;
     box-shadow: 0 10px 30px rgba(15, 23, 42, .08);
     padding: 8px;
     min-width: 180px;
+    z-index: 1080;
 }
 
-.dropdown-item {
+.crud-card .dropdown-item {
     border-radius: 8px;
     padding: 10px 12px;
     font-size: 14px;
 }
 
-.dropdown-item:hover {
+.crud-card .dropdown-item:hover {
     background: #f1f5f9;
+}
+
+.crud-card .action-btn {
+    position: relative;
+    z-index: 2;
 }
 
 /* ===========================

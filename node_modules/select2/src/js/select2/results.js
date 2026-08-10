@@ -18,7 +18,7 @@ define([
     );
 
     if (this.options.get('multiple')) {
-      $results.attr('aria-multiselectable', 'true');
+      $results[0].setAttribute('aria-multiselectable', 'true');
     }
 
     this.$results = $results;
@@ -99,9 +99,9 @@ define([
 
   Results.prototype.highlightFirstItem = function () {
     var $options = this.$results
-      .find('.select2-results__option[aria-selected]');
+      .find('.select2-results__option--selectable');
 
-    var $selected = $options.filter('[aria-selected=true]');
+    var $selected = $options.filter('.select2-results__option--selected');
 
     // Check if there are any selected options
     if ($selected.length > 0) {
@@ -120,12 +120,12 @@ define([
     var self = this;
 
     this.data.current(function (selected) {
-      var selectedIds = $.map(selected, function (s) {
+      var selectedIds = selected.map(function (s) {
         return s.id.toString();
       });
 
       var $options = self.$results
-        .find('.select2-results__option[aria-selected]');
+        .find('.select2-results__option--selectable');
 
       $options.each(function () {
         var $option = $(this);
@@ -136,10 +136,12 @@ define([
         var id = '' + item.id;
 
         if ((item.element != null && item.element.selected) ||
-            (item.element == null && $.inArray(id, selectedIds) > -1)) {
-          $option.attr('aria-selected', 'true');
+            (item.element == null && selectedIds.indexOf(id) > -1)) {
+          this.classList.add('select2-results__option--selected');
+          $option[0].setAttribute('aria-selected', 'true');
         } else {
-          $option.attr('aria-selected', 'false');
+          this.classList.remove('select2-results__option--selected');
+          $option[0].setAttribute('aria-selected', 'false');
         }
       });
 
@@ -168,11 +170,11 @@ define([
 
   Results.prototype.option = function (data) {
     var option = document.createElement('li');
-    option.className = 'select2-results__option';
+    option.classList.add('select2-results__option');
+    option.classList.add('select2-results__option--selectable');
 
     var attrs = {
-      'role': 'option',
-      'aria-selected': 'false'
+      'role': 'option'
     };
 
     var matches = window.Element.prototype.matches ||
@@ -181,12 +183,14 @@ define([
 
     if ((data.element != null && matches.call(data.element, ':disabled')) ||
         (data.element == null && data.disabled)) {
-      delete attrs['aria-selected'];
       attrs['aria-disabled'] = 'true';
+
+      option.classList.remove('select2-results__option--selectable');
+      option.classList.add('select2-results__option--disabled');
     }
 
     if (data.id == null) {
-      delete attrs['aria-selected'];
+      option.classList.remove('select2-results__option--selectable');
     }
 
     if (data._resultId != null) {
@@ -200,7 +204,9 @@ define([
     if (data.children) {
       attrs.role = 'group';
       attrs['aria-label'] = data.text;
-      delete attrs['aria-selected'];
+
+      option.classList.remove('select2-results__option--selectable');
+      option.classList.add('select2-results__option--group');
     }
 
     for (var attr in attrs) {
@@ -215,7 +221,6 @@ define([
       var label = document.createElement('strong');
       label.className = 'select2-results__group';
 
-      var $label = $(label);
       this.template(data, label);
 
       var $children = [];
@@ -229,7 +234,8 @@ define([
       }
 
       var $childrenContainer = $('<ul></ul>', {
-        'class': 'select2-results__options select2-results__options--nested'
+        'class': 'select2-results__options select2-results__options--nested',
+        'role': 'none'
       });
 
       $childrenContainer.append($children);
@@ -250,7 +256,7 @@ define([
 
     var id = container.id + '-results';
 
-    this.$results.attr('id', id);
+    this.$results[0].setAttribute('id', id);
 
     container.on('results:all', function (params) {
       self.clear();
@@ -301,8 +307,8 @@ define([
 
     container.on('open', function () {
       // When the dropdown is open, aria-expended="true"
-      self.$results.attr('aria-expanded', 'true');
-      self.$results.attr('aria-hidden', 'false');
+      self.$results[0].setAttribute('aria-expanded', 'true');
+      self.$results[0].setAttribute('aria-hidden', 'false');
 
       self.setClasses();
       self.ensureHighlightVisible();
@@ -310,9 +316,9 @@ define([
 
     container.on('close', function () {
       // When the dropdown is closed, aria-expended="false"
-      self.$results.attr('aria-expanded', 'false');
-      self.$results.attr('aria-hidden', 'true');
-      self.$results.removeAttr('aria-activedescendant');
+      self.$results[0].setAttribute('aria-expanded', 'false');
+      self.$results[0].setAttribute('aria-hidden', 'true');
+      self.$results[0].removeAttribute('aria-activedescendant');
     });
 
     container.on('results:toggle', function () {
@@ -334,7 +340,7 @@ define([
 
       var data = Utils.GetData($highlighted[0], 'data');
 
-      if ($highlighted.attr('aria-selected') == 'true') {
+      if ($highlighted.hasClass('select2-results__option--selected')) {
         self.trigger('close', {});
       } else {
         self.trigger('select', {
@@ -346,7 +352,7 @@ define([
     container.on('results:previous', function () {
       var $highlighted = self.getHighlightedResults();
 
-      var $options = self.$results.find('[aria-selected]');
+      var $options = self.$results.find('.select2-results__option--selectable');
 
       var currentIndex = $options.index($highlighted);
 
@@ -381,7 +387,7 @@ define([
     container.on('results:next', function () {
       var $highlighted = self.getHighlightedResults();
 
-      var $options = self.$results.find('[aria-selected]');
+      var $options = self.$results.find('.select2-results__option--selectable');
 
       var currentIndex = $options.index($highlighted);
 
@@ -409,7 +415,8 @@ define([
     });
 
     container.on('results:focus', function (params) {
-      params.element.addClass('select2-results__option--highlighted');
+      params.element[0].classList.add('select2-results__option--highlighted');
+      params.element[0].setAttribute('aria-selected', 'true');
     });
 
     container.on('results:message', function (params) {
@@ -441,20 +448,23 @@ define([
       });
     }
 
-    this.$results.on('mouseup', '.select2-results__option[aria-selected]',
+    this.$results.on('mouseup', '.select2-results__option--selectable',
       function (evt) {
       var $this = $(this);
 
       var data = Utils.GetData(this, 'data');
 
-      if ($this.attr('aria-selected') === 'true') {
+      if ($this.hasClass('select2-results__option--selected')) {
         if (self.options.get('multiple')) {
           self.trigger('unselect', {
             originalEvent: evt,
             data: data
           });
         } else {
-          self.trigger('close', {});
+          self.trigger('close', {
+            originalEvent: evt,
+            data: data
+          });
         }
 
         return;
@@ -466,12 +476,15 @@ define([
       });
     });
 
-    this.$results.on('mouseenter', '.select2-results__option[aria-selected]',
+    this.$results.on('mouseenter', '.select2-results__option--selectable',
       function (evt) {
       var data = Utils.GetData(this, 'data');
 
-      self.getHighlightedResults()
-          .removeClass('select2-results__option--highlighted');
+      var $highlighted = self.getHighlightedResults();
+      $highlighted.removeClass('select2-results__option--highlighted');
+      $highlighted.each(function () {
+        this.setAttribute('aria-selected', 'false');
+      });
 
       self.trigger('results:focus', {
         data: data,
@@ -498,7 +511,7 @@ define([
       return;
     }
 
-    var $options = this.$results.find('[aria-selected]');
+    var $options = this.$results.find('.select2-results__option--selectable');
 
     var currentIndex = $options.index($highlighted);
 

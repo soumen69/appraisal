@@ -22,6 +22,8 @@ class BranchController extends BaseController
             'branches/index',
             [
                 'title' => 'Branches',
+                'page_title' => 'Branches',
+                'page_subtitle' => 'Manage your active branches and access foundation.',
                 'organizations' => $this->branchModel->getOrganizationOptions()
             ]
         );

@@ -189,6 +189,147 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     );
                 }
             );
+
+            $routes->group(
+                'organizations',
+                ['filter' => 'permission:organization.view'],
+                static function ($routes) {
+
+                    $routes->get('/', 'OrganizationController::index');
+
+                    $routes->get(
+                        'list',
+                        'OrganizationController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'OrganizationController::edit/$1'
+                    );
+
+                    $routes->post(
+                        'store',
+                        'OrganizationController::store',
+                        ['filter' => 'permission:organization.create']
+                    );
+
+                    $routes->post(
+                        'update/(:num)',
+                        'OrganizationController::update/$1',
+                        ['filter' => 'permission:organization.edit']
+                    );
+
+                    $routes->post(
+                        'delete/(:num)',
+                        'OrganizationController::delete/$1',
+                        ['filter' => 'permission:organization.delete']
+                    );
+
+                    $routes->post(
+                        'toggle-status/(:num)',
+                        'OrganizationController::toggleStatus/$1',
+                        ['filter' => 'permission:organization.edit']
+                    );
+                }
+            );
+
+            $routes->group(
+                'departments',
+                ['filter' => 'permission:department.view'],
+                static function ($routes) {
+
+                    $routes->get(
+                        '/',
+                        'DepartmentController::index'
+                    );
+
+                    $routes->get(
+                        'list',
+                        'DepartmentController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'DepartmentController::edit/$1'
+                    );
+
+                    $routes->post(
+                        'store',
+                        'DepartmentController::store',
+                        ['filter' => 'permission:department.create']
+                    );
+
+                    $routes->post(
+                        'update/(:num)',
+                        'DepartmentController::update/$1',
+                        ['filter' => 'permission:department.edit']
+                    );
+
+                    $routes->post(
+                        'delete/(:num)',
+                        'DepartmentController::delete/$1',
+                        ['filter' => 'permission:department.delete']
+                    );
+
+                    $routes->post(
+                        'toggle-status/(:num)',
+                        'DepartmentController::toggleStatus/$1',
+                        ['filter' => 'permission:department.edit']
+                    );
+
+                    $routes->get(
+                        'group/(:any)',
+                        'DepartmentController::group/$1'
+                    );
+                }
+            );
+
+            $routes->group(
+                'designations',
+                ['filter' => 'permission:designation.view'],
+                static function ($routes) {
+
+                    $routes->get(
+                        '/',
+                        'DesignationController::index'
+                    );
+
+                    $routes->get(
+                        'list',
+                        'DesignationController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'DesignationController::edit/$1'
+                    );
+
+                    $routes->post(
+                        'store',
+                        'DesignationController::store',
+                        ['filter' => 'permission:designation.create']
+                    );
+
+                    $routes->post(
+                        'update/(:num)',
+                        'DesignationController::update/$1',
+                        ['filter' => 'permission:designation.edit']
+                    );
+
+                    $routes->post(
+                        'delete/(:num)',
+                        'DesignationController::delete/$1',
+                        ['filter' => 'permission:designation.delete']
+                    );
+
+                    $routes->post(
+                        'toggle-status/(:num)',
+                        'DesignationController::toggleStatus/$1',
+                        ['filter' => 'permission:designation.edit']
+                    );
+                    $routes->get('group/(:any)', 'DesignationController::group/$1');
+                }
+            );
         }
     );
 });

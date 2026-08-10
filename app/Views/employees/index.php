@@ -1,231 +1,644 @@
 <?= $this->extend('layouts/master') ?>
 
+
 <?= $this->section('content') ?>
 
-<div class="employee-page">
 
-    <!-- Page Header -->
-    <div class="page-header mb-4">
-        <div>
-            <h4 class="page-title mb-1">
-                Employees
-            </h4>
-
-            <p class="page-subtitle mb-0">
-                Manage employee records, organization details and access.
-            </p>
-        </div>
-
-        <div class="page-header-actions">
-            <a
-                href="<?= base_url('employees/create') ?>"
-                class="btn app-btn-primary">
-                <i class="bi bi-plus-lg me-1"></i>
-                Add Employee
-            </a>
-        </div>
-    </div>
+<?= view('layouts/components/crud_toolbar', [
+    'entity'       => 'Employee',
+    'entityPlural' => 'Employees',
+]) ?>
 
 
-    <!-- Employee Card -->
-    <div class="card employee-card">
-
-        <!-- Toolbar -->
-        <div class="employee-toolbar">
-
-            <div class="employee-toolbar-left">
-
-                <!-- Search -->
-                <div class="employee-search">
-                    <i class="bi bi-search"></i>
-
-                    <input
-                        type="search"
-                        id="employeeSearch"
-                        class="form-control"
-                        placeholder="Search employees..."
-                        autocomplete="off">
-                </div>
-
-                <!-- Status -->
-                <select
-                    id="employeeStatus"
-                    class="form-select employee-filter">
-                    <option value="">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                </select>
-
-            </div>
+<?= view('layouts/components/crud_table') ?>
 
 
-            <div class="employee-toolbar-right">
+<?= view('layouts/components/crud_drawer') ?>
 
-                <button
-                    type="button"
-                    class="btn employee-refresh-btn"
-                    id="employeeRefresh"
-                    title="Refresh">
-                    <i class="bi bi-arrow-clockwise"></i>
-                </button>
-
-                <select
-                    id="employeePageSize"
-                    class="form-select employee-page-size"
-                    title="Rows per page">
-                    <option value="10">10</option>
-                    <option value="25">25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                </select>
-
-            </div>
-
-        </div>
-
-
-        <!-- Table -->
-        <div class="table-responsive">
-
-            <table class="table employee-table mb-0">
-
-                <thead>
-                    <tr>
-
-                        <th class="employee-check-col">
-                            <input
-                                type="checkbox"
-                                class="form-check-input"
-                                id="employeeCheckAll">
-                        </th>
-
-                        <th>
-                            Employee
-                        </th>
-
-                        <th>
-                            Organization
-                        </th>
-
-                        <th>
-                            Department
-                        </th>
-
-                        <th>
-                            Designation
-                        </th>
-
-                        <th>
-                            Reporting Manager
-                        </th>
-
-                        <th>
-                            Joining Date
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th class="employee-action-col">
-                            Action
-                        </th>
-
-                    </tr>
-                </thead>
-
-                <tbody id="employeeTableBody">
-
-                    <tr>
-                        <td colspan="9">
-
-                            <div class="employee-table-loading">
-
-                                <div
-                                    class="spinner-border spinner-border-sm"
-                                    role="status"></div>
-
-                                <span>
-                                    Loading employees...
-                                </span>
-
-                            </div>
-
-                        </td>
-                    </tr>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- Footer -->
-        <div class="employee-table-footer">
-
-            <div
-                class="employee-summary"
-                id="employeeSummary">
-                Showing 0 of 0 employees
-            </div>
-
-            <nav aria-label="Employee pagination">
-
-                <ul
-                    class="pagination employee-pagination mb-0"
-                    id="employeePagination"></ul>
-
-            </nav>
-
-        </div>
-
-    </div>
-
-    <!-- Employee Details Drawer -->
-    <div
-        class="offcanvas offcanvas-end"
-        tabindex="-1"
-        id="crudDrawer"
-        aria-labelledby="crudDrawerTitle"
-        style="width: 480px;">
-        <div class="offcanvas-header border-bottom">
-
-            <div>
-                <h5
-                    class="offcanvas-title mb-1"
-                    id="crudDrawerTitle">
-                    Employee Details
-                </h5>
-
-                <small class="text-muted">
-                    Employee information
-                </small>
-            </div>
-
-            <button
-                type="button"
-                class="btn-close"
-                data-bs-dismiss="offcanvas"
-                aria-label="Close">
-            </button>
-
-        </div>
-
-        <div
-            class="offcanvas-body"
-            id="crudDrawerBody">
-        </div>
-    </div>
-
-</div>
 
 <?= $this->endSection() ?>
 
 
 <?= $this->section('scripts') ?>
+
+
+<script src="<?= base_url('assets/js/crud/crud.utils.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.api.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.table.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.pagination.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.search.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.modal.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.form.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.delete.js') ?>"></script>
 <script src="<?= base_url('assets/js/crud/crud.drawer.js') ?>"></script>
+<script src="<?= base_url('assets/js/crud/crud.view.js') ?>"></script>
+
+
 <script src="<?= base_url('assets/js/employees/employee-drawer.js') ?>"></script>
-<script src="<?= base_url('assets/js/employees/employee-list.js') ?>"></script>
+
+
+<script src="<?= base_url('assets/js/crud/crud.js') . '?v=' . time() ?>"></script>
+
+
+<script>
+    $(function() {
+
+        /*
+         * ---------------------------------------------------------
+         * Employee CRUD
+         * ---------------------------------------------------------
+         */
+
+        const employeeCrud = new Crud({
+
+            endpoint: '<?= base_url('employees') ?>',
+
+            viewEndpoint: '<?= base_url('employees/details') ?>',
+
+            table: '#crudTable',
+
+            entity: 'Employee',
+
+            entityPlural: 'Employees',
+
+            actionRenderer: function(row, id) {
+
+                const isActive =
+                    row.status === 'active';
+
+                return `
+
+            <li>
+                <a
+                    class="dropdown-item btn-view"
+                    href="#"
+                    data-id="${id}">
+
+                    <i class="bi bi-eye me-2"></i>
+                    View
+
+                </a>
+            </li>
+
+            <li>
+                <a
+                    class="dropdown-item"
+                    href="<?= base_url('employees/edit') ?>/${id}">
+
+                    <i class="bi bi-pencil me-2"></i>
+                    Edit
+
+                </a>
+            </li>
+
+            <li>
+                <a
+                    class="dropdown-item employee-toggle-status"
+                    href="#"
+                    data-id="${id}">
+
+                    <i class="bi bi-power me-2"></i>
+
+                    ${
+                        isActive
+                            ? 'Deactivate'
+                            : 'Activate'
+                    }
+
+                </a>
+            </li>
+
+            <li>
+                <hr class="dropdown-divider">
+            </li>
+
+            <li>
+                <a
+                    class="dropdown-item text-danger btn-delete"
+                    href="#"
+                    data-id="${id}">
+
+                    <i class="bi bi-trash me-2"></i>
+                    Delete
+
+                </a>
+            </li>
+
+        `;
+            },
+
+            columns: [
+
+                /*
+                 * Employee
+                 */
+                {
+                    key: 'employee',
+                    label: 'Employee',
+
+                    render: function(value, row) {
+
+                        const fullName =
+                            row.full_name || [
+                                row.first_name,
+                                row.last_name
+                            ]
+                            .filter(Boolean)
+                            .join(' ') ||
+                            'Employee';
+
+
+                        const initials =
+                            getEmployeeInitials(
+                                fullName
+                            );
+
+
+                        const avatar =
+                            row.profile_photo
+
+                            ?
+                            `
+                                    <img
+                                        src="${escapeEmployeeAttribute(
+                                            resolveEmployeePhoto(
+                                                row.profile_photo
+                                            )
+                                        )}"
+                                        alt="${escapeEmployeeAttribute(
+                                            fullName
+                                        )}">
+                                  `
+
+                            :
+                            `
+                                    <span class="employee-avatar-fallback">
+                                        ${escapeEmployeeHtml(
+                                            initials
+                                        )}
+                                    </span>
+                                  `;
+
+
+                        return `
+
+                            <div class="employee-identity">
+
+                                <div class="employee-avatar">
+                                    ${avatar}
+                                </div>
+
+
+                                <div>
+
+                                    <div class="employee-name">
+                                        ${escapeEmployeeHtml(
+                                            fullName
+                                        )}
+                                    </div>
+
+
+                                    <div class="employee-code">
+                                        ${escapeEmployeeHtml(
+                                            row.employee_code ||
+                                            'No employee code'
+                                        )}
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        `;
+                    }
+                },
+
+
+                /*
+                 * Organization
+                 */
+                {
+                    key: 'organization_name',
+                    label: 'Organization',
+
+                    render: function(value, row) {
+
+                        return `
+
+                            <div class="employee-primary-text">
+                                ${escapeEmployeeHtml(
+                                    value || '-'
+                                )}
+                            </div>
+
+                            ${
+                                row.branch_name
+                                    ? `
+                                        <div class="employee-secondary-text">
+                                            ${escapeEmployeeHtml(
+                                                row.branch_name
+                                            )}
+                                        </div>
+                                      `
+                                    : ''
+                            }
+
+                        `;
+                    }
+                },
+
+
+                /*
+                 * Department
+                 */
+                {
+                    key: 'department_name',
+                    label: 'Department',
+
+                    render: function(value) {
+
+                        return `
+                            <div class="employee-primary-text">
+                                ${escapeEmployeeHtml(
+                                    value || '-'
+                                )}
+                            </div>
+                        `;
+                    }
+                },
+
+
+                /*
+                 * Designation
+                 */
+                {
+                    key: 'designation_name',
+                    label: 'Designation',
+
+                    render: function(value) {
+
+                        return `
+                            <div class="employee-primary-text">
+                                ${escapeEmployeeHtml(
+                                    value || '-'
+                                )}
+                            </div>
+                        `;
+                    }
+                },
+
+
+                /*
+                 * Reporting Manager
+                 */
+                {
+                    key: 'reporting_manager_name',
+                    label: 'Reporting Manager',
+
+                    render: function(value) {
+
+                        return `
+                            <div class="employee-primary-text">
+                                ${escapeEmployeeHtml(
+                                    value || 'Not assigned'
+                                )}
+                            </div>
+                        `;
+                    }
+                },
+
+
+                /*
+                 * Joining Date
+                 */
+                {
+                    key: 'joining_date',
+                    label: 'Joining Date',
+
+                    render: function(value) {
+
+                        return formatEmployeeDate(
+                            value
+                        );
+                    }
+                },
+
+
+                /*
+                 * Status
+                 */
+                {
+                    key: 'status',
+                    label: 'Status'
+                }
+
+            ]
+
+        });
+
+
+        /*
+         * ---------------------------------------------------------
+         * Add Employee
+         *
+         * Reusable toolbar provides #btnAdd.
+         * Employees use a dedicated create page instead
+         * of the reusable CRUD modal.
+         * ---------------------------------------------------------
+         */
+
+        $('#btnAdd')
+            .off('click.employee')
+            .on('click.employee', function() {
+
+                window.location.href =
+                    '<?= base_url('employees/create') ?>';
+
+            });
+
+
+        /*
+         * ---------------------------------------------------------
+         * Employee View
+         *
+         * CrudView handles the request and drawer opening.
+         * We only provide the Employee-specific renderer.
+         * ---------------------------------------------------------
+         */
+
+        employeeCrud.drawerRenderer =
+            function(data) {
+
+                return EmployeeDrawer.render(
+                    data
+                );
+
+            };
+
+
+        /*
+         * ---------------------------------------------------------
+         * Employee Status Toggle
+         * ---------------------------------------------------------
+         */
+
+        $(document)
+            .off(
+                'click.employeeStatus',
+                '.employee-toggle-status'
+            )
+            .on(
+                'click.employeeStatus',
+                '.employee-toggle-status',
+                function(e) {
+
+                    e.preventDefault();
+
+                    const id =
+                        $(this).data('id');
+
+                    toggleEmployeeStatus(
+                        employeeCrud,
+                        id
+                    );
+
+                }
+            );
+
+    });
+
+
+    /*
+     * =============================================================
+     * Employee Helpers
+     * =============================================================
+     */
+
+    function getEmployeeInitials(name) {
+
+        const parts =
+            String(name)
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean);
+
+
+        if (!parts.length) {
+            return 'E';
+        }
+
+
+        if (parts.length === 1) {
+
+            return parts[0]
+                .substring(0, 2)
+                .toUpperCase();
+
+        }
+
+
+        return (
+            parts[0].charAt(0) +
+            parts[parts.length - 1].charAt(0)
+        ).toUpperCase();
+    }
+
+
+    function formatEmployeeDate(value) {
+
+        if (!value) {
+            return '-';
+        }
+
+
+        const date =
+            new Date(value);
+
+
+        if (
+            Number.isNaN(
+                date.getTime()
+            )
+        ) {
+
+            return escapeEmployeeHtml(
+                value
+            );
+
+        }
+
+
+        return date.toLocaleDateString(
+            'en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric'
+            }
+        );
+    }
+
+
+    function resolveEmployeePhoto(path) {
+
+        if (!path) {
+            return '';
+        }
+
+
+        if (
+            path.startsWith('http://') ||
+            path.startsWith('https://') ||
+            path.startsWith('/')
+        ) {
+
+            return path;
+
+        }
+
+
+        return `${APP.baseUrl}${path}`;
+    }
+
+
+    function escapeEmployeeHtml(value) {
+
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+
+    function escapeEmployeeAttribute(value) {
+
+        return escapeEmployeeHtml(
+            value
+        );
+    }
+
+
+    /*
+     * =============================================================
+     * Employee Status
+     * =============================================================
+     */
+
+    function toggleEmployeeStatus(
+        crud,
+        id
+    ) {
+
+        const employee =
+            crud.data.find(
+                item =>
+                parseInt(item.id, 10) ===
+                parseInt(id, 10)
+            );
+
+
+        if (!employee) {
+            return;
+        }
+
+
+        const activate =
+            employee.status !== 'active';
+
+
+        Swal.fire({
+
+            title: activate ?
+                'Activate employee?' : 'Deactivate employee?',
+
+
+            text: activate ?
+                'This employee will be allowed to access the system.' : 'This employee will no longer be able to log in.',
+
+
+            icon: 'warning',
+
+
+            showCancelButton: true,
+
+
+            confirmButtonText: activate ?
+                'Activate' : 'Deactivate',
+
+
+            cancelButtonText: 'Cancel',
+
+
+            confirmButtonColor: activate ?
+                '#198754' : '#dc3545'
+
+        }).then(function(result) {
+
+            if (!result.isConfirmed) {
+                return;
+            }
+
+
+            $.ajax({
+
+                url: `<?= base_url('employees/toggle-status') ?>/${id}`,
+
+                type: 'POST',
+
+                data: {
+
+                    [APP.csrfName]: APP.csrfHash
+
+                },
+
+                success: function(response) {
+
+                    if (!response.success) {
+
+                        APP.error(
+                            response.message ||
+                            'Unable to update employee status.'
+                        );
+
+                        return;
+                    }
+
+
+                    APP.success(
+                        response.message
+                    );
+
+
+                    crud.reload();
+
+                },
+
+
+                error: function(xhr) {
+
+                    if (xhr.status === 403) {
+
+                        APP.error(
+                            'You are not authorized.'
+                        );
+
+                        return;
+                    }
+
+
+                    APP.error(
+                        'Unable to update employee status.'
+                    );
+
+                }
+
+            });
+
+        });
+
+    }
+</script>
+
 
 <?= $this->endSection() ?>

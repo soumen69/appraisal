@@ -1,6 +1,5 @@
 define([
-  'jquery'
-], function ($) {
+], function () {
   var Utils = {};
 
   Utils.Extend = function (ChildClass, SuperClass) {
@@ -216,7 +215,6 @@ define([
     // http://codereview.stackexchange.com/q/13338
     // and was designed to be used with the Sizzle selector engine.
 
-    var $el = $(el);
     var overflowX = el.style.overflowX;
     var overflowY = el.style.overflowY;
 
@@ -230,8 +228,10 @@ define([
       return true;
     }
 
-    return ($el.innerHeight() < el.scrollHeight ||
-      $el.innerWidth() < el.scrollWidth);
+    var computedEl = window.getComputedStyle(el);
+
+    return (parseFloat(computedEl.height) < el.scrollHeight ||
+      parseFloat(computedEl.width) < el.scrollWidth);
   };
 
   Utils.escapeMarkup = function (markup) {
@@ -255,23 +255,6 @@ define([
     });
   };
 
-  // Append an array of jQuery nodes to a given element.
-  Utils.appendMany = function ($element, $nodes) {
-    // jQuery 1.7.x does not support $.fn.append() with an array
-    // Fall back to a jQuery object collection using $.fn.add()
-    if ($.fn.jquery.substr(0, 3) === '1.7') {
-      var $jqNodes = $();
-
-      $.map($nodes, function (node) {
-        $jqNodes = $jqNodes.add(node);
-      });
-
-      $nodes = $jqNodes;
-    }
-
-    $element.append($nodes);
-  };
-
   // Cache objects in Utils.__cache instead of $.data (see #4346)
   Utils.__cache = {};
 
@@ -279,20 +262,25 @@ define([
   Utils.GetUniqueElementId = function (element) {
     // Get a unique element Id. If element has no id,
     // creates a new unique number, stores it in the id
-    // attribute and returns the new id.
-    // If an id already exists, it simply returns it.
+    // attribute and returns the new id with a prefix.
+    // If an id already exists, it simply returns it with a prefix.
 
     var select2Id = element.getAttribute('data-select2-id');
-    if (select2Id == null) {
-      // If element has id, use it.
-      if (element.id) {
-        select2Id = element.id;
-        element.setAttribute('data-select2-id', select2Id);
-      } else {
-        element.setAttribute('data-select2-id', ++id);
-        select2Id = id.toString();
-      }
+
+    if (select2Id != null) {
+      return select2Id;
     }
+
+    // If element has id, use it.
+    if (element.id) {
+      select2Id = 'select2-data-' + element.id;
+    } else {
+      select2Id = 'select2-data-' + (++id).toString() +
+        '-' + Utils.generateChars(4);
+    }
+
+    element.setAttribute('data-select2-id', select2Id);
+
     return select2Id;
   };
 
@@ -314,13 +302,18 @@ define([
     // and for a specified element.
     var id = Utils.GetUniqueElementId(element);
     if (name) {
+      // Convert the attribute name format (e.g. 'foo-bar') to the dataset
+      // property key format (e.g. 'fooBar') as required by the HTML spec.
+      var datasetKey = name.replace(/-([a-z])/g, function (_, letter) {
+        return letter.toUpperCase();
+      });
       if (Utils.__cache[id]) {
         if (Utils.__cache[id][name] != null) {
           return Utils.__cache[id][name];
         }
-        return $(element).data(name); // Fallback to HTML5 data attribs.
+        return element.dataset[datasetKey]; // Fallback to HTML5 data attribs.
       }
-      return $(element).data(name); // Fallback to HTML5 data attribs.
+      return element.dataset[datasetKey]; // Fallback to HTML5 data attribs.
     } else {
       return Utils.__cache[id];
     }
@@ -334,6 +327,28 @@ define([
     }
 
     element.removeAttribute('data-select2-id');
+  };
+
+  Utils.copyNonInternalCssClasses = function (dest, src) {
+    var classes;
+
+    var destinationClasses = dest.getAttribute('class').trim().split(/\s+/);
+
+    destinationClasses = destinationClasses.filter(function (clazz) {
+      // Save all Select2 classes
+      return clazz.indexOf('select2-') === 0;
+    });
+
+    var sourceClasses = src.getAttribute('class').trim().split(/\s+/);
+
+    sourceClasses = sourceClasses.filter(function (clazz) {
+      // Only copy non-Select2 classes
+      return clazz.indexOf('select2-') !== 0;
+    });
+
+    var replacements = destinationClasses.concat(sourceClasses);
+
+    dest.setAttribute('class', replacements.join(' '));
   };
 
   return Utils;

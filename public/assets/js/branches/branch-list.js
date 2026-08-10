@@ -446,10 +446,8 @@ const BranchList = {
 
                                 <button
                                     type="button"
-                                    class="action-btn"
-                                    data-bs-toggle="dropdown"
-                                    aria-expanded="false"
-                                >
+                                    class="action-btn branch-action-btn"
+                                    aria-expanded="false">
                                     <i class="bi bi-three-dots"></i>
                                 </button>
 
@@ -511,6 +509,86 @@ const BranchList = {
         );
 
         $('#branchBody').html(html);
+        this.bindDropdowns();
+    },
+
+    bindDropdowns() {
+
+        $('#branchBody .branch-action-btn')
+            .off('click.branchDropdown')
+            .on('click.branchDropdown', function (e) {
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const button = this;
+
+                const dropdown =
+                    bootstrap.Dropdown
+                        .getOrCreateInstance(
+                            button,
+                            {
+                                display: 'static'
+                            }
+                        );
+
+                dropdown.toggle();
+            });
+
+
+        /*
+         * Close after clicking an action.
+         */
+        $('#branchBody .dropdown-item')
+            .off('click.branchDropdownAction')
+            .on('click.branchDropdownAction', function () {
+
+                const button =
+                    $(this)
+                        .closest('.dropdown')
+                        .find('.branch-action-btn')[0];
+
+                if (!button) {
+                    return;
+                }
+
+                const dropdown =
+                    bootstrap.Dropdown
+                        .getInstance(button);
+
+                if (dropdown) {
+                    dropdown.hide();
+                }
+            });
+
+
+        /*
+         * Close when clicking outside.
+         */
+        $(document)
+            .off('click.branchDropdown')
+            .on('click.branchDropdown', function (e) {
+
+                if (
+                    $(e.target)
+                        .closest('#branchBody .dropdown')
+                        .length
+                ) {
+                    return;
+                }
+
+                $('#branchBody .branch-action-btn')
+                    .each(function () {
+
+                        const dropdown =
+                            bootstrap.Dropdown
+                                .getInstance(this);
+
+                        if (dropdown) {
+                            dropdown.hide();
+                        }
+                    });
+            });
     },
 
     delete(id) {

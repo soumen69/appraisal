@@ -1,9 +1,8 @@
 define([
-  'require',
   'jquery',
   './defaults',
   './utils'
-], function (require, $, Defaults, Utils) {
+], function ($, Defaults, Utils) {
   function Options (options, $element) {
     this.options = options;
 
@@ -16,40 +15,41 @@ define([
     }
 
     this.options = Defaults.apply(this.options);
-
-    if ($element && $element.is('input')) {
-      var InputCompat = require(this.get('amdBase') + 'compat/inputData');
-
-      this.options.dataAdapter = Utils.Decorate(
-        this.options.dataAdapter,
-        InputCompat
-      );
-    }
   }
 
   Options.prototype.fromElement = function ($e) {
     var excludedData = ['select2'];
 
     if (this.options.multiple == null) {
-      this.options.multiple = $e.prop('multiple');
+      this.options.multiple = $e[0].multiple;
     }
 
     if (this.options.disabled == null) {
-      this.options.disabled = $e.prop('disabled');
+      this.options.disabled = $e[0].disabled;
     }
 
-    if (this.options.dir == null) {
-      if ($e.prop('dir')) {
-        this.options.dir = $e.prop('dir');
-      } else if ($e.closest('[dir]').prop('dir')) {
-        this.options.dir = $e.closest('[dir]').prop('dir');
+    if (this.options.autocomplete == null && $e[0].autocomplete) {
+      this.options.autocomplete = $e[0].autocomplete;
+    }
+
+    if (this.options.dir === null) {
+      var dirValue = $e[0].getAttribute('dir');
+
+      if (dirValue) {
+        this.options.dir = dirValue;
       } else {
-        this.options.dir = 'ltr';
+        var closestDirValue = $e.closest('[dir]').getAttribute('dir');
+
+        if (closestDirValue) {
+          this.options.dir = closestDirValue;
+        } else {
+          this.options.dir = 'ltr';
+        }
       }
     }
 
-    $e.prop('disabled', this.options.disabled);
-    $e.prop('multiple', this.options.multiple);
+    $e[0].disabled = this.options.disabled;
+    $e[0].multiple = this.options.multiple;
 
     if (Utils.GetData($e[0], 'select2Tags')) {
       if (this.options.debug && window.console && console.warn) {
@@ -73,7 +73,7 @@ define([
         );
       }
 
-      $e.attr('ajax--url', Utils.GetData($e[0], 'ajaxUrl'));
+      $e[0].setAttribute('ajax--url', Utils.GetData($e[0], 'ajaxUrl'));
       Utils.StoreData($e[0], 'ajax-Url', Utils.GetData($e[0], 'ajaxUrl'));
     }
 
@@ -116,7 +116,7 @@ define([
     data = Utils._convertData(data);
 
     for (var key in data) {
-      if ($.inArray(key, excludedData) > -1) {
+      if (excludedData.indexOf(key) > -1) {
         continue;
       }
 

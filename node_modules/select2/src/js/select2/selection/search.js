@@ -8,20 +8,27 @@ define([
   }
 
   Search.prototype.render = function (decorated) {
+    var searchLabel = this.options.get('translations').get('search');
     var $search = $(
-      '<li class="select2-search select2-search--inline">' +
-        '<input class="select2-search__field" type="search" tabindex="-1"' +
-        ' autocomplete="off" autocorrect="off" autocapitalize="none"' +
-        ' spellcheck="false" role="searchbox" aria-autocomplete="list" />' +
-      '</li>'
+      '<span class="select2-search select2-search--inline">' +
+        '<textarea class="select2-search__field"'+
+        ' type="search" tabindex="-1"' +
+        ' autocorrect="off" autocapitalize="none"' +
+        ' spellcheck="false" role="searchbox" aria-autocomplete="list" >' +
+        '</textarea>' +
+      '</span>'
     );
 
     this.$searchContainer = $search;
-    this.$search = $search.find('input');
+    this.$search = $search.find('textarea');
+
+    this.$search[0].autocomplete = this.options.get('autocomplete');
+    this.$search[0].setAttribute('aria-label', searchLabel());
 
     var $rendered = decorated.call(this);
 
     this._transferTabIndex();
+    $rendered.append(this.$searchContainer);
 
     return $rendered;
   };
@@ -30,29 +37,33 @@ define([
     var self = this;
 
     var resultsId = container.id + '-results';
+    var selectionId = container.id + '-container';
 
     decorated.call(this, container, $container);
 
+    self.$search[0].setAttribute('aria-describedby', selectionId);
+
     container.on('open', function () {
-      self.$search.attr('aria-controls', resultsId);
+      self.$search[0].setAttribute('aria-controls', resultsId);
       self.$search.trigger('focus');
     });
 
     container.on('close', function () {
       self.$search.val('');
-      self.$search.removeAttr('aria-controls');
-      self.$search.removeAttr('aria-activedescendant');
+      self.resizeSearch();
+      self.$search[0].removeAttribute('aria-controls');
+      self.$search[0].removeAttribute('aria-activedescendant');
       self.$search.trigger('focus');
     });
 
     container.on('enable', function () {
-      self.$search.prop('disabled', false);
+      self.$search[0].disabled = false;
 
       self._transferTabIndex();
     });
 
     container.on('disable', function () {
-      self.$search.prop('disabled', true);
+      self.$search[0].disabled = true;
     });
 
     container.on('focus', function (evt) {
@@ -61,9 +72,10 @@ define([
 
     container.on('results:focus', function (params) {
       if (params.data._resultId) {
-        self.$search.attr('aria-activedescendant', params.data._resultId);
+        self.$search[0]
+          .setAttribute('aria-activedescendant', params.data._resultId);
       } else {
-        self.$search.removeAttr('aria-activedescendant');
+        self.$search[0].removeAttribute('aria-activedescendant');
       }
     });
 
@@ -85,8 +97,8 @@ define([
       var key = evt.which;
 
       if (key === KEYS.BACKSPACE && self.$search.val() === '') {
-        var $previousChoice = self.$searchContainer
-          .prev('.select2-selection__choice');
+        var $previousChoice = self.$selection
+          .find('.select2-selection__choice').last();
 
         if ($previousChoice.length > 0) {
           var item = Utils.GetData($previousChoice[0], 'data');
@@ -169,23 +181,21 @@ define([
    * @private
    */
   Search.prototype._transferTabIndex = function (decorated) {
-    this.$search.attr('tabindex', this.$selection.attr('tabindex'));
-    this.$selection.attr('tabindex', '-1');
+    this.$search[0]
+      .setAttribute('tabindex', this.$selection[0].getAttribute('tabindex'));
+    this.$selection[0].setAttribute('tabindex', '-1');
   };
 
   Search.prototype.createPlaceholder = function (decorated, placeholder) {
-    this.$search.attr('placeholder', placeholder.text);
+    this.$search[0].setAttribute('placeholder', placeholder.text);
   };
 
   Search.prototype.update = function (decorated, data) {
     var searchHadFocus = this.$search[0] == document.activeElement;
 
-    this.$search.attr('placeholder', '');
+    this.$search[0].setAttribute('placeholder', '');
 
     decorated.call(this, data);
-
-    this.$selection.find('.select2-selection__rendered')
-                   .append(this.$searchContainer);
 
     this.resizeSearch();
     if (searchHadFocus) {
@@ -219,11 +229,9 @@ define([
   Search.prototype.resizeSearch = function () {
     this.$search.css('width', '25px');
 
-    var width = '';
+    var width = '100%';
 
-    if (this.$search.attr('placeholder') !== '') {
-      width = this.$selection.find('.select2-selection__rendered').width();
-    } else {
+    if (this.$search[0].getAttribute('placeholder') === '') {
       var minimumWidth = this.$search.val().length + 1;
 
       width = (minimumWidth * 0.75) + 'em';

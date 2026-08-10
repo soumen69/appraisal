@@ -34,7 +34,7 @@ define([
       // If an existing option wasn't found for it, create the option
       if (!$existingOptions.length) {
         var $option = self.option(item);
-        $option.attr('data-select2-tag', true);
+        $option[0].setAttribute('data-select2-tag', true);
 
         self._removeOldTags();
         self.addOptions([$option]);
@@ -82,7 +82,7 @@ define([
     while (i < term.length) {
       var termChar = term[i];
 
-      if ($.inArray(termChar, separators) === -1) {
+      if (separators.indexOf(termChar) === -1) {
         i++;
 
         continue;

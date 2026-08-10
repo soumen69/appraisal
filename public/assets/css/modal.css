@@ -1,19 +1,204 @@
+/* =========================================================
+   APPLICATION MODAL
+   ========================================================= */
+
+.modal-dialog {
+    /*
+     * Let the modal determine its own height naturally.
+     */
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+
+/* =========================================================
+   Modal Content
+   ========================================================= */
+
+.modal-dialog-scrollable {
+    /*
+     * IMPORTANT:
+     * Do not force a fixed height.
+     *
+     * Small forms will remain compact.
+     * Large forms will grow until the viewport limit.
+     */
+    height: auto;
+
+    max-height: calc(100vh - 2rem);
+}
+
+.modal-dialog-scrollable .modal-content {
+    /*
+     * Natural height until viewport limit.
+     */
+    height: auto;
+
+    max-height: calc(100vh - 2rem);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border: 0;
+    border-radius: 12px;
+}
+
+
+/* =========================================================
+   Modal Header
+   ========================================================= */
+
+.modal-dialog-scrollable .modal-header {
+    flex: 0 0 auto;
+}
+
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+/*
+ * Your CRUD modal has:
+ *
+ * modal-content
+ *     ├── header
+ *     └── form
+ *           ├── body
+ *           └── footer
+ *
+ * Therefore the FORM itself must participate in the
+ * flex layout.
+ */
+.modal-dialog-scrollable .modal-content>form {
+    display: flex;
+    flex-direction: column;
+
+    /*
+     * Allow the form to shrink when the viewport is small.
+     */
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    /*
+     * Important:
+     * Don't let the form itself create a second scrollbar.
+     */
+    overflow: hidden;
+}
+
+
+/* =========================================================
+   Modal Body
+   ========================================================= */
+
+.modal-dialog-scrollable .modal-body {
+    /*
+     * Small forms:
+     * body naturally determines the modal height.
+     *
+     * Large forms:
+     * body takes the remaining space and scrolls.
+     */
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+
+/* =========================================================
+   Modal Footer
+   ========================================================= */
+
+.modal-dialog-scrollable .modal-footer {
+    /*
+     * Footer is never allowed to disappear.
+     */
+    flex: 0 0 auto;
+
+    position: relative;
+
+    z-index: 2;
+
+    background: #fff;
+}
+
+
+/* =========================================================
+   Modal Body Scrollbar
+   ========================================================= */
+
+.modal-dialog-scrollable .modal-body {
+    scrollbar-width: thin;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+
+/* =========================================================
+   Drawer Details
+   ========================================================= */
+
 .drawer-row {
     margin-bottom: 18px;
 }
 
 .drawer-row label {
     display: block;
+
     color: #64748b;
+
     font-size: 12px;
+
     text-transform: uppercase;
+
     margin-bottom: 5px;
+
     font-weight: 600;
 }
 
 .drawer-row div {
     font-size: 15px;
+
     font-weight: 500;
+
     color: #0f172a;
+
     word-break: break-word;
+}
+
+
+/* =========================================================
+   Mobile
+   ========================================================= */
+
+@media (max-width: 767.98px) {
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-dialog-scrollable {
+        max-height: calc(100vh - 1rem);
+    }
+
+    .modal-dialog-scrollable .modal-content {
+        max-height: calc(100vh - 1rem);
+    }
 }

@@ -1,0 +1,10 @@
+.crud-card .table-responsive {
+    overflow-x: auto;
+    overflow-y: visible;
+}
+
+@media (min-width: 993px) {
+    .crud-card .table-responsive {
+        overflow: visible;
+    }
+}

@@ -8,30 +8,19 @@
 
         <div>
 
-            <a
-                href="<?= base_url('branches') ?>"
-                class="branch-back-link">
+            <a href="<?= base_url('branches') ?>" class="branch-back-link">
                 <i class="bi bi-arrow-left"></i>
                 Branches
             </a>
-
             <h4 class="branch-form-title">
                 Edit Branch
             </h4>
-
             <p class="branch-form-subtitle">
                 Update branch information and location.
             </p>
-
         </div>
-
     </div>
-
-
-    <?= $this->include(
-        'admin/branches/_form'
-    ) ?>
-
+    <?= $this->include('branches/_form') ?>
 </div>
 
 <?= $this->endSection() ?>
