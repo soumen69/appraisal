@@ -22,9 +22,6 @@ class DesignationController extends BaseController
     }
 
 
-    /**
-     * Designation listing page.
-     */
     public function index()
     {
         return view(
@@ -48,10 +45,6 @@ class DesignationController extends BaseController
         );
     }
 
-
-    /**
-     * AJAX listing.
-     */
     public function list(): ResponseInterface
     {
         try {
@@ -227,10 +220,6 @@ class DesignationController extends BaseController
         }
     }
 
-
-    /**
-     * Create designation.
-     */
     public function store(): ResponseInterface
     {
         $rules = [
@@ -979,10 +968,6 @@ class DesignationController extends BaseController
         }
     }
 
-
-    /**
-     * Delete designation.
-     */
     public function delete($id): ResponseInterface
     {
         $id = (int) $id;
@@ -1029,10 +1014,6 @@ class DesignationController extends BaseController
         }
     }
 
-
-    /**
-     * Toggle active/inactive status.
-     */
     public function toggleStatus($id): ResponseInterface
     {
         $id = (int) $id;
@@ -1124,5 +1105,67 @@ class DesignationController extends BaseController
                 'success' => true,
                 'data' => $designation,
             ]);
+    }
+
+    public function options(): ResponseInterface
+    {
+        try {
+            $organizationId = (int) $this->request->getGet('organization_id');
+
+            $builder = $this->designationModel
+                ->select([
+                    'id',
+                    'organization_id',
+                    'designation_code',
+                    'title',
+                    'level',
+                    'status'
+                ])
+                ->where('status', 'active');
+
+            if ($organizationId > 0) {
+                $builder->where(
+                    'organization_id',
+                    $organizationId
+                );
+            }
+
+            $designations = $builder
+                ->orderBy('level', 'ASC')
+                ->orderBy('title', 'ASC')
+                ->findAll();
+
+            $data = array_map(
+                static function (array $designation): array {
+                    return [
+                        'id'              => (int) $designation['id'],
+                        'organization_id' => (int) $designation['organization_id'],
+                        'name'            => $designation['title'],
+                        'title'           => $designation['title'],
+                        'code'            => $designation['designation_code'],
+                        'level'           => (int) $designation['level'],
+                    ];
+                },
+                $designations
+            );
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        } catch (\Throwable $e) {
+
+            log_message(
+                'error',
+                'Designation options failed: ' . $e->getMessage()
+            );
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Unable to load designations.',
+                ]);
+        }
     }
 }

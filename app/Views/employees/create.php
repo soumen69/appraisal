@@ -3,29 +3,15 @@
 <?= $this->section('content') ?>
 
 <div class="employee-form-page">
-
     <!-- Header -->
     <div class="employee-form-header">
-
         <div>
-
-            <a
-                href="<?= base_url('employees') ?>"
+            <a href="<?= base_url('employees') ?>"
                 class="employee-back-link">
                 <i class="bi bi-arrow-left"></i>
                 Employees
             </a>
-
-            <h4 class="employee-form-title">
-                Create Employee
-            </h4>
-
-            <p class="employee-form-subtitle">
-                Add a new employee and configure their system access.
-            </p>
-
         </div>
-
     </div>
 
     <?= $this->include('employees/_form') ?>

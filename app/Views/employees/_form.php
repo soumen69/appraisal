@@ -460,7 +460,8 @@
                         id="role_ids"
                         class="form-select employee-select2"
                         multiple
-                        required></select>
+                        required>
+                    </select>
 
                     <div class="employee-form-help">
                         Select one or more roles for this employee.
@@ -468,12 +469,13 @@
 
                     <div
                         class="invalid-feedback"
-                        data-field-error="role_ids"></div>
+                        data-field-error="role_ids">
+                    </div>
 
                 </div>
 
 
-                <div class="col-md-4">
+                <!-- <div class="col-md-4">
 
                     <label class="employee-form-label">
                         Primary Role
@@ -499,7 +501,7 @@
                         class="invalid-feedback"
                         data-field-error="primary_role_id"></div>
 
-                </div>
+                </div> -->
 
 
                 <div class="col-md-6">
@@ -572,7 +574,7 @@
             class="btn app-btn-primary"
             id="employeeSaveBtn">
             <i class="bi bi-check2 me-1"></i>
-            Create Employee
+            <?= isset($employee) ? 'Update Employee' : 'Create Employee' ?>
         </button>
 
     </div>

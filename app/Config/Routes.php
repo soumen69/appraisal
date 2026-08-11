@@ -113,6 +113,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     $routes->get('view/(:num)', 'EmployeeController::view/$1', ['filter' => 'permission:employee.view']);
                     $routes->post('toggle-status/(:num)', 'EmployeeController::toggleStatus/$1', ['filter' => 'permission:employee.edit']);
                     $routes->get('details/(:num)', 'EmployeeController::details/$1');
+                    $routes->get('options', 'EmployeeController::options');
                 }
             );
 
@@ -230,6 +231,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'OrganizationController::toggleStatus/$1',
                         ['filter' => 'permission:organization.edit']
                     );
+                    $routes->get(
+                        'options',
+                        'OrganizationController::options'
+                    );
                 }
             );
 
@@ -281,6 +286,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'group/(:any)',
                         'DepartmentController::group/$1'
                     );
+                    $routes->get(
+                        'options',
+                        'DepartmentController::options'
+                    );
                 }
             );
 
@@ -328,6 +337,10 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         ['filter' => 'permission:designation.edit']
                     );
                     $routes->get('group/(:any)', 'DesignationController::group/$1');
+                    $routes->get(
+                        'options',
+                        'DesignationController::options'
+                    );
                 }
             );
         }

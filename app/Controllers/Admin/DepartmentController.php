@@ -910,4 +910,62 @@ class DepartmentController extends BaseController
                 'data' => $group,
             ]);
     }
+
+    public function options(): ResponseInterface
+    {
+        try {
+            $organizationId = (int) $this->request->getGet('organization_id');
+
+            $builder = $this->departmentModel
+                ->select([
+                    'id',
+                    'organization_id',
+                    'department_code',
+                    'name',
+                    'status'
+                ])
+                ->where('status', 'active');
+
+            if ($organizationId > 0) {
+                $builder->where(
+                    'organization_id',
+                    $organizationId
+                );
+            }
+
+            $departments = $builder
+                ->orderBy('name', 'ASC')
+                ->findAll();
+
+            $data = array_map(
+                static function (array $department): array {
+                    return [
+                        'id'              => (int) $department['id'],
+                        'organization_id' => (int) $department['organization_id'],
+                        'name'            => $department['name'],
+                        'code'            => $department['department_code'],
+                    ];
+                },
+                $departments
+            );
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        } catch (\Throwable $e) {
+
+            log_message(
+                'error',
+                'Department options failed: ' . $e->getMessage()
+            );
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Unable to load departments.',
+                ]);
+        }
+    }
 }

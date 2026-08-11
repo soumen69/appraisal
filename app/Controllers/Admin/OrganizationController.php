@@ -441,4 +441,48 @@ class OrganizationController extends BaseController
             $this->request->getPost('status') ?: 'active'
         ];
     }
+
+    public function options(): ResponseInterface
+    {
+        try {
+            $organizations = $this->organizationModel
+                ->select([
+                    'id',
+                    'name',
+                    'organization_code'
+                ])
+                ->where('status', 'active')
+                ->orderBy('name', 'ASC')
+                ->findAll();
+
+            $data = array_map(
+                static function (array $organization): array {
+                    return [
+                        'id'   => (int) $organization['id'],
+                        'name' => $organization['name'],
+                        'code' => $organization['organization_code'],
+                    ];
+                },
+                $organizations
+            );
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        } catch (\Throwable $e) {
+
+            log_message(
+                'error',
+                'Organization options failed: ' . $e->getMessage()
+            );
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Unable to load organizations.',
+                ]);
+        }
+    }
 }

@@ -7,15 +7,17 @@ use App\Services\EmployeeService;
 use InvalidArgumentException;
 use Throwable;
 use CodeIgniter\Exceptions\PageNotFoundException;
+use App\Models\UserModel;
 
 class EmployeeController extends BaseController
 {
     protected EmployeeService $employeeService;
+    protected UserModel $userModel;
 
     public function __construct()
     {
-        $this->employeeService =
-            new EmployeeService();
+        $this->employeeService = new EmployeeService();
+        $this->userModel = new UserModel();
     }
 
     //Employee Listing Page
@@ -67,7 +69,9 @@ class EmployeeController extends BaseController
         return view(
             'employees/create',
             [
-                'title' => 'Create Employee'
+                'title' => 'Create Employee',
+                'page_title' => 'Create Employee',
+                'page_subtitle' => 'Add a new employee and configure their system access.'
             ]
         );
     }
@@ -402,6 +406,78 @@ class EmployeeController extends BaseController
                 ->setJSON([
                     'success' => false,
                     'message' => 'Unable to load employee details.'
+                ]);
+        }
+    }
+
+    public function options()
+    {
+        try {
+            $organizationId = (int) $this->request->getGet('organization_id');
+            $excludeId      = (int) $this->request->getGet('exclude_id');
+
+            $builder = $this->userModel
+                ->select([
+                    'id',
+                    'organization_id',
+                    'employee_code',
+                    'first_name',
+                    'last_name',
+                    'full_name',
+                    'status'
+                ])
+                ->where('status', 'active');
+
+            if ($organizationId > 0) {
+                $builder->where(
+                    'organization_id',
+                    $organizationId
+                );
+            }
+
+            if ($excludeId > 0) {
+                $builder->where(
+                    'id !=',
+                    $excludeId
+                );
+            }
+
+            $employees = $builder
+                ->orderBy('full_name', 'ASC')
+                ->findAll();
+
+            $data = array_map(
+                static function (array $employee): array {
+                    return [
+                        'id'              => (int) $employee['id'],
+                        'organization_id' => (int) $employee['organization_id'],
+                        'employee_code'   => $employee['employee_code'],
+                        'name'            => $employee['full_name']
+                            ?: trim(
+                                ($employee['first_name'] ?? '') . ' ' .
+                                    ($employee['last_name'] ?? '')
+                            ),
+                    ];
+                },
+                $employees
+            );
+
+            return $this->response->setJSON([
+                'success' => true,
+                'data'    => $data,
+            ]);
+        } catch (\Throwable $e) {
+
+            log_message(
+                'error',
+                'Employee options failed: ' . $e->getMessage()
+            );
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Unable to load employees.',
                 ]);
         }
     }

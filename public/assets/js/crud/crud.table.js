@@ -624,51 +624,75 @@ const CrudTable = {
 
 
             /*
-             * Actions
-             */
-            html += `
-                <td>
-                    <div class="dropdown">
+ * ---------------------------------------------------------
+ * Actions
+ * ---------------------------------------------------------
+ */
 
-                        <button
-                            type="button"
-                            class="action-btn"
-                            aria-expanded="false"
-                            title="Actions">
-
-                            <i class="bi bi-three-dots"></i>
-
-                        </button>
-
-                        <ul
-                            class="dropdown-menu dropdown-menu-end">
-            `;
-
-
-            /*
-             * Custom actions
-             *
-             * Module can completely control
-             * the action menu.
-             */
             if (
                 typeof crud.actionRenderer ===
                 'function'
             ) {
 
-                html +=
-                    crud.actionRenderer(
-                        row,
-                        crud
-                    );
+                html += `
+        <td>
+
+            <div class="dropdown">
+
+                <button
+                    type="button"
+                    class="action-btn"
+                    aria-expanded="false">
+
+                    <i class="bi bi-three-dots"></i>
+
+                </button>
+
+
+                <ul class="dropdown-menu dropdown-menu-end">
+
+                    ${crud.actionRenderer(
+                    row,
+                    rowId,
+                    crud
+                )}
+
+                </ul>
+
+            </div>
+
+        </td>
+    `;
 
             } else {
 
                 /*
+                 * -----------------------------------------------------
                  * Default CRUD actions
+                 *
+                 * Used by modal-based CRUD modules.
+                 * -----------------------------------------------------
                  */
+
                 html += `
+        <td>
+
+            <div class="dropdown">
+
+                <button
+                    type="button"
+                    class="action-btn"
+                    aria-expanded="false">
+
+                    <i class="bi bi-three-dots"></i>
+
+                </button>
+
+
+                <ul class="dropdown-menu dropdown-menu-end">
+
                     <li>
+
                         <a
                             class="dropdown-item btn-view"
                             href="#"
@@ -678,9 +702,12 @@ const CrudTable = {
                             View
 
                         </a>
+
                     </li>
 
+
                     <li>
+
                         <a
                             class="dropdown-item btn-edit"
                             href="#"
@@ -690,38 +717,35 @@ const CrudTable = {
                             Edit
 
                         </a>
+
                     </li>
-                `;
 
 
-                /*
-                 * Existing Role-specific action.
-                 */
-                if (
-                    crud.entity === 'Role'
-                ) {
+                    ${crud.entity === 'Role'
+                        ? `
+                                <li>
 
-                    html += `
-                        <li>
+                                    <a
+                                        class="dropdown-item"
+                                        href="roles/permissions/${rowId}">
 
-                            <a
-                                class="dropdown-item"
-                                href="roles/permissions/${rowId}">
+                                        <i class="bi bi-shield-lock me-2"></i>
+                                        Manage Permissions
 
-                                <i class="bi bi-shield-lock me-2"></i>
-                                Manage Permissions
+                                    </a>
 
-                            </a>
-
-                        </li>
-                    `;
-                }
+                                </li>
+                              `
+                        : ''
+                    }
 
 
-                html += `
                     <li>
+
                         <hr class="dropdown-divider">
+
                     </li>
+
 
                     <li>
 
@@ -736,15 +760,14 @@ const CrudTable = {
                         </a>
 
                     </li>
-                `;
+
+                </ul>
+
+            </div>
+
+        </td>
+    `;
             }
-
-
-            html += `
-                        </ul>
-                    </div>
-                </td>
-            `;
 
 
             html += '</tr>';
