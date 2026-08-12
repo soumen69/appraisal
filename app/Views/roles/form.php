@@ -65,7 +65,7 @@
 
     </div>
 
-    <div class="col-md-6">
+    <!-- <div class="col-md-6">
 
         <div class="form-floating">
 
@@ -86,7 +86,7 @@
 
         <div class="invalid-feedback"></div>
 
-    </div>
+    </div> -->
 
     <div class="col-md-6">
 

@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </option>`;
             });
 
-            $('#parent_role_id').html(html);
+            // $('#parent_role_id').html(html);
 
         });
 

@@ -703,6 +703,18 @@
     box-shadow: 0 0 0 3px rgba(63, 85, 107, .08);
 }
 
+
+.select2-selection__choice__display {
+    margin-bottom: 1px;
+}
+
+.select2-container--bootstrap-5 
+.select2-selection--multiple .select2-selection__rendered 
+.select2-selection__choice .select2-selection__choice__remove{
+    width: 0.5rem;
+    height: .5rem;
+}   
+
 /* ==========================================================================
    Date Input
    ========================================================================== */
@@ -824,7 +836,7 @@
 
 .employee-cancel-btn {
     height: 40px;
-    padding: 0 18px;
+    padding: 9px 18px;
     border: 1px solid #dbe3ec;
     border-radius: 8px;
     background: #fff;

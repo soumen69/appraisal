@@ -154,7 +154,6 @@ class EmployeeController extends BaseController
         );
     }
 
-    // Employee Data
     public function edit(int $id)
     {
         try {
@@ -164,47 +163,18 @@ class EmployeeController extends BaseController
                 ->getEmployee($id);
 
             if (!$employee) {
+
                 return $this->response
                     ->setStatusCode(404)
                     ->setJSON([
                         'success' => false,
-                        'message' =>
-                        'Employee not found.'
+                        'message' => 'Employee not found.'
                     ]);
             }
 
-            $roles =
+            $employee['role_id'] =
                 $this->employeeService
-                ->getEmployeeRoles($id);
-
-            $employee['role_ids'] =
-                array_map(
-                    'intval',
-                    array_column(
-                        $roles,
-                        'role_id'
-                    )
-                );
-
-            $employee['primary_role_id'] = null;
-
-            foreach ($roles as $role) {
-
-                if (
-                    (int) $role['is_primary'] === 1
-                ) {
-                    $employee['primary_role_id'] =
-                        (int) $role['role_id'];
-
-                    break;
-                }
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Never expose sensitive fields
-            |--------------------------------------------------------------------------
-            */
+                ->getEmployeeRoleId($id);
 
             unset(
                 $employee['password'],
@@ -366,7 +336,7 @@ class EmployeeController extends BaseController
             );
         }
 
-        $roles = $this->employeeService->getEmployeeRoles($id);
+        $roles = $this->employeeService->getEmployeeRoleID($id);
 
         return view('employees/view', [
             'title' => 'Employee Details',

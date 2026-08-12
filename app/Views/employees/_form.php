@@ -456,53 +456,23 @@
                     </label>
 
                     <select
-                        name="role_ids[]"
-                        id="role_ids"
+                        name="role_id"
+                        id="role_id"
                         class="form-select employee-select2"
-                        multiple
                         required>
+                        <option value="">Select role</option>
                     </select>
 
                     <div class="employee-form-help">
-                        Select one or more roles for this employee.
+                        Select a role for this employee.
                     </div>
 
                     <div
                         class="invalid-feedback"
-                        data-field-error="role_ids">
+                        data-field-error="role_id">
                     </div>
 
                 </div>
-
-
-                <!-- <div class="col-md-4">
-
-                    <label class="employee-form-label">
-                        Primary Role
-                        <span>*</span>
-                    </label>
-
-                    <select
-                        name="primary_role_id"
-                        id="primary_role_id"
-                        class="form-select employee-select2"
-                        required
-                        disabled>
-                        <option value="">
-                            Select primary role
-                        </option>
-                    </select>
-
-                    <div class="employee-form-help">
-                        Used as the employee's primary role.
-                    </div>
-
-                    <div
-                        class="invalid-feedback"
-                        data-field-error="primary_role_id"></div>
-
-                </div> -->
-
 
                 <div class="col-md-6">
 

@@ -19,11 +19,9 @@ class RoleRepository
             ->table('roles r')
             ->select([
                 'r.*',
-                'parent.display_name AS parent_role',
                 'creator.full_name AS created_by_name',
                 'COUNT(DISTINCT rp.permission_id) AS permission_count'
             ])
-            ->join('roles parent', 'parent.id = r.parent_role_id', 'left')
             ->join('users creator', 'creator.id = r.created_by', 'left')
             ->join('role_permissions rp', 'rp.role_id = r.id', 'left')
             ->groupBy('r.id');
@@ -47,18 +45,16 @@ class RoleRepository
             ->getResultArray();
     }
 
-    public function getParents(?int $ignoreId = null): array
+    public function getOptions(): array
     {
-        $builder = $this->model
-            ->select('id,display_name')
+        return $this->model
+            ->select([
+                'id',
+                'display_name'
+            ])
             ->where('status', 'active')
-            ->orderBy('display_name', 'ASC');
-
-        if ($ignoreId) {
-            $builder->where('id !=', $ignoreId);
-        }
-
-        return $builder->findAll();
+            ->orderBy('display_name', 'ASC')
+            ->findAll();
     }
 
     public function find(int $id): ?array

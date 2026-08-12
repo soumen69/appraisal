@@ -128,10 +128,10 @@ class AuthService
                 'active'
             )
 
-            ->orderBy(
-                'ur.is_primary',
-                'DESC'
-            )
+            // ->orderBy(
+            //     'ur.is_primary',
+            //     'DESC'
+            // )
 
             ->get()
 

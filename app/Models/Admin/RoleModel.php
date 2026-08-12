@@ -18,7 +18,6 @@ class RoleModel extends Model
         'name',
         'slug',
         'display_name',
-        'parent_role_id',
         'icon',
         'color',
         'sort_order',

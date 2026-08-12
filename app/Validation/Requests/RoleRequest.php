@@ -29,10 +29,10 @@ class RoleRequest
                 'rules' => 'permit_empty|max_length[150]'
             ],
 
-            'parent_role_id' => [
-                'label' => 'Parent Role',
-                'rules' => 'permit_empty|integer'
-            ],
+            // 'parent_role_id' => [
+            //     'label' => 'Parent Role',
+            //     'rules' => 'permit_empty|integer'
+            // ],
 
             'icon' => [
                 'label' => 'Icon',

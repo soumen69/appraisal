@@ -30,9 +30,9 @@ class RoleService
         return $this->repository->getActive();
     }
 
-    public function getParents(?int $ignoreId = null): array
+    public function getOptions(): array
     {
-        return $this->repository->getParents($ignoreId);
+        return $this->repository->getOptions();
     }
 
     public function getById(int $id): ?array
@@ -44,9 +44,6 @@ class RoleService
     {
         if ($this->repository->exists($data['slug'])) {
             throw new \RuntimeException('Role slug already exists.');
-        }
-        if (empty($data['parent_role_id'])) {
-            $data['parent_role_id'] = null;
         }
 
         if (empty($data['icon'])) {
@@ -67,10 +64,6 @@ class RoleService
     {
         if ($this->repository->exists($data['slug'], $id)) {
             throw new \RuntimeException('Role slug already exists.');
-        }
-
-        if (empty($data['parent_role_id'])) {
-            $data['parent_role_id'] = null;
         }
 
         if (empty($data['icon'])) {

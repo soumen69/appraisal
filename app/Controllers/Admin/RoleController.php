@@ -133,7 +133,7 @@ class RoleController extends BaseCrudController
     public function options()
     {
         return $this->success('', [
-            'parents' => $this->roleService->getParents()
+            'roles' => $this->roleService->getOptions()
         ]);
     }
 

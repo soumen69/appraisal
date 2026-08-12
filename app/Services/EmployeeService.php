@@ -15,12 +15,6 @@ class EmployeeService
         $this->users = new UserModel();
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Employee Listing
-    |--------------------------------------------------------------------------
-    */
-
     public function getEmployees(array $filters = []): array
     {
         $page = max(
@@ -44,41 +38,24 @@ class EmployeeService
         );
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Employee Details
-    |--------------------------------------------------------------------------
-    */
-
     public function getEmployee(int $id): ?array
     {
         return $this->users->getEmployee($id);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Employee Roles
-    |--------------------------------------------------------------------------
-    */
-
-    public function getEmployeeRoles(int $userId): array
+    public function getEmployeeRoleId(int $userId): ?int
     {
-        return db_connect()
+        $row = db_connect()
             ->table('user_roles')
-            ->select([
-                'role_id',
-                'is_primary'
-            ])
+            ->select('role_id')
             ->where('user_id', $userId)
             ->get()
-            ->getResultArray();
-    }
+            ->getRowArray();
 
-    /*
-    |--------------------------------------------------------------------------
-    | Create Employee
-    |--------------------------------------------------------------------------
-    */
+        return $row
+            ? (int) $row['role_id']
+            : null;
+    }
 
     public function createEmployee(array $data): int
     {
@@ -94,12 +71,6 @@ class EmployeeService
             trim($data['email'])
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Duplicate Email
-        |--------------------------------------------------------------------------
-        */
-
         $existingEmail = $this->users
             ->where('email', $email)
             ->first();
@@ -111,12 +82,6 @@ class EmployeeService
                 ])
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Duplicate Employee Code
-        |--------------------------------------------------------------------------
-        */
 
         if (!empty($data['employee_code'])) {
 
@@ -141,24 +106,9 @@ class EmployeeService
             }
         }
 
-        $roleIds = $this->normalizeRoleIds(
-            $data['role_ids'] ?? []
-        );
+        $roleId = (int) ($data['role_id'] ?? 0);
 
-        $primaryRoleId = (int) (
-            $data['primary_role_id'] ?? 0
-        );
-
-        $this->validateRoles(
-            $roleIds,
-            $primaryRoleId
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reporting Manager
-        |--------------------------------------------------------------------------
-        */
+        $this->validateRole($roleId);
 
         $reportingManagerId = !empty($data['reporting_manager_id'])
             ? (int) $data['reporting_manager_id']
@@ -169,12 +119,6 @@ class EmployeeService
                 $reportingManagerId
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Transaction
-        |--------------------------------------------------------------------------
-        */
 
         $db = db_connect();
 
@@ -197,10 +141,9 @@ class EmployeeService
                 );
             }
 
-            $this->syncRoles(
+            $this->syncRole(
                 (int) $userId,
-                $roleIds,
-                $primaryRoleId
+                $roleId
             );
 
             if ($db->transStatus() === false) {
@@ -219,12 +162,6 @@ class EmployeeService
             throw $e;
         }
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Update Employee
-    |--------------------------------------------------------------------------
-    */
 
     public function updateEmployee(
         int $id,
@@ -254,12 +191,6 @@ class EmployeeService
             trim($data['email'])
         );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Duplicate Email
-        |--------------------------------------------------------------------------
-        */
-
         $existingEmail = $this->users
             ->where('email', $email)
             ->where('id !=', $id)
@@ -273,12 +204,6 @@ class EmployeeService
                 ])
             );
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Duplicate Employee Code
-        |--------------------------------------------------------------------------
-        */
 
         if (!empty($data['employee_code'])) {
 
@@ -304,24 +229,9 @@ class EmployeeService
             }
         }
 
-        $roleIds = $this->normalizeRoleIds(
-            $data['role_ids'] ?? []
-        );
+        $roleId = (int) ($data['role_id'] ?? 0);
 
-        $primaryRoleId = (int) (
-            $data['primary_role_id'] ?? 0
-        );
-
-        $this->validateRoles(
-            $roleIds,
-            $primaryRoleId
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Reporting Manager
-        |--------------------------------------------------------------------------
-        */
+        $this->validateRole($roleId);
 
         $reportingManagerId = !empty($data['reporting_manager_id'])
             ? (int) $data['reporting_manager_id']
@@ -354,15 +264,6 @@ class EmployeeService
                 true
             );
 
-            /*
-            |--------------------------------------------------------------------------
-            | Password
-            |--------------------------------------------------------------------------
-            |
-            | Only update password when explicitly supplied.
-            |
-            */
-
             if (
                 isset($data['password']) &&
                 trim($data['password']) !== ''
@@ -382,10 +283,9 @@ class EmployeeService
                 );
             }
 
-            $this->syncRoles(
+            $this->syncRole(
                 $id,
-                $roleIds,
-                $primaryRoleId
+                $roleId
             );
 
             if ($db->transStatus() === false) {
@@ -402,12 +302,6 @@ class EmployeeService
             throw $e;
         }
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete Employee
-    |--------------------------------------------------------------------------
-    */
 
     public function deleteEmployee(int $id): void
     {
@@ -462,12 +356,6 @@ class EmployeeService
         }
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Toggle Status
-    |--------------------------------------------------------------------------
-    */
-
     public function toggleStatus(int $id): string
     {
         $employee = $this->users->find($id);
@@ -499,12 +387,6 @@ class EmployeeService
 
         return $status;
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Build Employee Data
-    |--------------------------------------------------------------------------
-    */
 
     protected function buildEmployeeData(
         array $data,
@@ -607,16 +489,9 @@ class EmployeeService
         return $employeeData;
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Role Synchronization
-    |--------------------------------------------------------------------------
-    */
-
-    protected function syncRoles(
+    protected function syncRole(
         int $userId,
-        array $roleIds,
-        int $primaryRoleId
+        int $roleId
     ): void {
 
         $db = db_connect();
@@ -625,113 +500,43 @@ class EmployeeService
             ->where('user_id', $userId)
             ->delete();
 
-        $rows = [];
-
-        foreach ($roleIds as $roleId) {
-
-            $rows[] = [
+        $db->table('user_roles')
+            ->insert([
                 'user_id' => $userId,
-                'role_id' => $roleId,
-                'is_primary' =>
-                $roleId === $primaryRoleId ? 1 : 0
-            ];
-        }
-
-        if (!empty($rows)) {
-            $db->table('user_roles')
-                ->insertBatch($rows);
-        }
+                'role_id' => $roleId
+            ]);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Role Validation
-    |--------------------------------------------------------------------------
-    */
-
-    protected function validateRoles(
-        array $roleIds,
-        int $primaryRoleId
+    protected function validateRole(
+        int $roleId
     ): void {
 
-        if (empty($roleIds)) {
+        if ($roleId <= 0) {
+
             throw new InvalidArgumentException(
                 json_encode([
-                    'role_ids' =>
-                    'At least one role must be assigned.'
+                    'role_id' => 'A role must be assigned.'
                 ])
             );
         }
 
-        if (
-            !in_array(
-                $primaryRoleId,
-                $roleIds,
-                true
-            )
-        ) {
-            throw new InvalidArgumentException(
-                json_encode([
-                    'primary_role_id' =>
-                    'Primary role must be one of the assigned roles.'
-                ])
-            );
-        }
-
-        $validRoles = db_connect()
+        $role = db_connect()
             ->table('roles')
             ->select('id')
-            ->whereIn('id', $roleIds)
+            ->where('id', $roleId)
             ->where('status', 'active')
             ->get()
-            ->getResultArray();
+            ->getRowArray();
 
-        $validRoleIds = array_map(
-            'intval',
-            array_column($validRoles, 'id')
-        );
+        if (!$role) {
 
-        if (
-            count($validRoleIds) !== count($roleIds)
-        ) {
             throw new InvalidArgumentException(
                 json_encode([
-                    'role_ids' =>
-                    'One or more selected roles are invalid.'
+                    'role_id' => 'Selected role is invalid.'
                 ])
             );
         }
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Normalize Role IDs
-    |--------------------------------------------------------------------------
-    */
-
-    protected function normalizeRoleIds(
-        mixed $roleIds
-    ): array {
-
-        if (!is_array($roleIds)) {
-            $roleIds = [$roleIds];
-        }
-
-        $roleIds = array_filter(
-            array_map('intval', $roleIds),
-            fn($id) => $id > 0
-        );
-
-        return array_values(
-            array_unique($roleIds)
-        );
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reporting Manager Validation
-    |--------------------------------------------------------------------------
-    */
 
     protected function validateReportingManager(
         int $managerId
@@ -752,12 +557,6 @@ class EmployeeService
             );
         }
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Employee Validation
-    |--------------------------------------------------------------------------
-    */
 
     protected function validateEmployeeData(
         array $data,
@@ -794,17 +593,10 @@ class EmployeeService
         }
 
         if (
-            empty($data['role_ids'])
+            empty($data['role_id'])
         ) {
-            $errors['role_ids'] =
-                'At least one role is required.';
-        }
-
-        if (
-            empty($data['primary_role_id'])
-        ) {
-            $errors['primary_role_id'] =
-                'Primary role is required.';
+            $errors['role_id'] =
+                'Role is required.';
         }
 
         if (
