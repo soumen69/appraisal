@@ -5,7 +5,7 @@
 //         if (!crud.data.length) {
 
 //             const entity =
-//                 crud.entity || "Record";
+//                 crud.entity || 'Record';
 
 //             crud.body.innerHTML = `
 //                 <tr>
@@ -16,7 +16,7 @@
 //                         <i class="bi bi-database display-5 text-secondary"></i>
 
 //                         <h5 class="mt-3">
-//                             No ${entity}s Found
+//                             No ${crud.entityPlural || entity + 's'} Found
 //                         </h5>
 
 //                         <p class="text-muted mb-3">
@@ -24,10 +24,12 @@
 //                         </p>
 
 //                         <button
+//                             type="button"
 //                             class="btn app-btn-primary"
 //                             id="btnEmptyCreate">
 
-//                             <i class="bi bi-plus-lg"></i>
+//                             <i class="bi bi-plus-lg me-1"></i>
+
 //                             Create ${entity}
 
 //                         </button>
@@ -38,16 +40,17 @@
 
 //             $(document)
 //                 .off(
-//                     "click",
-//                     "#btnEmptyCreate"
+//                     'click.crudEmpty',
+//                     '#btnEmptyCreate'
 //                 )
 //                 .on(
-//                     "click",
-//                     "#btnEmptyCreate",
+//                     'click.crudEmpty',
+//                     '#btnEmptyCreate',
 //                     function () {
 
-//                         $("#btnAdd")
-//                             .trigger("click");
+//                         $('#btnAdd')
+//                             .trigger('click');
+
 //                     }
 //                 );
 
@@ -55,7 +58,7 @@
 //         }
 
 
-//         let html = "";
+//         let html = '';
 
 
 //         crud.data.forEach((row) => {
@@ -66,26 +69,34 @@
 //                 null;
 
 
-//             html += "<tr>";
+//             html += '<tr>';
 
 
+//             /*
+//              * Checkbox
+//              */
 //             html += `
 //                 <td>
 //                     <input
 //                         type="checkbox"
+//                         class="form-check-input crud-row-check"
 //                         value="${rowId}">
 //                 </td>
 //             `;
 
 
+//             /*
+//              * Columns
+//              */
 //             crud.columns.forEach((col) => {
 
 //                 let value =
-//                     row[col.key] ?? "";
+//                     row[col.key] ?? '';
 
 
 //                 if (
-//                     typeof col.render === "function"
+//                     typeof col.render ===
+//                     'function'
 //                 ) {
 
 //                     value =
@@ -98,24 +109,28 @@
 
 //                     switch (col.key) {
 
-//                         case "status":
+//                         case 'status':
 
 //                             if (
-//                                 row.status === "active"
+//                                 row.status ===
+//                                 'active'
 //                             ) {
 
 //                                 value = `
-//                                     <span class="status-badge status-active">
+//                                     <span
+//                                         class="status-badge status-active">
 //                                         Active
 //                                     </span>
 //                                 `;
 
 //                             } else if (
-//                                 row.status === "inactive"
+//                                 row.status ===
+//                                 'inactive'
 //                             ) {
 
 //                                 value = `
-//                                     <span class="status-badge status-inactive">
+//                                     <span
+//                                         class="status-badge status-inactive">
 //                                         Inactive
 //                                     </span>
 //                                 `;
@@ -123,7 +138,8 @@
 //                             } else {
 
 //                                 value = `
-//                                     <span class="badge bg-warning-subtle text-warning">
+//                                     <span
+//                                         class="badge bg-warning-subtle text-warning">
 //                                         Mixed
 //                                     </span>
 //                                 `;
@@ -132,19 +148,21 @@
 //                             break;
 
 
-//                         case "is_sidebar":
+//                         case 'is_sidebar':
 
 //                             value =
 //                                 row.is_sidebar == 1
 
 //                                     ? `
-//                                         <span class="badge bg-success-subtle text-success">
+//                                         <span
+//                                             class="badge bg-success-subtle text-success">
 //                                             Yes
 //                                         </span>
 //                                     `
 
 //                                     : `
-//                                         <span class="badge bg-secondary-subtle text-secondary">
+//                                         <span
+//                                             class="badge bg-secondary-subtle text-secondary">
 //                                             No
 //                                         </span>
 //                                     `;
@@ -152,19 +170,21 @@
 //                             break;
 
 
-//                         case "is_visible":
+//                         case 'is_visible':
 
 //                             value =
 //                                 row.is_visible == 1
 
 //                                     ? `
-//                                         <span class="badge bg-success-subtle text-success">
+//                                         <span
+//                                             class="badge bg-success-subtle text-success">
 //                                             Visible
 //                                         </span>
 //                                     `
 
 //                                     : `
-//                                         <span class="badge bg-warning-subtle text-warning">
+//                                         <span
+//                                             class="badge bg-warning-subtle text-warning">
 //                                             Hidden
 //                                         </span>
 //                                     `;
@@ -172,12 +192,18 @@
 //                             break;
 
 
-//                         case "icon":
+//                         case 'icon':
 
 //                             value =
 //                                 value
-//                                     ? `<i class="${value} fs-5"></i>`
-//                                     : "-";
+
+//                                     ? `
+//                                         <i
+//                                             class="${value} fs-5">
+//                                         </i>
+//                                     `
+
+//                                     : '-';
 
 //                             break;
 
@@ -185,7 +211,7 @@
 //                         default:
 
 //                             value =
-//                                 value || "-";
+//                                 value || '-';
 //                     }
 //                 }
 
@@ -199,119 +225,162 @@
 
 
 //             /*
-//              * Actions
-//              */
-//             html += `
-//                 <td>
-
-//                     <div class="dropdown">
-
-//                         <button
-//                             type="button"
-//                             class="action-btn"
-//                             aria-expanded="false">
-
-//                             <i class="bi bi-three-dots"></i>
-
-//                         </button>
-
-
-//                         <ul class="dropdown-menu dropdown-menu-end">
-
-//                             <li>
-
-//                                 <a
-//                                     class="dropdown-item btn-view"
-//                                     href="#"
-//                                     data-id="${rowId}">
-
-//                                     <i class="bi bi-eye me-2"></i>
-//                                     View
-
-//                                 </a>
-
-//                             </li>
-
-
-//                             <li>
-
-//                                 <a
-//                                     class="dropdown-item btn-edit"
-//                                     href="#"
-//                                     data-id="${rowId}">
-
-//                                     <i class="bi bi-pencil me-2"></i>
-//                                     Edit
-
-//                                 </a>
-
-//                             </li>
-//             `;
-
+//  * ---------------------------------------------------------
+//  * Actions
+//  * ---------------------------------------------------------
+//  */
 
 //             if (
-//                 crud.entity === "Role"
+//                 typeof crud.actionRenderer ===
+//                 'function'
 //             ) {
 
 //                 html += `
-//                             <li>
+//         <td>
 
-//                                 <a
-//                                     class="dropdown-item"
-//                                     href="roles/permissions/${rowId}">
+//             <div class="dropdown">
 
-//                                     <i class="bi bi-shield-lock me-2"></i>
-//                                     Manage Permissions
+//                 <button
+//                     type="button"
+//                     class="action-btn"
+//                     aria-expanded="false">
 
-//                                 </a>
+//                     <i class="bi bi-three-dots"></i>
 
-//                             </li>
-//                 `;
+//                 </button>
+
+
+//                 <ul class="dropdown-menu dropdown-menu-end">
+
+//                     ${crud.actionRenderer(
+//                     row,
+//                     rowId,
+//                     crud
+//                 )}
+
+//                 </ul>
+
+//             </div>
+
+//         </td>
+//     `;
+
+//             } else {
+
+//                 /*
+//                  * -----------------------------------------------------
+//                  * Default CRUD actions
+//                  *
+//                  * Used by modal-based CRUD modules.
+//                  * -----------------------------------------------------
+//                  */
+
+//                 html += `
+//         <td>
+
+//             <div class="dropdown">
+
+//                 <button
+//                     type="button"
+//                     class="action-btn"
+//                     aria-expanded="false">
+
+//                     <i class="bi bi-three-dots"></i>
+
+//                 </button>
+
+
+//                 <ul class="dropdown-menu dropdown-menu-end">
+
+//                     <li>
+
+//                         <a
+//                             class="dropdown-item btn-view"
+//                             href="#"
+//                             data-id="${rowId}">
+
+//                             <i class="bi bi-eye me-2"></i>
+//                             View
+
+//                         </a>
+
+//                     </li>
+
+
+//                     <li>
+
+//                         <a
+//                             class="dropdown-item btn-edit"
+//                             href="#"
+//                             data-id="${rowId}">
+
+//                             <i class="bi bi-pencil me-2"></i>
+//                             Edit
+
+//                         </a>
+
+//                     </li>
+
+
+//                     ${crud.entity === 'Role'
+//                         ? `
+//                                 <li>
+
+//                                     <a
+//                                         class="dropdown-item"
+//                                         href="roles/permissions/${rowId}">
+
+//                                         <i class="bi bi-shield-lock me-2"></i>
+//                                         Manage Permissions
+
+//                                     </a>
+
+//                                 </li>
+//                               `
+//                         : ''
+//                     }
+
+
+//                     <li>
+
+//                         <hr class="dropdown-divider">
+
+//                     </li>
+
+
+//                     <li>
+
+//                         <a
+//                             class="dropdown-item text-danger btn-delete"
+//                             href="#"
+//                             data-id="${rowId}">
+
+//                             <i class="bi bi-trash me-2"></i>
+//                             Delete
+
+//                         </a>
+
+//                     </li>
+
+//                 </ul>
+
+//             </div>
+
+//         </td>
+//     `;
 //             }
 
 
-//             html += `
-//                             <li>
-
-//                                 <hr class="dropdown-divider">
-
-//                             </li>
-
-
-//                             <li>
-
-//                                 <a
-//                                     class="dropdown-item text-danger btn-delete"
-//                                     href="#"
-//                                     data-id="${rowId}">
-
-//                                     <i class="bi bi-trash me-2"></i>
-//                                     Delete
-
-//                                 </a>
-
-//                             </li>
-
-//                         </ul>
-
-//                     </div>
-
-//                 </td>
-//             `;
-
-
-//             html += "</tr>";
+//             html += '</tr>';
 //         });
 
 
 //         crud.body.innerHTML = html;
 
 
-//         /*
-//          * Initialize CRUD action dropdowns.
-//          */
-//         CrudTable.bindDropdowns();
+//         this.bindDropdowns();
 //     },
+
 
 //     bindDropdowns() {
 
@@ -320,51 +389,56 @@
 //          */
 //         $('#crudBody .action-btn')
 //             .off('click.crudDropdown')
-//             .on('click.crudDropdown', function (e) {
+//             .on(
+//                 'click.crudDropdown',
+//                 function (e) {
 
-//                 e.preventDefault();
-//                 e.stopPropagation();
+//                     e.preventDefault();
+//                     e.stopPropagation();
 
-//                 const button = this;
+//                     const button = this;
 
-//                 const dropdown =
-//                     bootstrap.Dropdown
-//                         .getOrCreateInstance(
-//                             button,
-//                             {
-//                                 display: 'static'
-//                             }
-//                         );
+//                     const dropdown =
+//                         bootstrap.Dropdown
+//                             .getOrCreateInstance(
+//                                 button,
+//                                 {
+//                                     display: 'static'
+//                                 }
+//                             );
 
-//                 dropdown.toggle();
-//             });
+//                     dropdown.toggle();
+//                 }
+//             );
 
 
 //         /*
-//          * Close dropdown when clicking
-//          * any action inside it.
+//          * Close dropdown after action.
 //          */
 //         $('#crudBody .dropdown-item')
 //             .off('click.crudDropdownAction')
-//             .on('click.crudDropdownAction', function () {
+//             .on(
+//                 'click.crudDropdownAction',
+//                 function () {
 
-//                 const button =
-//                     $(this)
-//                         .closest('.dropdown')
-//                         .find('.action-btn')[0];
+//                     const button =
+//                         $(this)
+//                             .closest('.dropdown')
+//                             .find('.action-btn')[0];
 
-//                 if (!button) {
-//                     return;
+//                     if (!button) {
+//                         return;
+//                     }
+
+//                     const dropdown =
+//                         bootstrap.Dropdown
+//                             .getInstance(button);
+
+//                     if (dropdown) {
+//                         dropdown.hide();
+//                     }
 //                 }
-
-//                 const dropdown =
-//                     bootstrap.Dropdown
-//                         .getInstance(button);
-
-//                 if (dropdown) {
-//                     dropdown.hide();
-//                 }
-//             });
+//             );
 
 
 //         /*
@@ -372,30 +446,39 @@
 //          */
 //         $(document)
 //             .off('click.crudDropdown')
-//             .on('click.crudDropdown', function (e) {
+//             .on(
+//                 'click.crudDropdown',
+//                 function (e) {
 
-//                 if (
-//                     $(e.target)
-//                         .closest('#crudBody .dropdown')
-//                         .length
-//                 ) {
-//                     return;
+//                     if (
+//                         $(e.target)
+//                             .closest(
+//                                 '#crudBody .dropdown'
+//                             )
+//                             .length
+//                     ) {
+//                         return;
+//                     }
+
+//                     $('#crudBody .action-btn')
+//                         .each(function () {
+
+//                             const dropdown =
+//                                 bootstrap.Dropdown
+//                                     .getInstance(
+//                                         this
+//                                     );
+
+//                             if (dropdown) {
+//                                 dropdown.hide();
+//                             }
+
+//                         });
 //                 }
-
-//                 $('#crudBody .action-btn')
-//                     .each(function () {
-
-//                         const dropdown =
-//                             bootstrap.Dropdown
-//                                 .getInstance(this);
-
-//                         if (dropdown) {
-//                             dropdown.hide();
-//                         }
-//                     });
-//             });
+//             );
 //     }
 // };
+
 
 const CrudTable = {
 
@@ -406,6 +489,9 @@ const CrudTable = {
             const entity =
                 crud.entity || 'Record';
 
+            const createAllowed =
+                crud.can('create');
+
             crud.body.innerHTML = `
                 <tr>
                     <td
@@ -415,23 +501,27 @@ const CrudTable = {
                         <i class="bi bi-database display-5 text-secondary"></i>
 
                         <h5 class="mt-3">
-                            No ${crud.entityPlural || entity + 's'} Found
+                            No ${crud.entityPlural || entity + ''} Found
                         </h5>
 
                         <p class="text-muted mb-3">
                             No ${entity.toLowerCase()} records are available.
                         </p>
 
-                        <button
-                            type="button"
-                            class="btn app-btn-primary"
-                            id="btnEmptyCreate">
+                        ${createAllowed
+                    ? `
+                                    <button
+                                        type="button"
+                                        class="btn app-btn-primary"
+                                        id="btnEmptyCreate">
 
-                            <i class="bi bi-plus-lg me-1"></i>
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create ${entity}
 
-                            Create ${entity}
-
-                        </button>
+                                    </button>
+                                `
+                    : ''
+                }
 
                     </td>
                 </tr>
@@ -447,8 +537,7 @@ const CrudTable = {
                     '#btnEmptyCreate',
                     function () {
 
-                        $('#btnAdd')
-                            .trigger('click');
+                        $('#btnAdd').trigger('click');
 
                     }
                 );
@@ -467,12 +556,11 @@ const CrudTable = {
                 row.group_id ??
                 null;
 
-
             html += '<tr>';
 
 
             /*
-             * Checkbox
+             * Row checkbox
              */
             html += `
                 <td>
@@ -491,7 +579,6 @@ const CrudTable = {
 
                 let value =
                     row[col.key] ?? '';
-
 
                 if (
                     typeof col.render ===
@@ -551,14 +638,12 @@ const CrudTable = {
 
                             value =
                                 row.is_sidebar == 1
-
                                     ? `
                                         <span
                                             class="badge bg-success-subtle text-success">
                                             Yes
                                         </span>
                                     `
-
                                     : `
                                         <span
                                             class="badge bg-secondary-subtle text-secondary">
@@ -573,14 +658,12 @@ const CrudTable = {
 
                             value =
                                 row.is_visible == 1
-
                                     ? `
                                         <span
                                             class="badge bg-success-subtle text-success">
                                             Visible
                                         </span>
                                     `
-
                                     : `
                                         <span
                                             class="badge bg-warning-subtle text-warning">
@@ -595,13 +678,9 @@ const CrudTable = {
 
                             value =
                                 value
-
                                     ? `
-                                        <i
-                                            class="${value} fs-5">
-                                        </i>
+                                        <i class="${value} fs-5"></i>
                                     `
-
                                     : '-';
 
                             break;
@@ -614,7 +693,6 @@ const CrudTable = {
                     }
                 }
 
-
                 html += `
                     <td>
                         ${value}
@@ -624,151 +702,155 @@ const CrudTable = {
 
 
             /*
- * ---------------------------------------------------------
- * Actions
- * ---------------------------------------------------------
- */
-
+             * Custom action renderer
+             */
             if (
                 typeof crud.actionRenderer ===
                 'function'
             ) {
 
                 html += `
-        <td>
+                    <td>
+                        <div class="dropdown">
 
-            <div class="dropdown">
+                            <button
+                                type="button"
+                                class="action-btn"
+                                aria-expanded="false">
 
-                <button
-                    type="button"
-                    class="action-btn"
-                    aria-expanded="false">
+                                <i class="bi bi-three-dots"></i>
 
-                    <i class="bi bi-three-dots"></i>
+                            </button>
 
-                </button>
-
-
-                <ul class="dropdown-menu dropdown-menu-end">
-
-                    ${crud.actionRenderer(
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                ${crud.actionRenderer(
                     row,
                     rowId,
                     crud
                 )}
+                            </ul>
 
-                </ul>
-
-            </div>
-
-        </td>
-    `;
+                        </div>
+                    </td>
+                `;
 
             } else {
 
                 /*
-                 * -----------------------------------------------------
-                 * Default CRUD actions
-                 *
-                 * Used by modal-based CRUD modules.
-                 * -----------------------------------------------------
+                 * Default permission-aware actions.
                  */
+                const actions = [];
 
-                html += `
-        <td>
+                if (crud.can('view')) {
+                    actions.push(`
+                        <li>
+                            <a
+                                class="dropdown-item btn-view"
+                                href="#"
+                                data-id="${rowId}">
 
-            <div class="dropdown">
+                                <i class="bi bi-eye me-2"></i>
+                                View
 
-                <button
-                    type="button"
-                    class="action-btn"
-                    aria-expanded="false">
+                            </a>
+                        </li>
+                    `);
+                }
 
-                    <i class="bi bi-three-dots"></i>
+                if (crud.can('edit')) {
+                    actions.push(`
+                        <li>
+                            <a
+                                class="dropdown-item btn-edit"
+                                href="#"
+                                data-id="${rowId}">
 
-                </button>
+                                <i class="bi bi-pencil me-2"></i>
+                                Edit
 
+                            </a>
+                        </li>
+                    `);
+                }
 
-                <ul class="dropdown-menu dropdown-menu-end">
+                /*
+                 * Role permission manager.
+                 */
+                if (
+                    crud.entity === 'Role' &&
+                    crud.can('manage')
+                ) {
+                    actions.push(`
+                        <li>
+                            <a
+                                class="dropdown-item"
+                                href="${APP.baseUrl}/roles/permissions/${rowId}">
 
-                    <li>
+                                <i class="bi bi-shield-lock me-2"></i>
+                                Manage Permissions
 
-                        <a
-                            class="dropdown-item btn-view"
-                            href="#"
-                            data-id="${rowId}">
+                            </a>
+                        </li>
+                    `);
+                }
 
-                            <i class="bi bi-eye me-2"></i>
-                            View
+                if (crud.can('delete')) {
 
-                        </a>
-
-                    </li>
-
-
-                    <li>
-
-                        <a
-                            class="dropdown-item btn-edit"
-                            href="#"
-                            data-id="${rowId}">
-
-                            <i class="bi bi-pencil me-2"></i>
-                            Edit
-
-                        </a>
-
-                    </li>
-
-
-                    ${crud.entity === 'Role'
-                        ? `
-                                <li>
-
-                                    <a
-                                        class="dropdown-item"
-                                        href="roles/permissions/${rowId}">
-
-                                        <i class="bi bi-shield-lock me-2"></i>
-                                        Manage Permissions
-
-                                    </a>
-
-                                </li>
-                              `
-                        : ''
+                    if (actions.length) {
+                        actions.push(`
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                        `);
                     }
 
+                    actions.push(`
+                        <li>
+                            <a
+                                class="dropdown-item text-danger btn-delete"
+                                href="#"
+                                data-id="${rowId}">
 
-                    <li>
+                                <i class="bi bi-trash me-2"></i>
+                                Delete
 
-                        <hr class="dropdown-divider">
+                            </a>
+                        </li>
+                    `);
+                }
 
-                    </li>
+                if (actions.length) {
 
+                    html += `
+                        <td>
+                            <div class="dropdown">
 
-                    <li>
+                                <button
+                                    type="button"
+                                    class="action-btn"
+                                    aria-expanded="false"
+                                    title="Actions">
 
-                        <a
-                            class="dropdown-item text-danger btn-delete"
-                            href="#"
-                            data-id="${rowId}">
+                                    <i class="bi bi-three-dots"></i>
 
-                            <i class="bi bi-trash me-2"></i>
-                            Delete
+                                </button>
 
-                        </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
 
-                    </li>
+                                    ${actions.join('')}
 
-                </ul>
+                                </ul>
 
-            </div>
+                            </div>
+                        </td>`;
+                } else {
 
-        </td>
-    `;
+                    html += `
+                        <td class="text-center">
+                            <span class="text-muted">—</span>
+                        </td>`;
+                }
             }
-
 
             html += '</tr>';
         });
@@ -776,16 +858,12 @@ const CrudTable = {
 
         crud.body.innerHTML = html;
 
-
         this.bindDropdowns();
     },
 
 
     bindDropdowns() {
 
-        /*
-         * Open / toggle action dropdown.
-         */
         $('#crudBody .action-btn')
             .off('click.crudDropdown')
             .on(
@@ -811,9 +889,6 @@ const CrudTable = {
             );
 
 
-        /*
-         * Close dropdown after action.
-         */
         $('#crudBody .dropdown-item')
             .off('click.crudDropdownAction')
             .on(
@@ -840,9 +915,6 @@ const CrudTable = {
             );
 
 
-        /*
-         * Close dropdown when clicking outside.
-         */
         $(document)
             .off('click.crudDropdown')
             .on(
@@ -864,9 +936,7 @@ const CrudTable = {
 
                             const dropdown =
                                 bootstrap.Dropdown
-                                    .getInstance(
-                                        this
-                                    );
+                                    .getInstance(this);
 
                             if (dropdown) {
                                 dropdown.hide();

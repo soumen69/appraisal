@@ -106,15 +106,25 @@ class EmployeeService
             }
         }
 
-        $roleId = (int) ($data['role_id'] ?? 0);
+        $this->validateEmploymentReferences(
+            $data
+        );
 
-        $this->validateRole($roleId);
+        $roleId = (int) (
+            $data['role_id'] ?? 0
+        );
 
-        $reportingManagerId = !empty($data['reporting_manager_id'])
+        $this->validateRole(
+            $roleId
+        );
+
+        $reportingManagerId =
+            !empty($data['reporting_manager_id'])
             ? (int) $data['reporting_manager_id']
             : null;
 
         if ($reportingManagerId !== null) {
+
             $this->validateReportingManager(
                 $reportingManagerId
             );
@@ -126,33 +136,43 @@ class EmployeeService
 
         try {
 
-            $employeeData = $this->buildEmployeeData(
-                $data
-            );
+            $employeeData =
+                $this->buildEmployeeData(
+                    $data
+                );
 
-            $userId = $this->users->insert(
-                $employeeData,
-                true
-            );
+
+            $userId =
+                $this->users->insert(
+                    $employeeData,
+                    true
+                );
+
 
             if (!$userId) {
+
                 throw new RuntimeException(
                     'Unable to create employee.'
                 );
             }
+
 
             $this->syncRole(
                 (int) $userId,
                 $roleId
             );
 
+
             if ($db->transStatus() === false) {
+
                 throw new RuntimeException(
                     'Employee creation failed.'
                 );
             }
 
+
             $db->transCommit();
+
 
             return (int) $userId;
         } catch (\Throwable $e) {
@@ -163,40 +183,55 @@ class EmployeeService
         }
     }
 
-    public function updateEmployee(
-        int $id,
-        array $data
-    ): void {
+    public function updateEmployee(int $id, array $data): void
+    {
+        $employee =
+            $this->users->find($id);
 
-        $employee = $this->users->find($id);
 
         if (!$employee) {
+
             throw new RuntimeException(
                 'Employee not found.'
             );
         }
 
-        $errors = $this->validateEmployeeData(
-            $data,
-            $id
-        );
+
+        $errors =
+            $this->validateEmployeeData(
+                $data,
+                $id
+            );
+
 
         if (!empty($errors)) {
+
             throw new InvalidArgumentException(
                 json_encode($errors)
             );
         }
 
-        $email = strtolower(
-            trim($data['email'])
-        );
 
-        $existingEmail = $this->users
-            ->where('email', $email)
-            ->where('id !=', $id)
+        $email =
+            strtolower(
+                trim($data['email'])
+            );
+
+        $existingEmail =
+            $this->users
+            ->where(
+                'email',
+                $email
+            )
+            ->where(
+                'id !=',
+                $id
+            )
             ->first();
 
+
         if ($existingEmail) {
+
             throw new InvalidArgumentException(
                 json_encode([
                     'email' =>
@@ -207,19 +242,27 @@ class EmployeeService
 
         if (!empty($data['employee_code'])) {
 
-            $employeeCode = trim(
-                $data['employee_code']
-            );
+            $employeeCode =
+                trim(
+                    $data['employee_code']
+                );
 
-            $existingCode = $this->users
+
+            $existingCode =
+                $this->users
                 ->where(
                     'employee_code',
                     $employeeCode
                 )
-                ->where('id !=', $id)
+                ->where(
+                    'id !=',
+                    $id
+                )
                 ->first();
 
+
             if ($existingCode) {
+
                 throw new InvalidArgumentException(
                     json_encode([
                         'employee_code' =>
@@ -229,17 +272,32 @@ class EmployeeService
             }
         }
 
-        $roleId = (int) ($data['role_id'] ?? 0);
+        $this->validateEmploymentReferences(
+            $data
+        );
 
-        $this->validateRole($roleId);
+        $roleId =
+            (int) (
+                $data['role_id'] ?? 0
+            );
 
-        $reportingManagerId = !empty($data['reporting_manager_id'])
+
+        $this->validateRole(
+            $roleId
+        );
+
+        $reportingManagerId =
+            !empty($data['reporting_manager_id'])
             ? (int) $data['reporting_manager_id']
             : null;
 
+
         if ($reportingManagerId !== null) {
 
-            if ($reportingManagerId === $id) {
+            if (
+                $reportingManagerId === $id
+            ) {
+
                 throw new InvalidArgumentException(
                     json_encode([
                         'reporting_manager_id' =>
@@ -248,10 +306,12 @@ class EmployeeService
                 );
             }
 
+
             $this->validateReportingManager(
                 $reportingManagerId
             );
         }
+
 
         $db = db_connect();
 
@@ -259,25 +319,27 @@ class EmployeeService
 
         try {
 
-            $employeeData = $this->buildEmployeeData(
-                $data,
-                true
+            unset(
+                $data['password'],
+                $data['password_confirmation']
             );
 
-            if (
-                isset($data['password']) &&
-                trim($data['password']) !== ''
-            ) {
-                $employeeData['password'] =
-                    $data['password'];
-            }
 
-            $updated = $this->users->update(
-                $id,
-                $employeeData
-            );
+            $employeeData =
+                $this->buildEmployeeData(
+                    $data,
+                    true
+                );
+
+            $updated =
+                $this->users->update(
+                    $id,
+                    $employeeData
+                );
+
 
             if (!$updated) {
+
                 throw new RuntimeException(
                     'Unable to update employee.'
                 );
@@ -288,11 +350,14 @@ class EmployeeService
                 $roleId
             );
 
+
             if ($db->transStatus() === false) {
+
                 throw new RuntimeException(
                     'Employee update failed.'
                 );
             }
+
 
             $db->transCommit();
         } catch (\Throwable $e) {
@@ -419,13 +484,19 @@ class EmployeeService
                 : null,
 
             'first_name' =>
-            trim($data['first_name']),
+            trim(
+                $data['first_name']
+            ),
 
             'last_name' =>
-            trim($data['last_name'] ?? ''),
+            trim(
+                $data['last_name'] ?? ''
+            ),
 
             'email' =>
-            strtolower(trim($data['email'])),
+            strtolower(
+                trim($data['email'])
+            ),
 
             'phone' =>
             !empty($data['phone'])
@@ -458,33 +529,24 @@ class EmployeeService
                 : 'active'
         ];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Password
-        |--------------------------------------------------------------------------
-        */
-
         if (
             !$isUpdate &&
             !empty($data['password'])
         ) {
+
             $employeeData['password'] =
                 $data['password'];
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Profile Photo
-        |--------------------------------------------------------------------------
-        */
 
         if (
             isset($data['profile_photo']) &&
             $data['profile_photo'] !== ''
         ) {
+
             $employeeData['profile_photo'] =
                 $data['profile_photo'];
         }
+
 
         return $employeeData;
     }
@@ -515,26 +577,292 @@ class EmployeeService
 
             throw new InvalidArgumentException(
                 json_encode([
-                    'role_id' => 'A role must be assigned.'
+                    'role_id' =>
+                    'Role is required.'
                 ])
             );
         }
 
-        $role = db_connect()
+
+        $role =
+            db_connect()
             ->table('roles')
-            ->select('id')
-            ->where('id', $roleId)
-            ->where('status', 'active')
+            ->select([
+                'id',
+                'status'
+            ])
+            ->where(
+                'id',
+                $roleId
+            )
             ->get()
             ->getRowArray();
+
 
         if (!$role) {
 
             throw new InvalidArgumentException(
                 json_encode([
-                    'role_id' => 'Selected role is invalid.'
+                    'role_id' =>
+                    'Selected role is invalid.'
                 ])
             );
+        }
+
+
+        if (
+            ($role['status'] ?? null) !==
+            'active'
+        ) {
+
+            throw new InvalidArgumentException(
+                json_encode([
+                    'role_id' =>
+                    'Selected role is inactive.'
+                ])
+            );
+        }
+    }
+
+    protected function validateEmploymentReferences(
+        array $data
+    ): void {
+
+        $db = db_connect();
+
+        $organizationId =
+            (int) (
+                $data['organization_id'] ?? 0
+            );
+
+
+        if ($organizationId <= 0) {
+
+            throw new InvalidArgumentException(
+                json_encode([
+                    'organization_id' =>
+                    'Organization is required.'
+                ])
+            );
+        }
+
+
+        $organization =
+            $db->table('organizations')
+            ->select([
+                'id',
+                'status'
+            ])
+            ->where(
+                'id',
+                $organizationId
+            )
+            ->get()
+            ->getRowArray();
+
+
+        if (!$organization) {
+
+            throw new InvalidArgumentException(
+                json_encode([
+                    'organization_id' =>
+                    'Selected organization is invalid.'
+                ])
+            );
+        }
+
+
+        if (
+            ($organization['status'] ?? null) !==
+            'active'
+        ) {
+
+            throw new InvalidArgumentException(
+                json_encode([
+                    'organization_id' =>
+                    'Selected organization is inactive.'
+                ])
+            );
+        }
+
+        if (!empty($data['branch_id'])) {
+
+            $branchId =
+                (int) $data['branch_id'];
+
+
+            $branch =
+                $db->table('branches')
+                ->select([
+                    'id',
+                    'organization_id',
+                    'status'
+                ])
+                ->where(
+                    'id',
+                    $branchId
+                )
+                ->get()
+                ->getRowArray();
+
+
+            if (!$branch) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'branch_id' =>
+                        'Selected branch is invalid.'
+                    ])
+                );
+            }
+
+
+            if (
+                (int) $branch['organization_id'] !==
+                $organizationId
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'branch_id' =>
+                        'Selected branch does not belong to the selected organization.'
+                    ])
+                );
+            }
+
+
+            if (
+                isset($branch['status']) &&
+                $branch['status'] !== 'active'
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'branch_id' =>
+                        'Selected branch is inactive.'
+                    ])
+                );
+            }
+        }
+
+        if (!empty($data['department_id'])) {
+
+            $departmentId =
+                (int) $data['department_id'];
+
+
+            $department =
+                $db->table('departments')
+                ->select([
+                    'id',
+                    'organization_id',
+                    'status'
+                ])
+                ->where(
+                    'id',
+                    $departmentId
+                )
+                ->get()
+                ->getRowArray();
+
+
+            if (!$department) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'department_id' =>
+                        'Selected department is invalid.'
+                    ])
+                );
+            }
+
+
+            if (
+                (int) $department['organization_id'] !==
+                $organizationId
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'department_id' =>
+                        'Selected department does not belong to the selected organization.'
+                    ])
+                );
+            }
+
+
+            if (
+                isset($department['status']) &&
+                $department['status'] !== 'active'
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'department_id' =>
+                        'Selected department is inactive.'
+                    ])
+                );
+            }
+        }
+
+        if (!empty($data['designation_id'])) {
+
+            $designationId =
+                (int) $data['designation_id'];
+
+
+            $designation =
+                $db->table('designations')
+                ->select([
+                    'id',
+                    'organization_id',
+                    'status'
+                ])
+                ->where(
+                    'id',
+                    $designationId
+                )
+                ->get()
+                ->getRowArray();
+
+
+            if (!$designation) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'designation_id' =>
+                        'Selected designation is invalid.'
+                    ])
+                );
+            }
+
+
+            if (
+                (int) $designation['organization_id'] !==
+                $organizationId
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'designation_id' =>
+                        'Selected designation does not belong to the selected organization.'
+                    ])
+                );
+            }
+
+
+            if (
+                isset($designation['status']) &&
+                $designation['status'] !== 'active'
+            ) {
+
+                throw new InvalidArgumentException(
+                    json_encode([
+                        'designation_id' =>
+                        'Selected designation is inactive.'
+                    ])
+                );
+            }
         }
     }
 
@@ -542,13 +870,25 @@ class EmployeeService
         int $managerId
     ): void {
 
-        $manager = $this->users
-            ->select('id')
-            ->where('id', $managerId)
-            ->where('status', 'active')
+        $manager =
+            $this->users
+            ->select([
+                'id',
+                'status'
+            ])
+            ->where(
+                'id',
+                $managerId
+            )
+            ->where(
+                'status',
+                'active'
+            )
             ->first();
 
+
         if (!$manager) {
+
             throw new InvalidArgumentException(
                 json_encode([
                     'reporting_manager_id' =>
@@ -569,6 +909,7 @@ class EmployeeService
             empty($data['organization_id']) ||
             !is_numeric($data['organization_id'])
         ) {
+
             $errors['organization_id'] =
                 'Organization is required.';
         }
@@ -577,6 +918,7 @@ class EmployeeService
             empty($data['first_name']) ||
             trim($data['first_name']) === ''
         ) {
+
             $errors['first_name'] =
                 'First name is required.';
         }
@@ -588,6 +930,7 @@ class EmployeeService
                 FILTER_VALIDATE_EMAIL
             )
         ) {
+
             $errors['email'] =
                 'A valid email address is required.';
         }
@@ -595,6 +938,7 @@ class EmployeeService
         if (
             empty($data['role_id'])
         ) {
+
             $errors['role_id'] =
                 'Role is required.';
         }
@@ -603,47 +947,94 @@ class EmployeeService
             !empty($data['status']) &&
             !in_array(
                 $data['status'],
-                ['active', 'inactive'],
+                [
+                    'active',
+                    'inactive'
+                ],
                 true
             )
         ) {
+
             $errors['status'] =
                 'Invalid employee status.';
         }
+
 
         if (
             !empty($data['dob']) &&
             !strtotime($data['dob'])
         ) {
+
             $errors['dob'] =
                 'Invalid date of birth.';
         }
+
 
         if (
             !empty($data['joining_date']) &&
             !strtotime($data['joining_date'])
         ) {
+
             $errors['joining_date'] =
                 'Invalid joining date.';
         }
 
         if (
-            isset($data['password']) &&
-            trim($data['password']) !== '' &&
-            strlen($data['password']) < 8
+            $employeeId === null
         ) {
-            $errors['password'] =
-                'Password must be at least 8 characters.';
+
+            $password =
+                trim(
+                    (string) (
+                        $data['password'] ?? ''
+                    )
+                );
+
+            $confirmation =
+                trim(
+                    (string) (
+                        $data['password_confirmation'] ?? ''
+                    )
+                );
+
+
+            if ($password === '') {
+
+                $errors['password'] =
+                    'Password is required.';
+            } elseif (
+                strlen($password) < 8
+            ) {
+
+                $errors['password'] =
+                    'Password must be at least 8 characters.';
+            }
+
+
+            if ($confirmation === '') {
+
+                $errors['password_confirmation'] =
+                    'Please confirm the password.';
+            } elseif (
+                $password !== $confirmation
+            ) {
+
+                $errors['password_confirmation'] =
+                    'Passwords do not match.';
+            }
         }
 
         if (
             !empty($data['reporting_manager_id']) &&
             $employeeId !== null &&
-            (int) $data['reporting_manager_id'] === $employeeId
+            (int) $data['reporting_manager_id'] ===
+            $employeeId
         ) {
+
             $errors['reporting_manager_id'] =
                 'Employee cannot report to themselves.';
         }
+
 
         return $errors;
     }

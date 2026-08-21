@@ -13,6 +13,7 @@ use CodeIgniter\Filters\PageCache;
 use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\PermissionFilter;
+use App\Filters\PermissionDependencyFilter;
 use App\Filters\AuthFilter;
 use App\Filters\GuestFilter;
 
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'permission'    => PermissionFilter::class,
+        'permission_dependency' => PermissionDependencyFilter::class,
         'auth'          => AuthFilter::class,
         'guest'         => GuestFilter::class,
     ];

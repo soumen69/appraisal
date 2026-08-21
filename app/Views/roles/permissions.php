@@ -2,8 +2,7 @@
 
 <?= $this->section('styles') ?>
 
-<link rel="stylesheet"
-    href="<?= base_url('assets/css/role-permissions.css') . '?v=' . time() ?>">
+<link rel="stylesheet" href="<?= base_url('assets/css/role-permissions.css') . '?v=' . time() ?>">
 
 <?= $this->endSection() ?>
 
@@ -11,44 +10,58 @@
 
 <div class="permission-workspace">
 
-    <div class="permission-header">
+    <!-- <div class="permission-header">
 
         <div>
 
-            <a href="<?= base_url('roles') ?>"
+            <a
+                href="<?= base_url('roles') ?>"
                 class="permission-back">
-
                 <i class="bi bi-arrow-left"></i>
-
                 Back to Roles
-
             </a>
 
             <h2 class="permission-role-name">
-
-                <?= esc($role['display_name'] ?: $role['name']) ?>
-
+                <?= esc(
+                    $role['display_name']
+                        ?: $role['name']
+                ) ?>
             </h2>
 
-            <p class="permission-role-description">
+            <?php if (!empty($role['description'])): ?>
 
-                <?= esc($role['description']) ?>
+                <p class="permission-role-description">
+                    <?= esc($role['description']) ?>
+                </p>
 
-            </p>
+            <?php else: ?>
+
+                <p class="permission-role-description">
+                    Configure what this role can access and perform.
+                </p>
+
+            <?php endif; ?>
 
         </div>
 
         <div class="permission-header-actions">
 
-            <span class="status-badge status-active">
+            <span
+                class="status-badge
+                    <?= ($role['status'] ?? '') === 'active'
+                        ? 'status-active'
+                        : 'status-inactive' ?>">
 
-                <?= ucfirst($role['status']) ?>
+                <?= ucfirst(
+                    $role['status'] ?? 'inactive'
+                ) ?>
 
             </span>
 
         </div>
 
-    </div>
+    </div> -->
+
 
     <div class="permission-toolbar">
 
@@ -57,9 +70,11 @@
             <i class="bi bi-search"></i>
 
             <input
+                type="search"
                 id="moduleSearch"
                 class="form-control"
-                placeholder="Search modules...">
+                placeholder="Search modules..."
+                autocomplete="off">
 
         </div>
 
@@ -68,37 +83,34 @@
             <i class="bi bi-search"></i>
 
             <input
+                type="search"
                 id="permissionSearch"
                 class="form-control"
-                placeholder="Search permissions...">
+                placeholder="Search permissions..."
+                autocomplete="off">
 
         </div>
 
     </div>
 
+
     <div class="permission-layout">
 
-        <aside
-            class="permission-sidebar">
+        <aside class="permission-sidebar">
 
-            <div
-                id="moduleList">
-
-            </div>
+            <div id="moduleList"></div>
 
         </aside>
 
-        <section
-            class="permission-content">
 
-            <div
-                id="permissionWorkspace">
+        <section class="permission-content">
 
-            </div>
+            <div id="permissionWorkspace"></div>
 
         </section>
 
     </div>
+
 
     <div class="permission-footer">
 
@@ -107,12 +119,11 @@
             <span
                 id="permissionDirty"
                 class="text-muted">
-
                 No changes
-
             </span>
 
         </div>
+
 
         <div class="d-flex gap-2">
 
@@ -125,8 +136,10 @@
             </a>
 
             <button
+                type="button"
                 id="btnSavePermissions"
-                class="btn app-btn-primary">
+                class="btn app-btn-primary"
+                disabled>
 
                 <i class="bi bi-check2"></i>
 
@@ -140,7 +153,11 @@
 
 </div>
 
-<input type="hidden" id="roleId" value="<?= $role['id'] ?>">
+
+<input
+    type="hidden"
+    id="roleId"
+    value="<?= (int) $role['id'] ?>">
 
 <?= $this->endSection() ?>
 

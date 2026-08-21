@@ -1,25 +1,14 @@
 const BranchList = {
-    endpoint:
-        window.BranchConfig.endpoint,
-
+    endpoint: window.BranchConfig.endpoint,
     page: 1,
-
     pageSize: 10,
-
     search: '',
-
     status: '',
-
     organizationId: '',
-
     orderBy: 'id',
-
     direction: 'desc',
-
     total: 0,
-
     lastPage: 1,
-
     data: [],
 
     init() {

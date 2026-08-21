@@ -5,13 +5,19 @@ namespace App\Controllers\Admin;
 use App\Services\PermissionService;
 use App\Validation\Requests\PermissionRequest;
 use CodeIgniter\HTTP\ResponseInterface;
+use App\Services\MenuService;
+use App\Services\ModuleService;
 
 class PermissionController extends BaseCrudController
 {
     protected PermissionService $permissionService;
+    protected MenuService $menuService;
+    protected ModuleService $moduleService;
 
     public function __construct()
     {
+        $this->menuService = new MenuService();
+        $this->moduleService = new ModuleService();
         $this->permissionService = new PermissionService();
     }
 
@@ -115,5 +121,14 @@ class PermissionController extends BaseCrudController
 
             return $this->error($e->getMessage());
         }
+    }
+
+    public function options()
+    {
+        return $this->success('', [
+            'modules'    => $this->moduleService->getActive(),
+            'parents'    => $this->menuService->getParents(),
+            'permissions' => $this->permissionService->getAll()
+        ]);
     }
 }

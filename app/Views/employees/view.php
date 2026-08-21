@@ -2,73 +2,146 @@
 
 <?= $this->section('content') ?>
 
+<?= $this->section('styles') ?>
+<link rel="stylesheet" href="<?= base_url('assets/css/employee-view.css') ?>">
+<?= $this->endSection() ?>
+
+<?php
+$fullName = trim(
+    $employee['full_name']
+        ?? trim(
+            ($employee['first_name'] ?? '') . ' ' .
+                ($employee['last_name'] ?? '')
+        )
+);
+
+$fullName = $fullName ?: 'Employee';
+
+$initials = '';
+
+$nameParts = preg_split(
+    '/\s+/',
+    trim($fullName)
+);
+
+if (!empty($nameParts)) {
+
+    $initials =
+        strtoupper(
+            substr($nameParts[0], 0, 1) .
+                (
+                    count($nameParts) > 1
+                    ? substr(
+                        $nameParts[count($nameParts) - 1],
+                        0,
+                        1
+                    )
+                    : ''
+                )
+        );
+}
+
+$employeePhoto = $employee['profile_photo'] ?? '';
+
+if (
+    $employeePhoto &&
+    !str_starts_with($employeePhoto, 'http://') &&
+    !str_starts_with($employeePhoto, 'https://') &&
+    !str_starts_with($employeePhoto, '/')
+) {
+    $employeePhoto =
+        base_url(
+            'uploads/employees/' .
+                ltrim($employeePhoto, '/')
+        );
+}
+
+$isActive =
+    ($employee['status'] ?? '') === 'active';
+
+$formatDate = static function ($value, $format = 'd M Y') {
+    if (empty($value)) {
+        return '-';
+    }
+
+    $timestamp = strtotime($value);
+
+    return $timestamp
+        ? date($format, $timestamp)
+        : '-';
+};
+
+$value = static function ($value) {
+    return !empty($value) ? $value : '-';
+};
+?>
+
 <div class="employee-view-page">
 
     <!-- =========================================================
-         Header
+         Header / Profile Hero
          ========================================================= -->
 
     <div class="employee-view-header">
 
-        <div>
+        <div class="employee-view-header-main">
 
             <a
                 href="<?= base_url('employees') ?>"
                 class="employee-back-link">
+
                 <i class="bi bi-arrow-left"></i>
                 Employees
+
             </a>
 
-            <div class="d-flex align-items-center gap-3">
+            <div class="employee-profile">
 
                 <div class="employee-profile-avatar">
 
-                    <?php if (!empty($employee['profile_photo'])): ?>
+                    <?php if ($employeePhoto): ?>
 
                         <img
-                            src="<?= base_url(
-                                        'uploads/employees/' .
-                                            $employee['profile_photo']
-                                    ) ?>"
-                            alt="<?= esc(
-                                        $employee['full_name']
-                                    ) ?>">
+                            src="<?= esc($employeePhoto) ?>"
+                            alt="<?= esc($fullName) ?>">
 
                     <?php else: ?>
 
                         <span>
-                            <?= strtoupper(
-                                substr(
-                                    $employee['first_name'] ?? 'E',
-                                    0,
-                                    1
-                                )
-                            ) ?>
+                            <?= esc($initials ?: 'E') ?>
                         </span>
 
                     <?php endif; ?>
 
                 </div>
 
-                <div>
+                <div class="employee-profile-content">
 
-                    <h4 class="employee-view-title mb-1">
-                        <?= esc(
-                            $employee['full_name'] ??
-                                trim(
-                                    ($employee['first_name'] ?? '') .
-                                        ' ' .
-                                        ($employee['last_name'] ?? '')
-                                )
-                        ) ?>
-                    </h4>
+                    <div class="employee-profile-name-row">
 
-                    <div class="employee-view-meta">
+                        <h4 class="employee-view-title">
+                            <?= esc($fullName) ?>
+                        </h4>
+
+                        <span
+                            class="status-badge <?= $isActive
+                                                    ? 'status-active'
+                                                    : 'status-inactive' ?>">
+
+                            <?= $isActive
+                                ? 'Active'
+                                : 'Inactive' ?>
+
+                        </span>
+
+                    </div>
+
+                    <div class="employee-profile-meta">
 
                         <?php if (!empty($employee['employee_code'])): ?>
 
                             <span>
-                                <i class="bi bi-hash"></i>
+                                <i class="bi bi-person-badge"></i>
                                 <?= esc(
                                     $employee['employee_code']
                                 ) ?>
@@ -82,6 +155,17 @@
                                 <i class="bi bi-briefcase"></i>
                                 <?= esc(
                                     $employee['designation_name']
+                                ) ?>
+                            </span>
+
+                        <?php endif; ?>
+
+                        <?php if (!empty($employee['organization_name'])): ?>
+
+                            <span>
+                                <i class="bi bi-building"></i>
+                                <?= esc(
+                                    $employee['organization_name']
                                 ) ?>
                             </span>
 
@@ -103,67 +187,133 @@
                                 (int) $employee['id']
                         ) ?>"
                 class="btn app-btn-primary">
+
                 <i class="bi bi-pencil me-1"></i>
                 Edit Employee
+
             </a>
 
         </div>
 
     </div>
 
+
     <!-- =========================================================
-         Status
+         Quick Summary
          ========================================================= -->
 
-    <div class="employee-status-strip">
+    <div class="employee-summary-grid">
 
-        <div class="employee-status-info">
+        <div class="employee-summary-item">
 
-            <span class="employee-status-label">
-                Employment Status
-            </span>
+            <div class="employee-summary-icon">
+                <i class="bi bi-building"></i>
+            </div>
 
-            <?php if (($employee['status'] ?? '') === 'active'): ?>
+            <div>
 
-                <span class="status-badge status-active">
-                    Active
+                <span class="employee-summary-label">
+                    Organization
                 </span>
 
-            <?php else: ?>
-
-                <span class="status-badge status-inactive">
-                    Inactive
-                </span>
-
-            <?php endif; ?>
-
-        </div>
-
-        <?php if (!empty($employee['joining_date'])): ?>
-
-            <div class="employee-joined">
-
-                <i class="bi bi-calendar3"></i>
-
-                Joined
-                <?= date(
-                    'd M Y',
-                    strtotime(
-                        $employee['joining_date']
-                    )
-                ) ?>
+                <strong>
+                    <?= esc(
+                        $value(
+                            $employee['organization_name'] ?? null
+                        )
+                    ) ?>
+                </strong>
 
             </div>
 
-        <?php endif; ?>
+        </div>
+
+
+        <div class="employee-summary-item">
+
+            <div class="employee-summary-icon">
+                <i class="bi bi-diagram-3"></i>
+            </div>
+
+            <div>
+
+                <span class="employee-summary-label">
+                    Department
+                </span>
+
+                <strong>
+                    <?= esc(
+                        $value(
+                            $employee['department_name'] ?? null
+                        )
+                    ) ?>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="employee-summary-item">
+
+            <div class="employee-summary-icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+
+            <div>
+
+                <span class="employee-summary-label">
+                    Joining Date
+                </span>
+
+                <strong>
+                    <?= esc(
+                        $formatDate(
+                            $employee['joining_date'] ?? null
+                        )
+                    ) ?>
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="employee-summary-item">
+
+            <div class="employee-summary-icon">
+                <i class="bi bi-person-check"></i>
+            </div>
+
+            <div>
+
+                <span class="employee-summary-label">
+                    Reporting Manager
+                </span>
+
+                <strong>
+                    <?= esc(
+                        $value(
+                            $employee['reporting_manager_name']
+                                ?? null
+                        )
+                    ) ?>
+                </strong>
+
+            </div>
+
+        </div>
 
     </div>
 
+
+    <!-- =========================================================
+         Details
+         ========================================================= -->
+
     <div class="row g-4">
 
-        <!-- =====================================================
-             Personal Information
-             ===================================================== -->
+        <!-- Personal -->
 
         <div class="col-xl-6">
 
@@ -176,8 +326,13 @@
                     </div>
 
                     <div>
+
                         <h6>Personal Information</h6>
-                        <p>Basic employee details.</p>
+
+                        <p>
+                            Basic employee details.
+                        </p>
+
                     </div>
 
                 </div>
@@ -192,7 +347,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['first_name'] ?? '-'
+                                    $value(
+                                        $employee['first_name']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -204,7 +362,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['last_name'] ?? '-'
+                                    $value(
+                                        $employee['last_name']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -232,22 +393,11 @@
                             <span>Date of Birth</span>
 
                             <strong>
-
-                                <?php if (!empty($employee['dob'])): ?>
-
-                                    <?= date(
-                                        'd M Y',
-                                        strtotime(
-                                            $employee['dob']
-                                        )
-                                    ) ?>
-
-                                <?php else: ?>
-
-                                    -
-
-                                <?php endif; ?>
-
+                                <?= esc(
+                                    $formatDate(
+                                        $employee['dob'] ?? null
+                                    )
+                                ) ?>
                             </strong>
 
                         </div>
@@ -260,9 +410,8 @@
 
         </div>
 
-        <!-- =====================================================
-             Contact Information
-             ===================================================== -->
+
+        <!-- Contact -->
 
         <div class="col-xl-6">
 
@@ -275,8 +424,13 @@
                     </div>
 
                     <div>
+
                         <h6>Contact Information</h6>
-                        <p>Employee contact details.</p>
+
+                        <p>
+                            Employee contact details.
+                        </p>
+
                     </div>
 
                 </div>
@@ -291,7 +445,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['email'] ?? '-'
+                                    $value(
+                                        $employee['email']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -303,7 +460,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['phone'] ?? '-'
+                                    $value(
+                                        $employee['phone']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -317,94 +477,8 @@
 
         </div>
 
-        <!-- =====================================================
-             Organization
-             ===================================================== -->
 
-        <div class="col-xl-6">
-
-            <div class="employee-info-card">
-
-                <div class="employee-info-card-header">
-
-                    <div class="employee-section-icon">
-                        <i class="bi bi-building"></i>
-                    </div>
-
-                    <div>
-                        <h6>Organization</h6>
-                        <p>Organizational placement.</p>
-                    </div>
-
-                </div>
-
-                <div class="employee-info-card-body">
-
-                    <div class="employee-detail-grid">
-
-                        <div class="employee-detail">
-
-                            <span>Organization</span>
-
-                            <strong>
-                                <?= esc(
-                                    $employee['organization_name']
-                                        ?? '-'
-                                ) ?>
-                            </strong>
-
-                        </div>
-
-                        <div class="employee-detail">
-
-                            <span>Branch</span>
-
-                            <strong>
-                                <?= esc(
-                                    $employee['branch_name']
-                                        ?? '-'
-                                ) ?>
-                            </strong>
-
-                        </div>
-
-                        <div class="employee-detail">
-
-                            <span>Department</span>
-
-                            <strong>
-                                <?= esc(
-                                    $employee['department_name']
-                                        ?? '-'
-                                ) ?>
-                            </strong>
-
-                        </div>
-
-                        <div class="employee-detail">
-
-                            <span>Designation</span>
-
-                            <strong>
-                                <?= esc(
-                                    $employee['designation_name']
-                                        ?? '-'
-                                ) ?>
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- =====================================================
-             Employment
-             ===================================================== -->
+        <!-- Employment -->
 
         <div class="col-xl-6">
 
@@ -417,8 +491,13 @@
                     </div>
 
                     <div>
+
                         <h6>Employment</h6>
-                        <p>Employment and reporting information.</p>
+
+                        <p>
+                            Employee placement and reporting.
+                        </p>
+
                     </div>
 
                 </div>
@@ -433,8 +512,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['employee_code']
-                                        ?? '-'
+                                    $value(
+                                        $employee['employee_code']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -445,22 +526,12 @@
                             <span>Joining Date</span>
 
                             <strong>
-
-                                <?php if (!empty($employee['joining_date'])): ?>
-
-                                    <?= date(
-                                        'd M Y',
-                                        strtotime(
-                                            $employee['joining_date']
-                                        )
-                                    ) ?>
-
-                                <?php else: ?>
-
-                                    -
-
-                                <?php endif; ?>
-
+                                <?= esc(
+                                    $formatDate(
+                                        $employee['joining_date']
+                                            ?? null
+                                    )
+                                ) ?>
                             </strong>
 
                         </div>
@@ -471,7 +542,10 @@
 
                             <strong>
                                 <?= esc(
-                                    $employee['reporting_manager_name'] ?? '-'
+                                    $value(
+                                        $employee['reporting_manager_name']
+                                            ?? null
+                                    )
                                 ) ?>
                             </strong>
 
@@ -485,11 +559,10 @@
 
         </div>
 
-        <!-- =====================================================
-             Account
-             ===================================================== -->
 
-        <div class="col-12">
+        <!-- Account -->
+
+        <div class="col-xl-6">
 
             <div class="employee-info-card">
 
@@ -500,35 +573,34 @@
                     </div>
 
                     <div>
-                        <h6>Account Information</h6>
-                        <p>System account information.</p>
+
+                        <h6>Account</h6>
+
+                        <p>
+                            System account activity.
+                        </p>
+
                     </div>
 
                 </div>
 
                 <div class="employee-info-card-body">
 
-                    <div class="employee-detail-grid employee-account-grid">
+                    <div class="employee-detail-grid">
 
                         <div class="employee-detail">
 
-                            <span>Account Status</span>
+                            <span>Status</span>
 
-                            <?php if (
-                                ($employee['status'] ?? '') === 'active'
-                            ): ?>
+                            <strong class="<?= $isActive
+                                                ? 'text-success'
+                                                : 'text-danger' ?>">
 
-                                <strong class="text-success">
-                                    Active
-                                </strong>
+                                <?= $isActive
+                                    ? 'Active'
+                                    : 'Inactive' ?>
 
-                            <?php else: ?>
-
-                                <strong class="text-danger">
-                                    Inactive
-                                </strong>
-
-                            <?php endif; ?>
+                            </strong>
 
                         </div>
 
@@ -538,12 +610,14 @@
 
                             <strong>
 
-                                <?php if (!empty($employee['last_login'])): ?>
+                                <?php if (
+                                    !empty($employee['last_login'])
+                                ): ?>
 
-                                    <?= date(
-                                        'd M Y, h:i A',
-                                        strtotime(
-                                            $employee['last_login']
+                                    <?= esc(
+                                        $formatDate(
+                                            $employee['last_login'],
+                                            'd M Y, h:i A'
                                         )
                                     ) ?>
 
@@ -562,22 +636,13 @@
                             <span>Created</span>
 
                             <strong>
-
-                                <?php if (!empty($employee['created_at'])): ?>
-
-                                    <?= date(
-                                        'd M Y, h:i A',
-                                        strtotime(
-                                            $employee['created_at']
-                                        )
-                                    ) ?>
-
-                                <?php else: ?>
-
-                                    -
-
-                                <?php endif; ?>
-
+                                <?= esc(
+                                    $formatDate(
+                                        $employee['created_at']
+                                            ?? null,
+                                        'd M Y, h:i A'
+                                    )
+                                ) ?>
                             </strong>
 
                         </div>
@@ -593,23 +658,19 @@
     </div>
 
 
+    <!-- =========================================================
+         Footer Navigation
+         ========================================================= -->
+
     <div class="employee-view-footer">
 
         <a
             href="<?= base_url('employees') ?>"
             class="btn branch-cancel-btn">
+
             <i class="bi bi-arrow-left me-1"></i>
             Back to Employees
-        </a>
 
-        <a
-            href="<?= base_url(
-                        'employees/edit/' .
-                            (int) $employee['id']
-                    ) ?>"
-            class="btn app-btn-primary">
-            <i class="bi bi-pencil me-1"></i>
-            Edit Employee
         </a>
 
     </div>
@@ -617,6 +678,7 @@
 </div>
 
 <?= $this->endSection() ?>
+
 
 <?= $this->section('scripts') ?>
 

@@ -1,255 +1,518 @@
 const EmployeeList = {
-    endpoint: `${APP.baseUrl}employees`,
+
+    endpoint:
+        `${APP.baseUrl}/employees`,
+
     page: 1,
-
     pageSize: 10,
-
     search: '',
-
     status: '',
-
     orderBy: 'id',
-
     direction: 'desc',
-
     total: 0,
-
     lastPage: 1,
-
     data: [],
 
+
+    can(permission) {
+        return APP.can(permission);
+    },
+
+
     init() {
+
         this.bindEvents();
 
+        this.applyPermissions();
+
         this.load();
+
     },
+
+
+    applyPermissions() {
+
+        const canCreate =
+            this.can('employee.create');
+
+        const canView =
+            this.can('employee.view');
+
+        const canEdit =
+            this.can('employee.edit');
+
+        const canDelete =
+            this.can('employee.delete');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create buttons
+        |--------------------------------------------------------------------------
+        */
+
+        $('.employee-add-btn')
+            .toggle(canCreate);
+
+
+        $('#employeeCreateButton')
+            .toggle(canCreate);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | View controls
+        |--------------------------------------------------------------------------
+        */
+
+        $('.employee-view')
+            .toggle(canView);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Edit controls
+        |--------------------------------------------------------------------------
+        */
+
+        $('.employee-edit')
+            .toggle(canEdit);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Delete controls
+        |--------------------------------------------------------------------------
+        */
+
+        $('.employee-delete')
+            .toggle(canDelete);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Status control
+        |--------------------------------------------------------------------------
+        */
+
+        $('.employee-toggle-status')
+            .toggle(canEdit);
+
+    },
+
 
     bindEvents() {
+
         let searchTimer;
 
-        $('#employeeSearch').on('input', () => {
-            clearTimeout(searchTimer);
 
-            searchTimer = setTimeout(() => {
-                const value =
-                    $('#employeeSearch')
-                        .val()
-                        .trim();
+        $('#employeeSearch')
+            .on(
+                'input',
+                () => {
 
-                if (this.search === value) {
-                    return;
+                    clearTimeout(
+                        searchTimer
+                    );
+
+                    searchTimer =
+                        setTimeout(
+                            () => {
+
+                                const value =
+                                    $('#employeeSearch')
+                                        .val()
+                                        .trim();
+
+                                if (
+                                    this.search ===
+                                    value
+                                ) {
+                                    return;
+                                }
+
+                                this.search =
+                                    value;
+
+                                this.page =
+                                    1;
+
+                                this.load();
+
+                            },
+                            350
+                        );
                 }
+            );
 
-                this.search = value;
 
-                this.page = 1;
+        $('#employeeStatus')
+            .on(
+                'change',
+                () => {
 
-                this.load();
-            }, 350);
-        });
+                    this.status =
+                        $('#employeeStatus')
+                            .val();
 
-        $('#employeeStatus').on('change', () => {
-            this.status =
-                $('#employeeStatus').val();
+                    this.page =
+                        1;
 
-            this.page = 1;
+                    this.load();
+                }
+            );
 
-            this.load();
-        });
 
-        $('#employeePageSize').on('change', () => {
-            this.pageSize =
-                parseInt(
-                    $('#employeePageSize').val(),
-                    10
-                );
+        $('#employeePageSize')
+            .on(
+                'change',
+                () => {
 
-            this.page = 1;
+                    this.pageSize =
+                        parseInt(
+                            $('#employeePageSize')
+                                .val(),
+                            10
+                        );
 
-            this.load();
-        });
+                    this.page =
+                        1;
 
-        $('#employeeRefresh').on('click', () => {
-            this.load();
-        });
+                    this.load();
+                }
+            );
 
-        $(document).on(
-            'click',
-            '.employee-page-link',
-            (e) => {
-                e.preventDefault();
 
-                const page =
-                    parseInt(
+        $('#employeeRefresh')
+            .on(
+                'click',
+                () => {
+
+                    this.load();
+                }
+            );
+
+
+        $(document)
+            .on(
+                'click',
+                '.employee-page-link',
+                (e) => {
+
+                    e.preventDefault();
+
+                    const page =
+                        parseInt(
+                            $(e.currentTarget)
+                                .data('page'),
+                            10
+                        );
+
+                    if (
+                        !page ||
+                        page < 1 ||
+                        page > this.lastPage ||
+                        page === this.page
+                    ) {
+                        return;
+                    }
+
+                    this.page =
+                        page;
+
+                    this.load();
+                }
+            );
+
+
+        $(document)
+            .on(
+                'click',
+                '.employee-sort',
+                (e) => {
+
+                    e.preventDefault();
+
+                    const column =
                         $(e.currentTarget)
-                            .data('page'),
-                        10
-                    );
+                            .data('sort');
 
-                if (
-                    !page ||
-                    page < 1 ||
-                    page > this.lastPage ||
-                    page === this.page
-                ) {
-                    return;
+                    if (
+                        this.orderBy ===
+                        column
+                    ) {
+
+                        this.direction =
+                            this.direction ===
+                                'asc'
+                                ? 'desc'
+                                : 'asc';
+
+                    } else {
+
+                        this.orderBy =
+                            column;
+
+                        this.direction =
+                            'asc';
+                    }
+
+                    this.load();
                 }
+            );
 
-                this.page = page;
 
-                this.load();
-            }
-        );
+        $(document)
+            .on(
+                'click',
+                '.employee-toggle-status',
+                (e) => {
 
-        $(document).on(
-            'click',
-            '.employee-sort',
-            (e) => {
-                e.preventDefault();
+                    e.preventDefault();
 
-                const column =
-                    $(e.currentTarget)
-                        .data('sort');
+                    if (
+                        !this.can(
+                            'employee.edit'
+                        )
+                    ) {
 
-                if (this.orderBy === column) {
-                    this.direction =
-                        this.direction === 'asc'
-                            ? 'desc'
-                            : 'asc';
-                } else {
-                    this.orderBy = column;
+                        APP.error(
+                            'You are not authorized to change employee status.'
+                        );
 
-                    this.direction = 'asc';
+                        return;
+                    }
+
+                    const id =
+                        $(e.currentTarget)
+                            .data('id');
+
+                    this.toggleStatus(id);
                 }
+            );
 
-                this.load();
-            }
-        );
 
-        $(document).on(
-            'click',
-            '.employee-toggle-status',
-            (e) => {
-                e.preventDefault();
+        $(document)
+            .on(
+                'click',
+                '.employee-delete',
+                (e) => {
 
-                const id =
-                    $(e.currentTarget)
-                        .data('id');
+                    e.preventDefault();
 
-                this.toggleStatus(id);
-            }
-        );
+                    if (
+                        !this.can(
+                            'employee.delete'
+                        )
+                    ) {
 
-        $(document).on(
-            'click',
-            '.employee-delete',
-            (e) => {
-                e.preventDefault();
+                        APP.error(
+                            'You are not authorized to delete employees.'
+                        );
 
-                const id =
-                    $(e.currentTarget)
-                        .data('id');
+                        return;
+                    }
 
-                this.delete(id);
-            }
-        );
+                    const id =
+                        $(e.currentTarget)
+                            .data('id');
 
-        $('#employeeCheckAll').on(
-            'change',
-            function () {
-                $('.employee-row-check')
-                    .prop(
-                        'checked',
-                        $(this).prop('checked')
-                    );
-            }
-        );
+                    this.delete(id);
+                }
+            );
 
-        $(document).on(
-            'click',
-            '.employee-view',
-            (e) => {
-                e.preventDefault();
 
-                const id =
-                    $(e.currentTarget).data('id');
+        $('#employeeCheckAll')
+            .on(
+                'change',
+                function () {
 
-                this.view(id);
-            }
-        );
+                    $('.employee-row-check')
+                        .prop(
+                            'checked',
+                            $(this).prop('checked')
+                        );
+                }
+            );
+
+
+        $(document)
+            .on(
+                'click',
+                '.employee-view',
+                (e) => {
+
+                    e.preventDefault();
+
+                    if (
+                        !this.can(
+                            'employee.view'
+                        )
+                    ) {
+
+                        APP.error(
+                            'You are not authorized to view employees.'
+                        );
+
+                        return;
+                    }
+
+                    const id =
+                        $(e.currentTarget)
+                            .data('id');
+
+                    this.view(id);
+                }
+            );
+
     },
+
 
     load() {
+
+        if (
+            !this.can(
+                'employee.view'
+            )
+        ) {
+
+            $('#employeeTableBody')
+                .html(`
+                    <tr>
+                        <td
+                            colspan="9"
+                            class="text-center py-5">
+
+                            <i class="
+                                bi bi-shield-lock
+                                display-5
+                                text-muted
+                            "></i>
+
+                            <h5 class="mt-3">
+                                Access Restricted
+                            </h5>
+
+                            <p class="text-muted mb-0">
+                                You are not authorized to view employees.
+                            </p>
+
+                        </td>
+                    </tr>
+                `);
+
+            $('#employeePagination')
+                .empty();
+
+            $('#employeeSummary')
+                .text('Access restricted');
+
+            return;
+        }
+
+
         this.showLoading();
 
-        $.ajax({
-            url: `${this.endpoint}/list`,
 
-            type: 'GET',
+        $.ajax({
+
+            url:
+                `${this.endpoint}/list`,
+
+            type:
+                'GET',
 
             data: {
-                page: this.page,
-                pageSize: this.pageSize,
-                search: this.search,
-                status: this.status,
-                orderBy: this.orderBy,
-                direction: this.direction
+
+                page:
+                    this.page,
+
+                pageSize:
+                    this.pageSize,
+
+                search:
+                    this.search,
+
+                status:
+                    this.status,
+
+                orderBy:
+                    this.orderBy,
+
+                direction:
+                    this.direction
             },
 
-            success: (response) => {
-                if (!response.success) {
+            success:
+                (response) => {
+
+                    if (
+                        !response.success
+                    ) {
+
+                        APP.error(
+                            response.message ||
+                            'Unable to load employees.'
+                        );
+
+                        return;
+                    }
+
+                    const result =
+                        response.data || {};
+
+
+                    this.data =
+                        result.data || [];
+
+
+                    this.total =
+                        parseInt(
+                            result.total || 0,
+                            10
+                        );
+
+
+                    this.page =
+                        parseInt(
+                            result.page || 1,
+                            10
+                        );
+
+
+                    this.lastPage =
+                        parseInt(
+                            result.lastPage || 1,
+                            10
+                        );
+
+
+                    this.render();
+
+                },
+
+            error:
+                (xhr) => {
+
+                    if (
+                        APP.handleUnauthorized(
+                            xhr
+                        )
+                    ) {
+                        return;
+                    }
+
                     APP.error(
-                        response.message ||
+                        xhr.responseJSON?.message ||
                         'Unable to load employees.'
                     );
-
-                    return;
                 }
-
-                const result =
-                    response.data || {};
-
-                this.data =
-                    result.data || [];
-
-                this.total =
-                    parseInt(
-                        result.total || 0,
-                        10
-                    );
-
-                this.page =
-                    parseInt(
-                        result.page || 1,
-                        10
-                    );
-
-                this.lastPage =
-                    parseInt(
-                        result.lastPage || 1,
-                        10
-                    );
-
-                this.render();
-            },
-
-            error: (xhr) => {
-                if (xhr.status === 403) {
-                    APP.error(
-                        'You are not authorized.'
-                    );
-
-                    return;
-                }
-
-                APP.error(
-                    'Unable to load employees.'
-                );
-            }
         });
     },
 
+
     render() {
+
         this.renderTable();
 
         this.renderPagination();
@@ -257,17 +520,27 @@ const EmployeeList = {
         this.renderSummary();
 
         $('#employeeCheckAll')
-            .prop('checked', false);
+            .prop(
+                'checked',
+                false
+            );
+
     },
 
+
     renderTable() {
+
         const $body =
             $('#employeeTableBody');
 
+
         if (!this.data.length) {
+
             $body.html(`
                 <tr>
+
                     <td colspan="9">
+
                         <div class="employee-empty">
 
                             <div class="employee-empty-icon">
@@ -286,354 +559,541 @@ const EmployeeList = {
                 }
                             </p>
 
-                            ${!this.search && !this.status
+                            ${!this.search &&
+                    !this.status &&
+                    this.can(
+                        'employee.create'
+                    )
                     ? `
                                         <a
                                             href="${this.endpoint}/create"
-                                            class="btn app-btn-primary"
-                                        >
+                                            class="btn app-btn-primary employee-add-btn">
+
                                             <i class="bi bi-plus-lg me-1"></i>
                                             Add Employee
+
                                         </a>
                                     `
                     : ''
                 }
 
                         </div>
+
                     </td>
+
                 </tr>
             `);
 
             return;
         }
 
+
         let html = '';
 
-        this.data.forEach((employee) => {
-            const initials =
-                this.getInitials(
-                    employee.full_name ||
-                    employee.first_name ||
-                    'Employee'
-                );
 
-            const avatar =
-                employee.profile_photo
-                    ? `
-                        <img
-                            src="${this.escapeAttribute(
-                        this.resolvePhoto(
-                            employee.profile_photo
-                        )
-                    )}"
-                            alt="${this.escapeAttribute(
-                        employee.full_name || 'Employee'
-                    )}"
-                        >
-                    `
-                    : `
-                        <span class="employee-avatar-fallback">
-                            ${this.escapeHtml(initials)}
-                        </span>
-                    `;
+        this.data.forEach(
+            (employee) => {
 
-            const status =
-                employee.status === 'active'
-                    ? `
-                        <span class="employee-status employee-status-active">
-                            Active
-                        </span>
-                    `
-                    : `
-                        <span class="employee-status employee-status-inactive">
-                            Inactive
-                        </span>
-                    `;
+                const initials =
+                    this.getInitials(
+                        employee.full_name ||
+                        employee.first_name ||
+                        'Employee'
+                    );
 
-            const joiningDate =
-                this.formatDate(
-                    employee.joining_date
-                );
 
-            html += `
-                <tr>
+                const avatar =
+                    employee.profile_photo
+                        ? `
+                            <img
+                                src="${this.escapeAttribute(
+                            this.resolvePhoto(
+                                employee.profile_photo
+                            )
+                        )}"
+                                alt="${this.escapeAttribute(
+                            employee.full_name ||
+                            'Employee'
+                        )}">
+                        `
+                        : `
+                            <span
+                                class="employee-avatar-fallback">
 
-                    <td class="text-center">
+                                ${this.escapeHtml(
+                            initials
+                        )}
 
-                        <input
-                            type="checkbox"
-                            class="form-check-input employee-row-check"
-                            value="${employee.id} "
-                        >
+                            </span>
+                        `;
 
-                    </td>
 
-                    <td>
+                const status =
+                    employee.status === 'active'
+                        ? `
+                            <span
+                                class="
+                                    employee-status
+                                    employee-status-active
+                                ">
 
-                        <div class="employee-identity">
+                                Active
 
-                            <div class="employee-avatar">
-                                ${avatar}
-                            </div>
+                            </span>
+                        `
+                        : `
+                            <span
+                                class="
+                                    employee-status
+                                    employee-status-inactive
+                                ">
 
-                            <div>
+                                Inactive
 
-                                <div class="employee-name">
-                                    ${this.escapeHtml(
-                employee.full_name ||
-                '-'
-            )}
+                            </span>
+                        `;
+
+
+                const joiningDate =
+                    this.formatDate(
+                        employee.joining_date
+                    );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Actions
+                |--------------------------------------------------------------------------
+                */
+
+                const actions = [];
+
+
+                if (
+                    this.can('employee.edit')
+                ) {
+
+                    actions.push(`
+                        <li>
+
+                            <a
+                                class="dropdown-item employee-edit"
+                                href="${this.endpoint}/edit/${employee.id}">
+
+                                <i class="bi bi-pencil"></i>
+                                Edit
+
+                            </a>
+
+                        </li>
+                    `);
+
+                }
+
+
+                if (
+                    this.can('employee.view')
+                ) {
+
+                    actions.push(`
+                        <li>
+
+                            <a
+                                class="dropdown-item employee-view"
+                                href="#"
+                                data-id="${employee.id}">
+
+                                <i class="bi bi-eye"></i>
+                                View
+
+                            </a>
+
+                        </li>
+                    `);
+
+                }
+
+
+                if (
+                    this.can('employee.edit')
+                ) {
+
+                    actions.push(`
+                        <li>
+
+                            <a
+                                class="dropdown-item employee-toggle-status"
+                                href="#"
+                                data-id="${employee.id}">
+
+                                <i class="bi bi-power"></i>
+
+                                ${employee.status === 'active'
+                            ? 'Deactivate'
+                            : 'Activate'
+                        }
+
+                            </a>
+
+                        </li>
+                    `);
+
+                }
+
+
+                if (
+                    this.can('employee.delete')
+                ) {
+
+                    if (actions.length) {
+
+                        actions.push(`
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                        `);
+
+                    }
+
+
+                    actions.push(`
+                        <li>
+
+                            <a
+                                class="
+                                    dropdown-item
+                                    text-danger
+                                    employee-delete
+                                "
+                                href="#"
+                                data-id="${employee.id}">
+
+                                <i class="bi bi-trash"></i>
+                                Delete
+
+                            </a>
+
+                        </li>
+                    `);
+
+                }
+
+
+                if (!actions.length) {
+
+                    actions.push(`
+                        <li>
+
+                            <span class="dropdown-item-text text-muted">
+
+                                No available actions
+
+                            </span>
+
+                        </li>
+                    `);
+
+                }
+
+
+                html += `
+                    <tr>
+
+                        <td class="text-center">
+
+                            <input
+                                type="checkbox"
+                                class="form-check-input employee-row-check"
+                                value="${employee.id}">
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="employee-identity">
+
+                                <div class="employee-avatar">
+                                    ${avatar}
                                 </div>
 
-                                <div class="employee-code">
-                                    ${this.escapeHtml(
-                employee.employee_code ||
-                'No employee code'
-            )}
-                                </div>
+                                <div>
 
-                            </div>
-
-                        </div>
-
-                    </td>
-
-                    <td>
-
-                        <div class="employee-primary-text">
-                            ${this.escapeHtml(
-                employee.organization_name ||
-                '-'
-            )}
-                        </div>
-
-                        ${employee.branch_name
-                    ? `
-                                    <div class="employee-secondary-text">
+                                    <div class="employee-name">
                                         ${this.escapeHtml(
-                        employee.branch_name
-                    )}
+                    employee.full_name ||
+                    '-'
+                )}
                                     </div>
-                                `
-                    : ''
-                }
 
-                    </td>
+                                    <div class="employee-code">
+                                        ${this.escapeHtml(
+                    employee.employee_code ||
+                    'No employee code'
+                )}
+                                    </div>
 
-                    <td>
+                                </div>
 
-                        <div class="employee-primary-text">
-                            ${this.escapeHtml(
-                    employee.department_name ||
+                            </div>
+
+                        </td>
+
+
+                        <td>
+
+                            <div class="employee-primary-text">
+
+                                ${this.escapeHtml(
+                    employee.organization_name ||
                     '-'
                 )}
-                        </div>
 
-                    </td>
+                            </div>
 
-                    <td>
 
-                        <div class="employee-primary-text">
-                            ${this.escapeHtml(
-                    employee.designation_name ||
-                    '-'
-                )}
-                        </div>
+                            ${employee.branch_name
+                        ? `
+                                        <div
+                                            class="employee-secondary-text">
 
-                    </td>
+                                            ${this.escapeHtml(
+                            employee.branch_name
+                        )}
 
-                    <td>
+                                        </div>
+                                    `
+                        : ''
+                    }
 
-                        <div class="employee-primary-text">
-                            ${this.escapeHtml(
-                    employee.reporting_manager_name ||
-                    'Not assigned'
-                )}
-                        </div>
+                        </td>
 
-                    </td>
 
-                    <td>
+                        <td>
 
-                        <div class="employee-primary-text">
-                            ${joiningDate}
-                        </div>
+                            <div class="employee-primary-text">
 
-                    </td>
+                                ${this.escapeHtml(
+                        employee.department_name ||
+                        '-'
+                    )}
 
-                    <td>
-                        ${status}
-                    </td>
+                            </div>
 
-                    <td class="text-center">
+                        </td>
 
-                        <div class="dropdown">
 
-                            <button
-                                type="button"
-                                class="employee-action-btn"
-                                data-bs-toggle="dropdown"
-                                aria-expanded="false"
-                                title="Actions"
-                            >
-                                <i class="bi bi-three-dots"></i>
-                            </button>
+                        <td>
 
-                            <ul
-                                class="dropdown-menu dropdown-menu-end employee-action-menu"
-                            >
+                            <div class="employee-primary-text">
 
-                                <li>
+                                ${this.escapeHtml(
+                        employee.designation_name ||
+                        '-'
+                    )}
 
-                                    <a
-                                        class="dropdown-item"
-                                        href="${this.endpoint}/edit/${employee.id}"
-                                    >
-                                        <i class="bi bi-pencil"></i>
-                                        Edit
-                                    </a>
+                            </div>
 
-                                </li>
+                        </td>
 
-                                <li>
 
-                                    <a
-                                        class="dropdown-item employee-view"
-                                        href="#"
-                                        data-id="${employee.id} "
-                                    >
-                                        <i class="bi bi-eye"></i>
-                                        View
-                                    </a>
+                        <td>
 
-                                </li>
+                            <div class="employee-primary-text">
 
-                                <li>
+                                ${this.escapeHtml(
+                        employee.reporting_manager_name ||
+                        'Not assigned'
+                    )}
 
-                                    <a
-                                        class="dropdown-item employee-toggle-status"
-                                        href="#"
-                                        data-id="${employee.id} "
-                                    >
-                                        <i class="bi bi-power"></i>
+                            </div>
 
-                                        ${employee.status === 'active'
-                    ? 'Deactivate'
-                    : 'Activate'
-                }
+                        </td>
 
-                                    </a>
 
-                                </li>
+                        <td>
 
-                                <li>
+                            <div class="employee-primary-text">
 
-                                    <hr class="dropdown-divider">
+                                ${joiningDate}
 
-                                </li>
+                            </div>
 
-                                <li>
+                        </td>
 
-                                    <a
-                                        class="dropdown-item text-danger employee-delete"
-                                        href="#"
-                                        data-id="${employee.id} "
-                                    >
-                                        <i class="bi bi-trash"></i>
-                                        Delete
-                                    </a>
 
-                                </li>
+                        <td>
 
-                            </ul>
+                            ${status}
 
-                        </div>
+                        </td>
 
-                    </td>
 
-                </tr>
-            `;
-        });
+                        <td class="text-center">
+
+                            <div class="dropdown">
+
+                                <button
+                                    type="button"
+                                    class="employee-action-btn"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    title="Actions">
+
+                                    <i class="bi bi-three-dots"></i>
+
+                                </button>
+
+
+                                <ul
+                                    class="
+                                        dropdown-menu
+                                        dropdown-menu-end
+                                        employee-action-menu
+                                    ">
+
+                                    ${actions.join('')}
+
+                                </ul>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                `;
+            }
+        );
+
 
         $body.html(html);
     },
 
+
     view(id) {
 
-        const url = `${this.endpoint}/details/${id}`;
+        if (
+            !this.can(
+                'employee.view'
+            )
+        ) {
 
-        console.log('Employee View URL:', url);
+            APP.error(
+                'You are not authorized to view employees.'
+            );
+
+            return;
+        }
+
+
+        const url =
+            `${this.endpoint}/details/${id}`;
+
 
         $.ajax({
 
-            url: url,
+            url:
+                url,
 
-            type: 'GET',
+            type:
+                'GET',
 
-            dataType: 'json',
+            dataType:
+                'json',
 
-            success: (response) => {
+            success:
+                (response) => {
 
-                console.log(
-                    'Employee View Response:',
-                    response
-                );
+                    if (
+                        !response.success
+                    ) {
 
-                if (!response.success) {
+                        APP.error(
+                            response.message ||
+                            'Unable to load employee details.'
+                        );
 
-                    APP.error(
-                        response.message ||
-                        'Unable to load employee details.'
+                        return;
+                    }
+
+
+                    CrudDrawer.show(
+                        'Employee Details',
+                        response.data,
+                        {
+                            entity:
+                                'Employee',
+
+                            drawerRenderer:
+                                (data) =>
+                                    EmployeeDrawer
+                                        .render(data)
+                        }
                     );
 
-                    return;
+                },
+
+            error:
+                (xhr) => {
+
+                    if (
+                        APP.handleUnauthorized(
+                            xhr
+                        )
+                    ) {
+                        return;
+                    }
+
+                    APP.error(
+                        xhr.responseJSON?.message ||
+                        'Unable to load employee details.'
+                    );
                 }
-
-                CrudDrawer.show(
-                    'Employee Details',
-                    response.data,
-                    {
-                        entity: 'Employee',
-                        drawerRenderer: (data) =>
-                            EmployeeDrawer.render(data)
-                    }
-                );
-            },
-
-            error: (xhr, status, error) => {
-
-                console.error(
-                    'Employee View Error:',
-                    {
-                        status: xhr.status,
-                        textStatus: status,
-                        error: error,
-                        responseText: xhr.responseText
-                    }
-                );
-
-                APP.error(
-                    `Unable to load employee details. HTTP ${xhr.status}`
-                );
-            }
         });
     },
 
 
     toggleStatus(id) {
+
+        if (
+            !this.can(
+                'employee.edit'
+            )
+        ) {
+
+            APP.error(
+                'You are not authorized to change employee status.'
+            );
+
+            return;
+        }
+
+
         const employee =
             this.data.find(
-                item => parseInt(item.id, 10) === parseInt(id, 10)
+                item =>
+                    parseInt(
+                        item.id,
+                        10
+                    ) ===
+                    parseInt(
+                        id,
+                        10
+                    )
             );
+
 
         if (!employee) {
             return;
         }
 
+
         const activate =
             employee.status !== 'active';
 
+
         Swal.fire({
+
             title:
                 activate
                     ? 'Activate employee?'
@@ -644,240 +1104,368 @@ const EmployeeList = {
                     ? 'This employee will be allowed to access the system.'
                     : 'This employee will no longer be able to log in.',
 
-            icon: 'warning',
+            icon:
+                'warning',
 
-            showCancelButton: true,
+            showCancelButton:
+                true,
 
             confirmButtonText:
                 activate
                     ? 'Activate'
                     : 'Deactivate',
 
-            cancelButtonText: 'Cancel',
+            cancelButtonText:
+                'Cancel',
 
             confirmButtonColor:
                 activate
                     ? '#198754'
                     : '#dc3545'
-        }).then((result) => {
-            if (!result.isConfirmed) {
-                return;
-            }
 
-            $.ajax({
-                url:
-                    `${this.endpoint}/toggle-status/${id}`,
+        }).then(
+            (result) => {
 
-                type: 'POST',
-
-                data: {
-                    [APP.csrfName]:
-                        APP.csrfHash
-                },
-
-                success: (response) => {
-                    if (!response.success) {
-                        APP.error(
-                            response.message ||
-                            'Unable to update employee status.'
-                        );
-
-                        return;
-                    }
-
-                    APP.success(
-                        response.message
-                    );
-
-                    this.load();
-                },
-
-                error: (xhr) => {
-                    if (xhr.status === 403) {
-                        APP.error(
-                            'You are not authorized.'
-                        );
-
-                        return;
-                    }
-
-                    APP.error(
-                        'Unable to update employee status.'
-                    );
+                if (
+                    !result.isConfirmed
+                ) {
+                    return;
                 }
-            });
-        });
+
+
+                $.ajax({
+
+                    url:
+                        `${this.endpoint}/toggle-status/${id}`,
+
+                    type:
+                        'POST',
+
+                    data: {
+
+                        [APP.csrfName]:
+                            APP.csrfHash
+
+                    },
+
+                    success:
+                        (response) => {
+
+                            if (
+                                !response.success
+                            ) {
+
+                                APP.error(
+                                    response.message ||
+                                    'Unable to update employee status.'
+                                );
+
+                                return;
+                            }
+
+
+                            APP.success(
+                                response.message
+                            );
+
+                            this.load();
+
+                        },
+
+                    error:
+                        (xhr) => {
+
+                            if (
+                                APP.handleUnauthorized(
+                                    xhr
+                                )
+                            ) {
+                                return;
+                            }
+
+                            APP.error(
+                                xhr.responseJSON?.message ||
+                                'Unable to update employee status.'
+                            );
+                        }
+                });
+
+            }
+        );
     },
 
+
     delete(id) {
+
+        if (
+            !this.can(
+                'employee.delete'
+            )
+        ) {
+
+            APP.error(
+                'You are not authorized to delete employees.'
+            );
+
+            return;
+        }
+
+
         Swal.fire({
-            title: 'Delete employee?',
+
+            title:
+                'Delete employee?',
 
             text:
                 'This action cannot be undone.',
 
-            icon: 'warning',
+            icon:
+                'warning',
 
-            showCancelButton: true,
+            showCancelButton:
+                true,
 
-            confirmButtonText: 'Delete',
+            confirmButtonText:
+                'Delete',
 
-            cancelButtonText: 'Cancel',
+            cancelButtonText:
+                'Cancel',
 
-            confirmButtonColor: '#dc3545'
-        }).then((result) => {
-            if (!result.isConfirmed) {
-                return;
-            }
+            confirmButtonColor:
+                '#dc3545'
 
-            $.ajax({
-                url:
-                    `${this.endpoint}/delete/${id}`,
+        }).then(
+            (result) => {
 
-                type: 'POST',
-
-                data: {
-                    [APP.csrfName]:
-                        APP.csrfHash
-                },
-
-                success: (response) => {
-                    if (!response.success) {
-                        APP.error(
-                            response.message ||
-                            'Unable to delete employee.'
-                        );
-
-                        return;
-                    }
-
-                    APP.success(
-                        response.message
-                    );
-
-                    this.load();
-                },
-
-                error: (xhr) => {
-                    if (xhr.status === 403) {
-                        APP.error(
-                            'You are not authorized.'
-                        );
-
-                        return;
-                    }
-
-                    APP.error(
-                        'Unable to delete employee.'
-                    );
+                if (
+                    !result.isConfirmed
+                ) {
+                    return;
                 }
-            });
-        });
+
+
+                $.ajax({
+
+                    url:
+                        `${this.endpoint}/delete/${id}`,
+
+                    type:
+                        'POST',
+
+                    data: {
+
+                        [APP.csrfName]:
+                            APP.csrfHash
+
+                    },
+
+                    success:
+                        (response) => {
+
+                            if (
+                                !response.success
+                            ) {
+
+                                APP.error(
+                                    response.message ||
+                                    'Unable to delete employee.'
+                                );
+
+                                return;
+                            }
+
+
+                            APP.success(
+                                response.message
+                            );
+
+                            this.load();
+
+                        },
+
+                    error:
+                        (xhr) => {
+
+                            if (
+                                APP.handleUnauthorized(
+                                    xhr
+                                )
+                            ) {
+                                return;
+                            }
+
+                            APP.error(
+                                xhr.responseJSON?.message ||
+                                'Unable to delete employee.'
+                            );
+                        }
+                });
+
+            }
+        );
     },
 
+
     renderPagination() {
+
         const $pagination =
             $('#employeePagination');
 
-        if (this.lastPage <= 1) {
+
+        if (
+            this.lastPage <= 1
+        ) {
+
             $pagination.empty();
 
             return;
         }
 
+
         let html = '';
 
+
         html += `
-            <li class="page-item ${this.page <= 1
+            <li
+                class="
+                    page-item
+                    ${this.page <= 1
                 ? 'disabled'
                 : ''
-            }">
+            }
+                ">
 
                 <a
                     href="#"
                     class="page-link employee-page-link"
-                    data-page="${this.page - 1} "
-                >
+                    data-page="${this.page - 1}">
+
                     <i class="bi bi-chevron-left"></i>
+
                 </a>
 
             </li>
         `;
+
 
         const pages =
             this.getPaginationPages();
 
-        pages.forEach((page) => {
-            if (page === '...') {
+
+        pages.forEach(
+            (page) => {
+
+                if (
+                    page === '...'
+                ) {
+
+                    html += `
+                        <li
+                            class="
+                                page-item
+                                disabled
+                            ">
+
+                            <span
+                                class="page-link">
+
+                                ...
+
+                            </span>
+
+                        </li>
+                    `;
+
+                    return;
+                }
+
+
                 html += `
-                    <li class="page-item disabled">
-                        <span class="page-link">
-                            ...
-                        </span>
+                    <li
+                        class="
+                            page-item
+                            ${page === this.page
+                        ? 'active'
+                        : ''
+                    }
+                        ">
+
+                        <a
+                            href="#"
+                            class="page-link employee-page-link"
+                            data-page="${page}">
+
+                            ${page}
+
+                        </a>
+
                     </li>
                 `;
-
-                return;
             }
+        );
 
-            html += `
-                <li class="page-item ${page === this.page
-                    ? 'active'
-                    : ''
-                }">
-
-                    <a
-                        href="#"
-                        class="page-link employee-page-link"
-                        data-page="${page} "
-                    >
-                        ${page}
-                    </a>
-
-                </li>
-            `;
-        });
 
         html += `
-            <li class="page-item ${this.page >= this.lastPage
+            <li
+                class="
+                    page-item
+                    ${this.page >= this.lastPage
                 ? 'disabled'
                 : ''
-            }">
+            }
+                ">
 
                 <a
                     href="#"
                     class="page-link employee-page-link"
-                    data-page="${this.page + 1} "
-                >
+                    data-page="${this.page + 1}">
+
                     <i class="bi bi-chevron-right"></i>
+
                 </a>
 
             </li>
         `;
 
+
         $pagination.html(html);
     },
 
+
     getPaginationPages() {
+
         const pages = [];
 
-        if (this.lastPage <= 7) {
+
+        if (
+            this.lastPage <= 7
+        ) {
+
             for (
                 let i = 1;
                 i <= this.lastPage;
                 i++
             ) {
+
                 pages.push(i);
+
             }
 
             return pages;
         }
 
+
         pages.push(1);
 
-        if (this.page > 4) {
+
+        if (
+            this.page > 4
+        ) {
+
             pages.push('...');
+
         }
+
 
         const start =
             Math.max(
@@ -885,148 +1473,1284 @@ const EmployeeList = {
                 this.page - 1
             );
 
+
         const end =
             Math.min(
                 this.lastPage - 1,
                 this.page + 1
             );
 
+
         for (
             let i = start;
             i <= end;
             i++
         ) {
+
             pages.push(i);
+
         }
 
-        if (this.page < this.lastPage - 3) {
+
+        if (
+            this.page <
+            this.lastPage - 3
+        ) {
+
             pages.push('...');
+
         }
 
-        pages.push(this.lastPage);
+
+        pages.push(
+            this.lastPage
+        );
+
 
         return pages;
     },
 
+
     renderSummary() {
-        if (!this.total) {
+
+        if (
+            !this.total
+        ) {
+
             $('#employeeSummary')
-                .text('Showing 0 of 0 employees');
+                .text(
+                    'Showing 0 of 0 employees'
+                );
 
             return;
         }
 
+
         const start =
-            ((this.page - 1) * this.pageSize) + 1;
+            ((this.page - 1) *
+                this.pageSize) + 1;
+
 
         const end =
             Math.min(
-                this.page * this.pageSize,
+                this.page *
+                this.pageSize,
                 this.total
             );
 
+
         $('#employeeSummary')
             .text(
-                `Showing ${start} -${end} of ${this.total} employees`
+                `Showing ${start} - ${end} of ${this.total} employees`
             );
     },
 
-    showLoading() {
-        $('#employeeTableBody').html(`
-            <tr>
-                <td colspan="9">
 
-                    <div class="employee-table-loading">
+    showLoading() {
+
+        $('#employeeTableBody')
+            .html(`
+
+                <tr>
+
+                    <td colspan="9">
 
                         <div
-                            class="spinner-border spinner-border-sm"
-                            role="status"
-                        ></div>
+                            class="employee-table-loading">
 
-                        <span>
-                            Loading employees...
-                        </span>
+                            <div
+                                class="
+                                    spinner-border
+                                    spinner-border-sm
+                                "
+                                role="status">
+                            </div>
 
-                    </div>
+                            <span>
+                                Loading employees...
+                            </span>
 
-                </td>
-            </tr>
-        `);
+                        </div>
+
+                    </td>
+
+                </tr>
+
+            `);
     },
 
+
     formatDate(date) {
+
         if (!date) {
             return '-';
         }
 
+
         const parsed =
             new Date(date);
 
-        if (Number.isNaN(parsed.getTime())) {
-            return this.escapeHtml(date);
+
+        if (
+            Number.isNaN(
+                parsed.getTime()
+            )
+        ) {
+
+            return this.escapeHtml(
+                date
+            );
         }
+
 
         return parsed.toLocaleDateString(
             'en-GB',
             {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric'
+                day:
+                    '2-digit',
+                month:
+                    'short',
+                year:
+                    'numeric'
             }
         );
     },
 
+
     getInitials(name) {
+
         const parts =
             String(name)
                 .trim()
                 .split(/\s+/)
                 .filter(Boolean);
 
-        if (!parts.length) {
+
+        if (
+            !parts.length
+        ) {
             return 'E';
         }
 
-        if (parts.length === 1) {
-            return parts[0].substring(0, 2);
+
+        if (
+            parts.length === 1
+        ) {
+
+            return parts[0]
+                .substring(
+                    0,
+                    2
+                );
         }
+
 
         return (
             parts[0].charAt(0) +
-            parts[parts.length - 1].charAt(0)
+            parts[
+                parts.length - 1
+            ].charAt(0)
         );
     },
 
+
     resolvePhoto(path) {
+
         if (!path) {
             return '';
         }
+
 
         if (
             path.startsWith('http://') ||
             path.startsWith('https://') ||
             path.startsWith('/')
         ) {
+
             return path;
         }
 
-        return `${APP.baseUrl}${path} `;
+
+        return `${APP.baseUrl}${path}`;
     },
+
 
     escapeHtml(value) {
-        return String(value ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+
+        return String(
+            value ?? ''
+        )
+            .replace(
+                /&/g,
+                '&amp;'
+            )
+            .replace(
+                /</g,
+                '&lt;'
+            )
+            .replace(
+                />/g,
+                '&gt;'
+            )
+            .replace(
+                /"/g,
+                '&quot;'
+            )
+            .replace(
+                /'/g,
+                '&#039;'
+            );
     },
 
+
     escapeAttribute(value) {
-        return this.escapeHtml(value);
+
+        return this.escapeHtml(
+            value
+        );
     }
+
 };
+
 
 $(function () {
     EmployeeList.init();
 });
+
+
+
+
+
+
+// const EmployeeList = {
+//     endpoint: `${APP.baseUrl}employees`,
+//     page: 1,
+
+//     pageSize: 10,
+
+//     search: '',
+
+//     status: '',
+
+//     orderBy: 'id',
+
+//     direction: 'desc',
+
+//     total: 0,
+
+//     lastPage: 1,
+
+//     data: [],
+
+//     init() {
+//         this.bindEvents();
+
+//         this.load();
+//     },
+
+//     bindEvents() {
+//         let searchTimer;
+
+//         $('#employeeSearch').on('input', () => {
+//             clearTimeout(searchTimer);
+
+//             searchTimer = setTimeout(() => {
+//                 const value =
+//                     $('#employeeSearch')
+//                         .val()
+//                         .trim();
+
+//                 if (this.search === value) {
+//                     return;
+//                 }
+
+//                 this.search = value;
+
+//                 this.page = 1;
+
+//                 this.load();
+//             }, 350);
+//         });
+
+//         $('#employeeStatus').on('change', () => {
+//             this.status =
+//                 $('#employeeStatus').val();
+
+//             this.page = 1;
+
+//             this.load();
+//         });
+
+//         $('#employeePageSize').on('change', () => {
+//             this.pageSize =
+//                 parseInt(
+//                     $('#employeePageSize').val(),
+//                     10
+//                 );
+
+//             this.page = 1;
+
+//             this.load();
+//         });
+
+//         $('#employeeRefresh').on('click', () => {
+//             this.load();
+//         });
+
+//         $(document).on(
+//             'click',
+//             '.employee-page-link',
+//             (e) => {
+//                 e.preventDefault();
+
+//                 const page =
+//                     parseInt(
+//                         $(e.currentTarget)
+//                             .data('page'),
+//                         10
+//                     );
+
+//                 if (
+//                     !page ||
+//                     page < 1 ||
+//                     page > this.lastPage ||
+//                     page === this.page
+//                 ) {
+//                     return;
+//                 }
+
+//                 this.page = page;
+
+//                 this.load();
+//             }
+//         );
+
+//         $(document).on(
+//             'click',
+//             '.employee-sort',
+//             (e) => {
+//                 e.preventDefault();
+
+//                 const column =
+//                     $(e.currentTarget)
+//                         .data('sort');
+
+//                 if (this.orderBy === column) {
+//                     this.direction =
+//                         this.direction === 'asc'
+//                             ? 'desc'
+//                             : 'asc';
+//                 } else {
+//                     this.orderBy = column;
+
+//                     this.direction = 'asc';
+//                 }
+
+//                 this.load();
+//             }
+//         );
+
+//         $(document).on(
+//             'click',
+//             '.employee-toggle-status',
+//             (e) => {
+//                 e.preventDefault();
+
+//                 const id =
+//                     $(e.currentTarget)
+//                         .data('id');
+
+//                 this.toggleStatus(id);
+//             }
+//         );
+
+//         $(document).on(
+//             'click',
+//             '.employee-delete',
+//             (e) => {
+//                 e.preventDefault();
+
+//                 const id =
+//                     $(e.currentTarget)
+//                         .data('id');
+
+//                 this.delete(id);
+//             }
+//         );
+
+//         $('#employeeCheckAll').on(
+//             'change',
+//             function () {
+//                 $('.employee-row-check')
+//                     .prop(
+//                         'checked',
+//                         $(this).prop('checked')
+//                     );
+//             }
+//         );
+
+//         $(document).on(
+//             'click',
+//             '.employee-view',
+//             (e) => {
+//                 e.preventDefault();
+
+//                 const id =
+//                     $(e.currentTarget).data('id');
+
+//                 this.view(id);
+//             }
+//         );
+//     },
+
+//     load() {
+//         this.showLoading();
+
+//         $.ajax({
+//             url: `${this.endpoint}/list`,
+
+//             type: 'GET',
+
+//             data: {
+//                 page: this.page,
+//                 pageSize: this.pageSize,
+//                 search: this.search,
+//                 status: this.status,
+//                 orderBy: this.orderBy,
+//                 direction: this.direction
+//             },
+
+//             success: (response) => {
+//                 if (!response.success) {
+//                     APP.error(
+//                         response.message ||
+//                         'Unable to load employees.'
+//                     );
+
+//                     return;
+//                 }
+
+//                 const result =
+//                     response.data || {};
+
+//                 this.data =
+//                     result.data || [];
+
+//                 this.total =
+//                     parseInt(
+//                         result.total || 0,
+//                         10
+//                     );
+
+//                 this.page =
+//                     parseInt(
+//                         result.page || 1,
+//                         10
+//                     );
+
+//                 this.lastPage =
+//                     parseInt(
+//                         result.lastPage || 1,
+//                         10
+//                     );
+
+//                 this.render();
+//             },
+
+//             error: (xhr) => {
+//                 if (xhr.status === 403) {
+//                     APP.error(
+//                         'You are not authorized.'
+//                     );
+
+//                     return;
+//                 }
+
+//                 APP.error(
+//                     'Unable to load employees.'
+//                 );
+//             }
+//         });
+//     },
+
+//     render() {
+//         this.renderTable();
+
+//         this.renderPagination();
+
+//         this.renderSummary();
+
+//         $('#employeeCheckAll')
+//             .prop('checked', false);
+//     },
+
+//     renderTable() {
+//         const $body =
+//             $('#employeeTableBody');
+
+//         if (!this.data.length) {
+//             $body.html(`
+//                 <tr>
+//                     <td colspan="9">
+//                         <div class="employee-empty">
+
+//                             <div class="employee-empty-icon">
+//                                 <i class="bi bi-people"></i>
+//                             </div>
+
+//                             <h5>
+//                                 No employees found
+//                             </h5>
+
+//                             <p>
+//                                 ${this.search ||
+//                     this.status
+//                     ? 'Try changing your search or filters.'
+//                     : 'There are no employee records yet.'
+//                 }
+//                             </p>
+
+//                             ${!this.search && !this.status
+//                     ? `
+//                                         <a
+//                                             href="${this.endpoint}/create"
+//                                             class="btn app-btn-primary"
+//                                         >
+//                                             <i class="bi bi-plus-lg me-1"></i>
+//                                             Add Employee
+//                                         </a>
+//                                     `
+//                     : ''
+//                 }
+
+//                         </div>
+//                     </td>
+//                 </tr>
+//             `);
+
+//             return;
+//         }
+
+//         let html = '';
+
+//         this.data.forEach((employee) => {
+//             const initials =
+//                 this.getInitials(
+//                     employee.full_name ||
+//                     employee.first_name ||
+//                     'Employee'
+//                 );
+
+//             const avatar =
+//                 employee.profile_photo
+//                     ? `
+//                         <img
+//                             src="${this.escapeAttribute(
+//                         this.resolvePhoto(
+//                             employee.profile_photo
+//                         )
+//                     )}"
+//                             alt="${this.escapeAttribute(
+//                         employee.full_name || 'Employee'
+//                     )}"
+//                         >
+//                     `
+//                     : `
+//                         <span class="employee-avatar-fallback">
+//                             ${this.escapeHtml(initials)}
+//                         </span>
+//                     `;
+
+//             const status =
+//                 employee.status === 'active'
+//                     ? `
+//                         <span class="employee-status employee-status-active">
+//                             Active
+//                         </span>
+//                     `
+//                     : `
+//                         <span class="employee-status employee-status-inactive">
+//                             Inactive
+//                         </span>
+//                     `;
+
+//             const joiningDate =
+//                 this.formatDate(
+//                     employee.joining_date
+//                 );
+
+//             html += `
+//                 <tr>
+
+//                     <td class="text-center">
+
+//                         <input
+//                             type="checkbox"
+//                             class="form-check-input employee-row-check"
+//                             value="${employee.id} "
+//                         >
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-identity">
+
+//                             <div class="employee-avatar">
+//                                 ${avatar}
+//                             </div>
+
+//                             <div>
+
+//                                 <div class="employee-name">
+//                                     ${this.escapeHtml(
+//                 employee.full_name ||
+//                 '-'
+//             )}
+//                                 </div>
+
+//                                 <div class="employee-code">
+//                                     ${this.escapeHtml(
+//                 employee.employee_code ||
+//                 'No employee code'
+//             )}
+//                                 </div>
+
+//                             </div>
+
+//                         </div>
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-primary-text">
+//                             ${this.escapeHtml(
+//                 employee.organization_name ||
+//                 '-'
+//             )}
+//                         </div>
+
+//                         ${employee.branch_name
+//                     ? `
+//                                     <div class="employee-secondary-text">
+//                                         ${this.escapeHtml(
+//                         employee.branch_name
+//                     )}
+//                                     </div>
+//                                 `
+//                     : ''
+//                 }
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-primary-text">
+//                             ${this.escapeHtml(
+//                     employee.department_name ||
+//                     '-'
+//                 )}
+//                         </div>
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-primary-text">
+//                             ${this.escapeHtml(
+//                     employee.designation_name ||
+//                     '-'
+//                 )}
+//                         </div>
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-primary-text">
+//                             ${this.escapeHtml(
+//                     employee.reporting_manager_name ||
+//                     'Not assigned'
+//                 )}
+//                         </div>
+
+//                     </td>
+
+//                     <td>
+
+//                         <div class="employee-primary-text">
+//                             ${joiningDate}
+//                         </div>
+
+//                     </td>
+
+//                     <td>
+//                         ${status}
+//                     </td>
+
+//                     <td class="text-center">
+
+//                         <div class="dropdown">
+
+//                             <button
+//                                 type="button"
+//                                 class="employee-action-btn"
+//                                 data-bs-toggle="dropdown"
+//                                 aria-expanded="false"
+//                                 title="Actions"
+//                             >
+//                                 <i class="bi bi-three-dots"></i>
+//                             </button>
+
+//                             <ul
+//                                 class="dropdown-menu dropdown-menu-end employee-action-menu"
+//                             >
+
+//                                 <li>
+
+//                                     <a
+//                                         class="dropdown-item"
+//                                         href="${this.endpoint}/edit/${employee.id}"
+//                                     >
+//                                         <i class="bi bi-pencil"></i>
+//                                         Edit
+//                                     </a>
+
+//                                 </li>
+
+//                                 <li>
+
+//                                     <a
+//                                         class="dropdown-item employee-view"
+//                                         href="#"
+//                                         data-id="${employee.id} "
+//                                     >
+//                                         <i class="bi bi-eye"></i>
+//                                         View
+//                                     </a>
+
+//                                 </li>
+
+//                                 <li>
+
+//                                     <a
+//                                         class="dropdown-item employee-toggle-status"
+//                                         href="#"
+//                                         data-id="${employee.id} "
+//                                     >
+//                                         <i class="bi bi-power"></i>
+
+//                                         ${employee.status === 'active'
+//                     ? 'Deactivate'
+//                     : 'Activate'
+//                 }
+
+//                                     </a>
+
+//                                 </li>
+
+//                                 <li>
+
+//                                     <hr class="dropdown-divider">
+
+//                                 </li>
+
+//                                 <li>
+
+//                                     <a
+//                                         class="dropdown-item text-danger employee-delete"
+//                                         href="#"
+//                                         data-id="${employee.id} "
+//                                     >
+//                                         <i class="bi bi-trash"></i>
+//                                         Delete
+//                                     </a>
+
+//                                 </li>
+
+//                             </ul>
+
+//                         </div>
+
+//                     </td>
+
+//                 </tr>
+//             `;
+//         });
+
+//         $body.html(html);
+//     },
+
+//     view(id) {
+
+//         const url = `${this.endpoint}/details/${id}`;
+
+//         console.log('Employee View URL:', url);
+
+//         $.ajax({
+
+//             url: url,
+
+//             type: 'GET',
+
+//             dataType: 'json',
+
+//             success: (response) => {
+
+//                 console.log(
+//                     'Employee View Response:',
+//                     response
+//                 );
+
+//                 if (!response.success) {
+
+//                     APP.error(
+//                         response.message ||
+//                         'Unable to load employee details.'
+//                     );
+
+//                     return;
+//                 }
+
+//                 CrudDrawer.show(
+//                     'Employee Details',
+//                     response.data,
+//                     {
+//                         entity: 'Employee',
+//                         drawerRenderer: (data) =>
+//                             EmployeeDrawer.render(data)
+//                     }
+//                 );
+//             },
+
+//             error: (xhr, status, error) => {
+
+//                 console.error(
+//                     'Employee View Error:',
+//                     {
+//                         status: xhr.status,
+//                         textStatus: status,
+//                         error: error,
+//                         responseText: xhr.responseText
+//                     }
+//                 );
+
+//                 APP.error(
+//                     `Unable to load employee details. HTTP ${xhr.status}`
+//                 );
+//             }
+//         });
+//     },
+
+
+//     toggleStatus(id) {
+//         const employee =
+//             this.data.find(
+//                 item => parseInt(item.id, 10) === parseInt(id, 10)
+//             );
+
+//         if (!employee) {
+//             return;
+//         }
+
+//         const activate =
+//             employee.status !== 'active';
+
+//         Swal.fire({
+//             title:
+//                 activate
+//                     ? 'Activate employee?'
+//                     : 'Deactivate employee?',
+
+//             text:
+//                 activate
+//                     ? 'This employee will be allowed to access the system.'
+//                     : 'This employee will no longer be able to log in.',
+
+//             icon: 'warning',
+
+//             showCancelButton: true,
+
+//             confirmButtonText:
+//                 activate
+//                     ? 'Activate'
+//                     : 'Deactivate',
+
+//             cancelButtonText: 'Cancel',
+
+//             confirmButtonColor:
+//                 activate
+//                     ? '#198754'
+//                     : '#dc3545'
+//         }).then((result) => {
+//             if (!result.isConfirmed) {
+//                 return;
+//             }
+
+//             $.ajax({
+//                 url:
+//                     `${this.endpoint}/toggle-status/${id}`,
+
+//                 type: 'POST',
+
+//                 data: {
+//                     [APP.csrfName]:
+//                         APP.csrfHash
+//                 },
+
+//                 success: (response) => {
+//                     if (!response.success) {
+//                         APP.error(
+//                             response.message ||
+//                             'Unable to update employee status.'
+//                         );
+
+//                         return;
+//                     }
+
+//                     APP.success(
+//                         response.message
+//                     );
+
+//                     this.load();
+//                 },
+
+//                 error: (xhr) => {
+//                     if (xhr.status === 403) {
+//                         APP.error(
+//                             'You are not authorized.'
+//                         );
+
+//                         return;
+//                     }
+
+//                     APP.error(
+//                         'Unable to update employee status.'
+//                     );
+//                 }
+//             });
+//         });
+//     },
+
+//     delete(id) {
+//         Swal.fire({
+//             title: 'Delete employee?',
+
+//             text:
+//                 'This action cannot be undone.',
+
+//             icon: 'warning',
+
+//             showCancelButton: true,
+
+//             confirmButtonText: 'Delete',
+
+//             cancelButtonText: 'Cancel',
+
+//             confirmButtonColor: '#dc3545'
+//         }).then((result) => {
+//             if (!result.isConfirmed) {
+//                 return;
+//             }
+
+//             $.ajax({
+//                 url:
+//                     `${this.endpoint}/delete/${id}`,
+
+//                 type: 'POST',
+
+//                 data: {
+//                     [APP.csrfName]:
+//                         APP.csrfHash
+//                 },
+
+//                 success: (response) => {
+//                     if (!response.success) {
+//                         APP.error(
+//                             response.message ||
+//                             'Unable to delete employee.'
+//                         );
+
+//                         return;
+//                     }
+
+//                     APP.success(
+//                         response.message
+//                     );
+
+//                     this.load();
+//                 },
+
+//                 error: (xhr) => {
+//                     if (xhr.status === 403) {
+//                         APP.error(
+//                             'You are not authorized.'
+//                         );
+
+//                         return;
+//                     }
+
+//                     APP.error(
+//                         'Unable to delete employee.'
+//                     );
+//                 }
+//             });
+//         });
+//     },
+
+//     renderPagination() {
+//         const $pagination =
+//             $('#employeePagination');
+
+//         if (this.lastPage <= 1) {
+//             $pagination.empty();
+
+//             return;
+//         }
+
+//         let html = '';
+
+//         html += `
+//             <li class="page-item ${this.page <= 1
+//                 ? 'disabled'
+//                 : ''
+//             }">
+
+//                 <a
+//                     href="#"
+//                     class="page-link employee-page-link"
+//                     data-page="${this.page - 1} "
+//                 >
+//                     <i class="bi bi-chevron-left"></i>
+//                 </a>
+
+//             </li>
+//         `;
+
+//         const pages =
+//             this.getPaginationPages();
+
+//         pages.forEach((page) => {
+//             if (page === '...') {
+//                 html += `
+//                     <li class="page-item disabled">
+//                         <span class="page-link">
+//                             ...
+//                         </span>
+//                     </li>
+//                 `;
+
+//                 return;
+//             }
+
+//             html += `
+//                 <li class="page-item ${page === this.page
+//                     ? 'active'
+//                     : ''
+//                 }">
+
+//                     <a
+//                         href="#"
+//                         class="page-link employee-page-link"
+//                         data-page="${page} "
+//                     >
+//                         ${page}
+//                     </a>
+
+//                 </li>
+//             `;
+//         });
+
+//         html += `
+//             <li class="page-item ${this.page >= this.lastPage
+//                 ? 'disabled'
+//                 : ''
+//             }">
+
+//                 <a
+//                     href="#"
+//                     class="page-link employee-page-link"
+//                     data-page="${this.page + 1} "
+//                 >
+//                     <i class="bi bi-chevron-right"></i>
+//                 </a>
+
+//             </li>
+//         `;
+
+//         $pagination.html(html);
+//     },
+
+//     getPaginationPages() {
+//         const pages = [];
+
+//         if (this.lastPage <= 7) {
+//             for (
+//                 let i = 1;
+//                 i <= this.lastPage;
+//                 i++
+//             ) {
+//                 pages.push(i);
+//             }
+
+//             return pages;
+//         }
+
+//         pages.push(1);
+
+//         if (this.page > 4) {
+//             pages.push('...');
+//         }
+
+//         const start =
+//             Math.max(
+//                 2,
+//                 this.page - 1
+//             );
+
+//         const end =
+//             Math.min(
+//                 this.lastPage - 1,
+//                 this.page + 1
+//             );
+
+//         for (
+//             let i = start;
+//             i <= end;
+//             i++
+//         ) {
+//             pages.push(i);
+//         }
+
+//         if (this.page < this.lastPage - 3) {
+//             pages.push('...');
+//         }
+
+//         pages.push(this.lastPage);
+
+//         return pages;
+//     },
+
+//     renderSummary() {
+//         if (!this.total) {
+//             $('#employeeSummary')
+//                 .text('Showing 0 of 0 employees');
+
+//             return;
+//         }
+
+//         const start =
+//             ((this.page - 1) * this.pageSize) + 1;
+
+//         const end =
+//             Math.min(
+//                 this.page * this.pageSize,
+//                 this.total
+//             );
+
+//         $('#employeeSummary')
+//             .text(
+//                 `Showing ${start} -${end} of ${this.total} employees`
+//             );
+//     },
+
+//     showLoading() {
+//         $('#employeeTableBody').html(`
+//             <tr>
+//                 <td colspan="9">
+
+//                     <div class="employee-table-loading">
+
+//                         <div
+//                             class="spinner-border spinner-border-sm"
+//                             role="status"
+//                         ></div>
+
+//                         <span>
+//                             Loading employees...
+//                         </span>
+
+//                     </div>
+
+//                 </td>
+//             </tr>
+//         `);
+//     },
+
+//     formatDate(date) {
+//         if (!date) {
+//             return '-';
+//         }
+
+//         const parsed =
+//             new Date(date);
+
+//         if (Number.isNaN(parsed.getTime())) {
+//             return this.escapeHtml(date);
+//         }
+
+//         return parsed.toLocaleDateString(
+//             'en-GB',
+//             {
+//                 day: '2-digit',
+//                 month: 'short',
+//                 year: 'numeric'
+//             }
+//         );
+//     },
+
+//     getInitials(name) {
+//         const parts =
+//             String(name)
+//                 .trim()
+//                 .split(/\s+/)
+//                 .filter(Boolean);
+
+//         if (!parts.length) {
+//             return 'E';
+//         }
+
+//         if (parts.length === 1) {
+//             return parts[0].substring(0, 2);
+//         }
+
+//         return (
+//             parts[0].charAt(0) +
+//             parts[parts.length - 1].charAt(0)
+//         );
+//     },
+
+//     resolvePhoto(path) {
+//         if (!path) {
+//             return '';
+//         }
+
+//         if (
+//             path.startsWith('http://') ||
+//             path.startsWith('https://') ||
+//             path.startsWith('/')
+//         ) {
+//             return path;
+//         }
+
+//         return `${APP.baseUrl}${path} `;
+//     },
+
+//     escapeHtml(value) {
+//         return String(value ?? '')
+//             .replace(/&/g, '&amp;')
+//             .replace(/</g, '&lt;')
+//             .replace(/>/g, '&gt;')
+//             .replace(/"/g, '&quot;')
+//             .replace(/'/g, '&#039;');
+//     },
+
+//     escapeAttribute(value) {
+//         return this.escapeHtml(value);
+//     }
+// };
+
+// $(function () {
+//     EmployeeList.init();
+// });

@@ -42,7 +42,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 static function ($routes) {
                     $routes->get('/', 'ModuleController::index');
                     $routes->get('list', 'ModuleController::list');
-                    $routes->get('edit/(:num)', 'ModuleController::edit/$1');
+                    $routes->get('edit/(:num)', 'ModuleController::edit/$1', ['filter' => 'permission:module.edit']);
                     $routes->get('options', 'ModuleController::options');
                     $routes->post('store', 'ModuleController::store', ['filter' => 'permission:module.create']);
                     $routes->post('update/(:num)', 'ModuleController::update/$1', ['filter' => 'permission:module.edit']);
@@ -56,8 +56,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 static function ($routes) {
                     $routes->get('/', 'MenuController::index');
                     $routes->get('list', 'MenuController::list');
-                    $routes->get('edit/(:num)', 'MenuController::edit/$1');
                     $routes->get('options', 'MenuController::options');
+                    $routes->get('edit/(:num)', 'MenuController::edit/$1', ['filter' => 'permission:menu.edit']);
                     $routes->post('store', 'MenuController::store', ['filter' => 'permission:menu.create']);
                     $routes->post('update/(:num)', 'MenuController::update/$1', ['filter' => 'permission:menu.edit']);
                     $routes->post('delete/(:num)', 'MenuController::delete/$1', ['filter' => 'permission:menu.delete']);
@@ -70,7 +70,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 static function ($routes) {
                     $routes->get('/', 'PermissionController::index');
                     $routes->get('list', 'PermissionController::list');
-                    $routes->get('edit/(:num)', 'PermissionController::edit/$1');
+                    $routes->get('options', 'PermissionController::options');
+                    $routes->get('edit/(:num)', 'PermissionController::edit/$1', ['filter' => 'permission:permission.edit']);
                     $routes->post('store', 'PermissionController::store', ['filter' => 'permission:permission.create']);
                     $routes->post('update/(:num)', 'PermissionController::update/$1', ['filter' => 'permission:permission.edit']);
                     $routes->post('delete/(:num)', 'PermissionController::delete/$1', ['filter' => 'permission:permission.delete']);
@@ -85,8 +86,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 static function ($routes) {
                     $routes->get('/', 'RoleController::index');
                     $routes->get('list', 'RoleController::list');
-                    $routes->get('edit/(:num)', 'RoleController::edit/$1');
-                    $routes->get('options', 'RoleController::options');
+                    $routes->get('edit/(:num)', 'RoleController::edit/$1', ['filter' => 'permission:role.edit']);
+                    $routes->get('options', 'RoleController::options', ['filter' => 'permission_dependency:employee.create,employee.edit']);
                     $routes->get('permissions/(:num)', 'RoleController::permissions/$1');
                     $routes->get('permissions-data/(:num)', 'RoleController::permissionData/$1');
                     $routes->post('store', 'RoleController::store', ['filter' => 'permission:role.create']);
@@ -107,13 +108,20 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     $routes->get('create', 'EmployeeController::create', ['filter' => 'permission:employee.create']);
                     $routes->post('store', 'EmployeeController::store', ['filter' => 'permission:employee.create']);
                     $routes->get('edit/(:num)', 'EmployeeController::editPage/$1', ['filter' => 'permission:employee.edit']);
-                    $routes->get('data/(:num)', 'EmployeeController::edit/$1');
+                    $routes->get('data/(:num)', 'EmployeeController::edit/$1', ['filter' => 'permission:employee.edit']);
                     $routes->post('update/(:num)', 'EmployeeController::update/$1', ['filter' => 'permission:employee.edit']);
                     $routes->post('delete/(:num)', 'EmployeeController::delete/$1', ['filter' => 'permission:employee.delete']);
                     $routes->get('view/(:num)', 'EmployeeController::view/$1', ['filter' => 'permission:employee.view']);
                     $routes->post('toggle-status/(:num)', 'EmployeeController::toggleStatus/$1', ['filter' => 'permission:employee.edit']);
                     $routes->get('details/(:num)', 'EmployeeController::details/$1');
-                    $routes->get('options', 'EmployeeController::options');
+                    $routes->get(
+                        'options',
+                        'EmployeeController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
                 }
             );
 
@@ -159,7 +167,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
                     $routes->get(
                         'options',
-                        'BranchController::options'
+                        'BranchController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
                     );
 
                     $routes->post(
@@ -203,10 +215,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'OrganizationController::list'
                     );
 
-                    $routes->get(
-                        'edit/(:num)',
-                        'OrganizationController::edit/$1'
-                    );
+                    $routes->get('edit/(:num)', 'OrganizationController::edit/$1', ['filter' => 'permission:organization.edit']);
 
                     $routes->post(
                         'store',
@@ -233,7 +242,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     );
                     $routes->get(
                         'options',
-                        'OrganizationController::options'
+                        'OrganizationController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
                     );
                 }
             );
@@ -255,7 +268,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
                     $routes->get(
                         'edit/(:num)',
-                        'DepartmentController::edit/$1'
+                        'DepartmentController::edit/$1',
+                        ['filter' => 'permission:department.edit']
                     );
 
                     $routes->post(
@@ -288,7 +302,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     );
                     $routes->get(
                         'options',
-                        'DepartmentController::options'
+                        'DepartmentController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
                     );
                 }
             );
@@ -310,7 +328,8 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
                     $routes->get(
                         'edit/(:num)',
-                        'DesignationController::edit/$1'
+                        'DesignationController::edit/$1',
+                        ['filter' => 'permission:designation.edit']
                     );
 
                     $routes->post(
@@ -339,7 +358,11 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     $routes->get('group/(:any)', 'DesignationController::group/$1');
                     $routes->get(
                         'options',
-                        'DesignationController::options'
+                        'DesignationController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
                     );
                 }
             );

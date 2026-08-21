@@ -19,7 +19,6 @@
 
     <!-- Select2 -->
     <link rel="stylesheet" href="<?= base_url('assets/vendor/select2/css/select2.min.css') ?>">
-    <!-- <link rel="stylesheet" href="<?= base_url('assets/vendor/select2/css/select2-bootstrap-5-theme.min.css') ?>"> -->
     <link rel="stylesheet" href="<?= base_url('assets/vendor/select2-theme/select2-bootstrap-5-theme.min.css') ?>">
     <!-- Flatpickr -->
     <link rel="stylesheet" href="<?= base_url('assets/vendor/flatpickr/flatpickr.min.css') ?>">
@@ -46,6 +45,8 @@
     <link rel="stylesheet" href="<?= base_url('assets/css/app.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/employees.css') ?>">
     <link rel="stylesheet" href="<?= base_url('assets/css/branches.css') ?>">
+
+    <?= $this->renderSection('styles') ?>
 </head>
 
 <body>
@@ -72,20 +73,40 @@
 
     </div>
 
+
+    <script>
+        window.APP = {
+            baseUrl: "<?= base_url() ?>",
+            csrfName: "<?= csrf_token() ?>",
+            csrfHash: "<?= csrf_hash() ?>",
+
+            permissions: <?= json_encode(
+                                session('permissions') ?? [],
+                                JSON_HEX_TAG |
+                                    JSON_HEX_APOS |
+                                    JSON_HEX_AMP |
+                                    JSON_HEX_QUOT
+                            ) ?>,
+
+            isSuper: <?= session('is_super') ? 'true' : 'false' ?>,
+
+            can(permission) {
+                if (this.isSuper) {
+                    return true;
+                }
+
+                if (!permission) {
+                    return false;
+                }
+
+                return Array.isArray(this.permissions) &&
+                    this.permissions.includes(permission);
+            }
+        };
+    </script>
+
     <!-- jQuery -->
     <script src="<?= base_url('assets/vendor/jquery/jquery.min.js') ?>"></script>
-    <!-- jQuery -->
-    <script src="<?= base_url('assets/vendor/jquery/jquery.min.js') ?>"></script>
-
-    <!-- Bootstrap -->
-    <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
-
-    <!-- DataTables -->
-    <script src="<?= base_url('assets/vendor/datatables-core/dataTables.min.js') ?>"></script>
-    <script src="<?= base_url('assets/vendor/datatables/js/dataTables.bootstrap5.min.js') ?>"></script>
-
-    <!-- Select2 -->
-    <script src="<?= base_url('assets/vendor/select2/js/select2.full.min.js') ?>"></script>
 
     <!-- Bootstrap -->
     <script src="<?= base_url('assets/vendor/bootstrap/js/bootstrap.bundle.min.js') ?>"></script>
@@ -108,13 +129,14 @@
 
     <!-- Chart.js -->
     <script src="<?= base_url('assets/vendor/chartjs/chart.umd.js') ?>"></script>
-    <script>
+    <!-- <script>
         window.APP = {
             baseUrl: "<?= base_url() ?>",
             csrfName: "<?= csrf_token() ?>",
             csrfHash: "<?= csrf_hash() ?>"
         };
-    </script>
+    </script> -->
+
     <!-- App JS -->
     <script src="<?= base_url('assets/js/common.js') ?>"></script>
     <script src="<?= base_url('assets/js/ajax.js') ?>"></script>

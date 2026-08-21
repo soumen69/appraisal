@@ -1,145 +1,278 @@
 const EmployeeForm = {
+
     config: window.EmployeeFormConfig || {},
+
     endpoint: `${APP.baseUrl}employees`,
+
     employee: null,
 
+    isSubmitting: false,
+
     init() {
+
         this.bindEvents();
+
         this.initializeSelect2();
+
         this.initializeDates();
+
         this.initializePhoto();
+
         this.setFormMode();
 
-        this.updateSubmitButtonState();
-
+        /*
+         * Edit loads employee first because several
+         * dropdowns depend on employee values.
+         */
         if (this.config.mode === 'edit') {
+
+            this.setPageLoading(true);
+
             this.loadEmployee();
+
+        } else {
+
+            /*
+             * Create has no employee data, so load
+             * independent dropdowns immediately.
+             */
+            this.loadOrganizations();
+
+            this.loadManagers();
+
+            this.loadRoles();
+
+            this.updateSubmitButtonState();
+
         }
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Form Mode
+     * -------------------------------------------------------------
+     */
+
     setFormMode() {
+
         const $button = $('#employeeSaveBtn');
 
         if (!$button.length) {
             return;
         }
 
-        if (this.config.mode === 'edit') {
-            $button.html(`
-            <i class="bi bi-check2 me-1"></i>
-            Update Employee
-        `);
-        } else {
-            $button.html(`
-            <i class="bi bi-check2 me-1"></i>
-            Create Employee
-        `);
-        }
+        $button.html(
+            this.config.mode === 'edit'
+                ? `
+                    <i class="bi bi-check2 me-1"></i>
+                    Update Employee
+                  `
+                : `
+                    <i class="bi bi-check2 me-1"></i>
+                    Create Employee
+                  `
+        );
     },
 
-    // bindEvents() {
-    //     $('#employeeForm')
-    //         .off('submit.employeeForm')
-    //         .on(
-    //             'submit.employeeForm',
-    //             (e) => {
 
-    //                 e.preventDefault();
-
-    //                 this.submit();
-    //             }
-    //         );
-
-    //     $('#organization_id').off('change.employeeForm').on('change.employeeForm', () => {
-    //         const organizationId = $('#organization_id').val();
-    //         this.loadBranches(organizationId);
-    //         this.loadDepartments(organizationId);
-    //         this.loadDesignations(organizationId);
-    //     }
-    //     );
-
-
-    //     $('#profile_photo')
-    //         .off('change.employeeForm')
-    //         .on(
-    //             'change.employeeForm',
-    //             (e) => {
-
-    //                 this.previewPhoto(
-    //                     e.target.files[0]
-    //                 );
-    //             }
-    //         );
-    // },
-
+    /*
+     * -------------------------------------------------------------
+     * Events
+     * -------------------------------------------------------------
+     */
 
     bindEvents() {
+
+        /*
+         * Submit
+         */
         $('#employeeForm')
             .off('submit.employeeForm')
-            .on('submit.employeeForm', (e) => {
-                e.preventDefault();
-                this.submit();
-            });
+            .on(
+                'submit.employeeForm',
+                (e) => {
 
+                    e.preventDefault();
+
+                    this.submit();
+                }
+            );
+
+
+        /*
+         * User interaction.
+         *
+         * Once the user starts interacting with the form,
+         * Bootstrap validation state becomes visible.
+         */
         $('#employeeForm')
-            .off('input.employeeForm change.employeeForm')
+            .off(
+                'input.employeeForm change.employeeForm',
+                'input, select, textarea'
+            )
             .on(
                 'input.employeeForm change.employeeForm',
                 'input, select, textarea',
                 () => {
+
+                    this.syncPasswordValidation();
+
+                    this.updateSubmitButtonState();
+
+                }
+            );
+
+
+        /*
+         * Blur validation.
+         */
+        $('#employeeForm')
+            .off(
+                'blur.employeeForm',
+                'input, select, textarea'
+            )
+            .on(
+                'blur.employeeForm',
+                'input, select, textarea',
+                () => {
+
+                    $('#employeeForm')
+                        .addClass('was-validated');
+
+                    this.syncPasswordValidation();
+
+                    this.updateSubmitButtonState();
+
+                }
+            );
+
+
+        /*
+         * Organization dependency chain.
+         */
+        $('#organization_id')
+            .off('change.employeeForm')
+            .on(
+                'change.employeeForm',
+                () => {
+
+                    const organizationId =
+                        $('#organization_id').val();
+
+                    this.loadBranches(
+                        organizationId
+                    );
+
+                    this.loadDepartments(
+                        organizationId
+                    );
+
+                    this.loadDesignations(
+                        organizationId
+                    );
+
                     this.updateSubmitButtonState();
                 }
             );
 
-        $('#organization_id')
-            .off('change.employeeForm')
-            .on('change.employeeForm', () => {
-                const organizationId = $('#organization_id').val();
 
-                this.loadBranches(organizationId);
-                this.loadDepartments(organizationId);
-                this.loadDesignations(organizationId);
-
-                this.updateSubmitButtonState();
-            });
-
+        /*
+         * Profile photo.
+         */
         $('#profile_photo')
             .off('change.employeeForm')
-            .on('change.employeeForm', (e) => {
-                this.previewPhoto(e.target.files[0]);
-                this.updateSubmitButtonState();
-            });
+            .on(
+                'change.employeeForm',
+                (e) => {
+
+                    this.previewPhoto(
+                        e.target.files[0]
+                    );
+
+                    this.updateSubmitButtonState();
+                }
+            );
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Select2
+     * -------------------------------------------------------------
+     */
 
     initializeSelect2() {
-        $('.employee-select2').each(function () {
-            const $select = $(this);
-            $select.select2({
-                theme: 'bootstrap-5',
-                width: '100%',
-                placeholder: $select.find('option:first').text(),
-                allowClear: !$select.prop('multiple'),
-                dropdownAutoWidth: true
-            });
-        });
 
-        this.loadOrganizations();
-        this.loadManagers();
-        if (this.config.mode === 'create') {
-            this.loadRoles();
-        }
+        $('.employee-select2').each(
+            function () {
+
+                const $select = $(this);
+
+                $select.select2({
+
+                    theme: 'bootstrap-5',
+
+                    width: '100%',
+
+                    placeholder:
+                        $select
+                            .find('option:first')
+                            .text(),
+
+                    allowClear:
+                        !$select.prop('multiple'),
+
+                    dropdownAutoWidth: true
+
+                });
+
+            }
+        );
     },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Dates
+     * -------------------------------------------------------------
+     */
 
     initializeDates() {
-        flatpickr('#dob', { dateFormat: 'Y-m-d', maxDate: 'today', allowInput: true });
-        flatpickr('#joining_date', { dateFormat: 'Y-m-d', allowInput: true });
+
+        flatpickr(
+            '#dob',
+            {
+                dateFormat: 'Y-m-d',
+                maxDate: 'today',
+                allowInput: true
+            }
+        );
+
+
+        flatpickr(
+            '#joining_date',
+            {
+                dateFormat: 'Y-m-d',
+                allowInput: true
+            }
+        );
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Existing Photo
+     * -------------------------------------------------------------
+     */
+
     initializePhoto() {
+
         const existingPhoto =
             this.config.employee?.profile_photo;
+
         if (existingPhoto) {
+
             this.setPhotoPreview(
                 this.resolvePhoto(
                     existingPhoto
@@ -148,126 +281,308 @@ const EmployeeForm = {
         }
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Load Employee
+     * -------------------------------------------------------------
+     */
+
     loadEmployee() {
-        const id = parseInt(this.config.employeeId, 10);
+
+        const id =
+            parseInt(
+                this.config.employeeId,
+                10
+            );
 
         if (!id) {
+
+            this.setPageLoading(false);
+
+            APP.error(
+                'Invalid employee ID.'
+            );
+
             return;
         }
 
-        this.setPageLoading(true);
 
         $.ajax({
-            url: `${this.endpoint}/data/${id}`,
+
+            url:
+                `${this.endpoint}/data/${id}`,
+
             type: 'GET',
+
+            dataType: 'json',
+
             success: (response) => {
-                if (!response.success) {
+
+                if (
+                    !response ||
+                    response.success !== true
+                ) {
+
                     APP.error(
-                        response.message ||
+                        response?.message ||
                         'Unable to load employee.'
                     );
+
                     return;
                 }
 
-                this.employee = response.data || {};
-                this.populateForm(this.employee);
+
+                this.employee =
+                    response.data || {};
+
+                this.populateForm(
+                    this.employee
+                );
+
             },
 
-            error: () => {
+            error: (xhr) => {
+
+                console.error(
+                    'Employee load failed:',
+                    xhr
+                );
+
+                if (xhr.status === 404) {
+
+                    APP.error(
+                        'Employee not found.'
+                    );
+
+                    return;
+                }
+
+                if (xhr.status === 403) {
+
+                    APP.error(
+                        'You are not authorized.'
+                    );
+
+                    return;
+                }
+
                 APP.error(
                     'Unable to load employee.'
                 );
             },
 
             complete: () => {
+
                 this.setPageLoading(false);
+
+                this.updateSubmitButtonState();
             }
+
         });
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Populate Edit Form
+     * -------------------------------------------------------------
+     */
+
     populateForm(employee) {
-        $('[name="first_name"]').val(employee.first_name || '');
 
-        $('[name="last_name"]').val(employee.last_name || '');
+        $('[name="first_name"]')
+            .val(employee.first_name || '');
 
-        $('[name="email"]').val(employee.email || '');
+        $('[name="last_name"]')
+            .val(employee.last_name || '');
 
-        $('[name="phone"]').val(employee.phone || '');
+        $('[name="email"]')
+            .val(employee.email || '');
 
-        $('[name="gender"]').val(employee.gender || '').trigger('change');
+        $('[name="phone"]')
+            .val(employee.phone || '');
 
-        $('[name="employee_code"]').val(employee.employee_code || '');
+        $('[name="gender"]')
+            .val(employee.gender || '')
+            .trigger('change');
 
-        $('[name="status"]').val(employee.status || 'active').trigger('change');
+        $('[name="employee_code"]')
+            .val(employee.employee_code || '');
 
-        $('[name="dob"]').val(employee.dob || '');
+        $('[name="status"]')
+            .val(employee.status || 'active')
+            .trigger('change');
 
-        $('[name="joining_date"]').val(employee.joining_date || '');
+        $('[name="dob"]')
+            .val(employee.dob || '');
 
-        this.setSelectValue(
-            '#organization_id',
+        $('[name="joining_date"]')
+            .val(employee.joining_date || '');
+
+
+        /*
+         * Organization must load first.
+         *
+         * Department / designation / branch depend on it.
+         */
+        this.loadOrganizations(
             employee.organization_id
         );
+
 
         this.loadBranches(
             employee.organization_id,
             employee.branch_id
         );
 
+
         this.loadDepartments(
             employee.organization_id,
             employee.department_id
         );
 
+
         this.loadDesignations(
             employee.organization_id,
             employee.designation_id
         );
-        this.loadRoles(
-            employee.role_id || null
-        );
-        this.setSelectValue('#reporting_manager_id', employee.reporting_manager_id);
 
-        if (employee.profile_photo) {
-            this.setPhotoPreview(this.resolvePhoto(employee.profile_photo));
+
+        /*
+         * Resolve employee role.
+         *
+         * Supports both:
+         *
+         * role_id
+         * role_ids
+         */
+        let roleId =
+            employee.role_id ?? null;
+
+        if (
+            !roleId &&
+            Array.isArray(employee.role_ids) &&
+            employee.role_ids.length
+        ) {
+
+            roleId =
+                employee.role_ids[0];
         }
+
+
+        this.loadRoles(
+            roleId
+        );
+
+
+        /*
+         * Reporting manager.
+         */
+        this.loadManagers(
+            employee.reporting_manager_id,
+            this.config.employeeId
+        );
+
+
+        /*
+         * Profile photo.
+         */
+        if (employee.profile_photo) {
+
+            this.setPhotoPreview(
+                this.resolvePhoto(
+                    employee.profile_photo
+                )
+            );
+
+        }
+
+
         this.updateSubmitButtonState();
     },
 
-    loadOrganizations() {
+
+    /*
+     * -------------------------------------------------------------
+     * Organization
+     * -------------------------------------------------------------
+     */
+
+    loadOrganizations(
+        selectedId = null
+    ) {
 
         this.loadOptions(
             'organizations/options',
             '#organization_id',
-            'Select organization'
-        );
-    },
-
-
-    loadBranches(organizationId, selectedId = null) {
-        const $branch = $('#branch_id');
-        $branch.prop('disabled', true).empty().append('<option value="">Select branch</option>').trigger('change');
-
-        if (!organizationId) {
-            return;
-        }
-
-        this.loadOptions(
-            `branches/options?organization_id=${encodeURIComponent(
-                organizationId
-            )}`,
-            '#branch_id',
-            'Select branch',
+            'Select organization',
             selectedId
         );
     },
 
 
+    /*
+     * -------------------------------------------------------------
+     * Branches
+     * -------------------------------------------------------------
+     */
+
+    loadBranches(
+        organizationId,
+        selectedId = null
+    ) {
+
+        const $branch =
+            $('#branch_id');
+
+
+        $branch
+            .prop('disabled', true)
+            .empty()
+            .append(
+                $('<option>', {
+                    value: '',
+                    text: 'Select branch'
+                })
+            )
+            .trigger('change');
+
+
+        if (!organizationId) {
+            return;
+        }
+
+
+        this.loadOptions(
+
+            `branches/options?organization_id=${encodeURIComponent(
+                organizationId
+            )}`,
+
+            '#branch_id',
+
+            'Select branch',
+
+            selectedId
+        );
+    },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Departments
+     * -------------------------------------------------------------
+     */
+
     loadDepartments(
         organizationId = null,
         selectedId = null
     ) {
-        const $department = $('#department_id');
+
+        const $department =
+            $('#department_id');
+
 
         $department
             .prop('disabled', true)
@@ -280,26 +595,41 @@ const EmployeeForm = {
             )
             .trigger('change');
 
+
         if (!organizationId) {
             return;
         }
 
+
         this.loadOptions(
+
             `departments/options?organization_id=${encodeURIComponent(
                 organizationId
             )}`,
+
             '#department_id',
+
             'Select department',
+
             selectedId
         );
     },
 
 
+    /*
+     * -------------------------------------------------------------
+     * Designations
+     * -------------------------------------------------------------
+     */
+
     loadDesignations(
         organizationId = null,
         selectedId = null
     ) {
-        const $designation = $('#designation_id');
+
+        const $designation =
+            $('#designation_id');
+
 
         $designation
             .prop('disabled', true)
@@ -312,55 +642,189 @@ const EmployeeForm = {
             )
             .trigger('change');
 
+
         if (!organizationId) {
             return;
         }
 
+
         this.loadOptions(
+
             `designations/options?organization_id=${encodeURIComponent(
                 organizationId
             )}`,
+
             '#designation_id',
+
             'Select designation',
+
             selectedId
         );
     },
 
 
-    loadManagers() {
-        this.loadOptions(
-            'employees/options',
-            '#reporting_manager_id',
-            'No reporting manager',
-            this.config.employeeId || null
-        );
+    /*
+     * -------------------------------------------------------------
+     * Reporting Managers
+     * -------------------------------------------------------------
+     *
+     * selectedId:
+     *     Current employee's manager
+     *
+     * excludeId:
+     *     Current employee itself
+     *
+     * This prevents an employee from accidentally
+     * being displayed as their own manager.
+     */
+
+    loadManagers(
+        selectedId = null,
+        excludeId = null
+    ) {
+
+        const $manager =
+            $('#reporting_manager_id');
+
+
+        $.ajax({
+
+            url:
+                `${APP.baseUrl}employees/options`,
+
+            type: 'GET',
+
+            dataType: 'json',
+
+            success: (response) => {
+
+                if (!$manager.length) {
+                    return;
+                }
+
+
+                let options =
+                    Array.isArray(response)
+                        ? response
+                        : response?.data || [];
+
+
+                if (!Array.isArray(options)) {
+                    options = [];
+                }
+
+
+                $manager
+                    .empty()
+                    .append(
+                        $('<option>', {
+                            value: '',
+                            text: 'No reporting manager'
+                        })
+                    );
+
+
+                options.forEach(
+                    (option) => {
+
+                        const id =
+                            option.id ??
+                            option.value;
+
+                        /*
+                         * Do not allow the employee
+                         * to select themselves.
+                         */
+                        if (
+                            excludeId !== null &&
+                            String(id) ===
+                            String(excludeId)
+                        ) {
+                            return;
+                        }
+
+
+                        const text =
+                            option.name ??
+                            option.text ??
+                            option.display_name ??
+                            option.full_name ??
+                            '';
+
+
+                        $manager.append(
+                            $('<option>', {
+                                value: id,
+                                text: text
+                            })
+                        );
+                    }
+                );
+
+
+                if (
+                    selectedId !== null &&
+                    selectedId !== undefined &&
+                    selectedId !== ''
+                ) {
+
+                    $manager.val(
+                        String(selectedId)
+                    );
+                }
+
+
+                $manager.trigger('change');
+
+            },
+
+            error: (xhr) => {
+
+                console.warn(
+                    'Unable to load employees/options',
+                    xhr
+                );
+            }
+
+        });
     },
 
-    loadRoles(selectedValue = null) {
 
-        const $select = $('#role_id');
+    /*
+     * -------------------------------------------------------------
+     * Roles
+     * -------------------------------------------------------------
+     */
+
+    loadRoles(
+        selectedValue = null
+    ) {
+
+        const $select =
+            $('#role_id');
+
 
         if (!$select.length) {
             return;
         }
 
+
         $.ajax({
 
-            url: `${APP.baseUrl}roles/options`,
+            url:
+                `${APP.baseUrl}roles/options`,
+
             type: 'GET',
 
-            success: (response) => {
+            dataType: 'json',
 
-                /*
-                |--------------------------------------------------------------------------
-                | Validate response
-                |--------------------------------------------------------------------------
-                */
+            success: (response) => {
 
                 if (
                     !response ||
                     response.success !== true
                 ) {
+
                     console.warn(
                         'Invalid roles/options response',
                         response
@@ -369,17 +833,15 @@ const EmployeeForm = {
                     return;
                 }
 
+
                 const options =
                     response.data &&
-                        Array.isArray(response.data.roles)
+                        Array.isArray(
+                            response.data.roles
+                        )
                         ? response.data.roles
                         : [];
 
-                /*
-                |--------------------------------------------------------------------------
-                | Reset select
-                |--------------------------------------------------------------------------
-                */
 
                 $select
                     .empty()
@@ -390,64 +852,72 @@ const EmployeeForm = {
                         })
                     );
 
-                /*
-                |--------------------------------------------------------------------------
-                | Populate roles
-                |--------------------------------------------------------------------------
-                */
 
-                options.forEach((role) => {
+                options.forEach(
+                    (role) => {
 
-                    if (
-                        role.id === undefined ||
-                        role.display_name === undefined
-                    ) {
-                        return;
+                        if (
+                            role.id === undefined ||
+                            role.display_name === undefined
+                        ) {
+                            return;
+                        }
+
+
+                        $select.append(
+                            $('<option>', {
+                                value: String(role.id),
+                                text: role.display_name
+                            })
+                        );
                     }
+                );
 
-                    $select.append(
-                        $('<option>', {
-                            value: String(role.id),
-                            text: role.display_name
-                        })
-                    );
-                });
 
                 /*
-                |--------------------------------------------------------------------------
-                | Restore selected role
-                |--------------------------------------------------------------------------
-                */
-
+                 * Restore edit value only after
+                 * all options have been loaded.
+                 */
                 if (
                     selectedValue !== null &&
                     selectedValue !== undefined &&
                     selectedValue !== ''
                 ) {
 
-                    $select
-                        .val(String(selectedValue));
+                    $select.val(
+                        String(selectedValue)
+                    );
                 }
 
-                /*
-                |--------------------------------------------------------------------------
-                | Refresh Select2
-                |--------------------------------------------------------------------------
-                */
 
                 $select.trigger('change');
+
+
+                this.updateSubmitButtonState();
+
             },
 
             error: (xhr) => {
 
-                console.warn(
+                console.error(
                     'Unable to load roles/options',
                     xhr
                 );
+
+                APP.error(
+                    'Unable to load roles.'
+                );
             }
+
         });
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Generic Options Loader
+     * -------------------------------------------------------------
+     */
 
     loadOptions(
         path,
@@ -457,45 +927,109 @@ const EmployeeForm = {
     ) {
 
         $.ajax({
-            url: `${APP.baseUrl}${path}`,
+
+            url:
+                `${APP.baseUrl}${path}`,
+
             type: 'GET',
+
+            dataType: 'json',
+
             success: (response) => {
-                const $select = $(selector);
+
+                const $select =
+                    $(selector);
+
+
                 if (!$select.length) {
                     return;
                 }
 
-                let options = Array.isArray(response) ? response : (response.data || []);
+
+                let options =
+                    Array.isArray(response)
+                        ? response
+                        : response?.data || [];
+
+
                 if (!Array.isArray(options)) {
                     options = [];
                 }
 
-                if (!$select.prop('multiple')) {
-                    $select.empty().append($('<option>', { value: '', text: placeholder }));
-                } else {
-                    $select.empty();
-                }
+
+                $select
+                    .empty()
+                    .append(
+                        $('<option>', {
+                            value: '',
+                            text: placeholder
+                        })
+                    );
+
 
                 options.forEach(
                     (option) => {
 
-                        const id = option.id ?? option.value;
-                        const text = option.name ?? option.text ?? option.display_name ?? option.full_name ?? '';
-                        $select.append($('<option>', { value: id, text: text }));
+                        const id =
+                            option.id ??
+                            option.value;
+
+                        const text =
+                            option.name ??
+                            option.text ??
+                            option.display_name ??
+                            option.full_name ??
+                            '';
+
+
+                        $select.append(
+                            $('<option>', {
+                                value: id,
+                                text: text
+                            })
+                        );
                     }
                 );
 
-                if (selectedValue !== null) {
-                    this.setSelectValue(selector, selectedValue);
+
+                /*
+                 * Selected value is applied only
+                 * AFTER options exist.
+                 */
+                if (
+                    selectedValue !== null &&
+                    selectedValue !== undefined &&
+                    selectedValue !== ''
+                ) {
+
+                    $select.val(
+                        String(selectedValue)
+                    );
                 }
 
-                if (selector === '#branch_id' || selector === '#department_id' || selector === '#designation_id') {
-                    $select.prop('disabled', false);
+
+                /*
+                 * Dependency selects become
+                 * available only after successful load.
+                 */
+                if (
+                    selector === '#branch_id' ||
+                    selector === '#department_id' ||
+                    selector === '#designation_id'
+                ) {
+
+                    $select.prop(
+                        'disabled',
+                        false
+                    );
                 }
+
 
                 $select.trigger('change');
-            },
 
+
+                this.updateSubmitButtonState();
+            },
 
             error: (xhr) => {
 
@@ -503,106 +1037,248 @@ const EmployeeForm = {
                     `Unable to load ${path}`,
                     xhr
                 );
+
+                this.updateSubmitButtonState();
             }
+
         });
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Password Validation
+     * -------------------------------------------------------------
+     */
+
+    syncPasswordValidation() {
+
+        /*
+         * Edit form has no password fields.
+         */
+        if (
+            this.config.mode !== 'create'
+        ) {
+            return;
+        }
+
+
+        const $password =
+            $('#password');
+
+        const $confirmation =
+            $('#password_confirmation');
+
+
+        if (
+            !$password.length ||
+            !$confirmation.length
+        ) {
+            return;
+        }
+
+
+        const password =
+            $password.val() || '';
+
+        const confirmation =
+            $confirmation.val() || '';
+
+
+        if (
+            confirmation &&
+            password !== confirmation
+        ) {
+
+            $confirmation[0]
+                .setCustomValidity(
+                    'Passwords do not match.'
+                );
+
+        } else {
+
+            $confirmation[0]
+                .setCustomValidity('');
+        }
+
+
+        const $error =
+            $('[data-field-error="password_confirmation"]');
+
+
+        if (
+            confirmation &&
+            password !== confirmation
+        ) {
+
+            $error
+                .text('Passwords do not match.')
+                .addClass('d-block');
+
+        } else {
+
+            $error
+                .text('')
+                .removeClass('d-block');
+        }
+    },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Submit Button State
+     * -------------------------------------------------------------
+     */
+
     updateSubmitButtonState() {
-        const $button = $('#employeeSaveBtn');
-        const form = document.getElementById('employeeForm');
 
-        if (!$button.length || !form) {
+        const $button =
+            $('#employeeSaveBtn');
+
+        const form =
+            document.getElementById(
+                'employeeForm'
+            );
+
+
+        if (
+            !$button.length ||
+            !form
+        ) {
             return;
         }
 
-        if ($button.data('saving') === true) {
+
+        if (this.isSubmitting) {
             return;
         }
 
-        let isValid = form.checkValidity();
 
-        const roleId = $('#role_id').val();
+        this.syncPasswordValidation();
+
+
+        let isValid =
+            form.checkValidity();
+
+
+        /*
+         * Explicit role check.
+         */
+        const roleId =
+            $('#role_id').val();
+
 
         if (!roleId) {
             isValid = false;
         }
 
-        const password = $('#password').val();
-        const confirmation = $('#password_confirmation').val();
 
-        if (this.config.mode === 'create') {
-            if (!password || password !== confirmation) {
-                isValid = false;
-            }
-        } else {
+        /*
+         * Create password requirements.
+         *
+         * Edit does not have password fields.
+         */
+        if (
+            this.config.mode === 'create'
+        ) {
+
+            const password =
+                $('#password').val() || '';
+
+            const confirmation =
+                $('#password_confirmation').val() || '';
+
+
             if (
-                password &&
+                !password ||
+                !confirmation ||
                 password !== confirmation
             ) {
+
                 isValid = false;
             }
         }
 
-        $button.prop('disabled', !isValid);
+
+        $button.prop(
+            'disabled',
+            !isValid
+        );
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Submit
+     * -------------------------------------------------------------
+     */
+
     submit() {
+
         this.clearErrors();
 
-        const form = document.getElementById('employeeForm');
+
+        const form =
+            document.getElementById(
+                'employeeForm'
+            );
+
+
+        if (!form) {
+            return;
+        }
+
+
+        this.syncPasswordValidation();
+
+
+        /*
+         * Show all validation feedback
+         * when submission is attempted.
+         */
+        form.classList.add(
+            'was-validated'
+        );
+
 
         if (!form.checkValidity()) {
-            form.classList.add('was-validated');
 
             this.updateSubmitButtonState();
 
             return;
         }
 
-        const password =
-            $('#password').val();
 
+        const roleId =
+            $('#role_id').val();
 
-        const confirmation =
-            $('#password_confirmation').val();
-
-
-        if (this.config.mode === 'create' && password !== confirmation) {
-            this.setFieldError(
-                'password_confirmation',
-                'Passwords do not match.'
-            );
-            this.updateSubmitButtonState();
-            return;
-        }
-
-
-        if (
-            this.config.mode === 'edit' &&
-            password &&
-            password !== confirmation
-        ) {
-            this.setFieldError(
-                'password_confirmation',
-                'Passwords do not match.'
-            );
-
-            this.updateSubmitButtonState();
-
-            return;
-        }
-
-        const roleId = $('#role_id').val();
 
         if (!roleId) {
-            this.setFieldError('role_id', 'Please select a role.');
+
+            this.setFieldError(
+                'role_id',
+                'Please select a role.'
+            );
+
             this.updateSubmitButtonState();
+
             return;
         }
 
-        const formData = new FormData(form);
 
-        if (!formData.has(APP.csrfName)) {
+        const formData =
+            new FormData(form);
+
+
+        /*
+         * CSRF fallback.
+         */
+        if (
+            !formData.has(
+                APP.csrfName
+            )
+        ) {
+
             formData.append(
                 APP.csrfName,
                 APP.csrfHash
@@ -610,27 +1286,57 @@ const EmployeeForm = {
         }
 
 
+        const id =
+            this.config.employeeId;
+
+
+        const url =
+            this.config.mode === 'edit'
+                ? `${this.endpoint}/update/${id}`
+                : `${this.endpoint}/store`;
+
+
+        this.isSubmitting = true;
+
         this.setSaving(true);
-        const id = this.config.employeeId;
-        const url = this.config.mode === 'edit' ? `${this.endpoint}/update/${id}` : `${this.endpoint}/store`;
+
 
         $.ajax({
+
             url: url,
+
             type: 'POST',
+
             data: formData,
+
             processData: false,
+
             contentType: false,
 
+            dataType: 'json',
+
             success: (response) => {
-                if (!response.success) {
-                    this.handleErrors(response);
+
+                if (
+                    !response ||
+                    response.success !== true
+                ) {
+
+                    this.handleErrors(
+                        response || {}
+                    );
+
                     return;
                 }
 
 
                 APP.success(
                     response.message ||
-                    'Employee saved successfully.'
+                    (
+                        this.config.mode === 'edit'
+                            ? 'Employee updated successfully.'
+                            : 'Employee created successfully.'
+                    )
                 );
 
 
@@ -649,11 +1355,8 @@ const EmployeeForm = {
             error: (xhr) => {
 
                 if (
-
                     xhr.status === 422 &&
-
                     xhr.responseJSON
-
                 ) {
 
                     this.handleErrors(
@@ -674,6 +1377,22 @@ const EmployeeForm = {
                 }
 
 
+                if (xhr.status === 404) {
+
+                    APP.error(
+                        'Employee not found.'
+                    );
+
+                    return;
+                }
+
+
+                console.error(
+                    'Employee save failed:',
+                    xhr
+                );
+
+
                 APP.error(
                     'Unable to save employee.'
                 );
@@ -682,22 +1401,35 @@ const EmployeeForm = {
 
             complete: () => {
 
+                this.isSubmitting = false;
+
                 this.setSaving(false);
             }
+
         });
     },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Server Validation Errors
+     * -------------------------------------------------------------
+     */
 
     handleErrors(response) {
 
         this.clearErrors();
 
 
+        $('#employeeForm')
+            .addClass(
+                'was-validated'
+            );
+
+
         if (
-
             response.errors &&
-
             typeof response.errors === 'object'
-
         ) {
 
             Object.keys(
@@ -709,8 +1441,12 @@ const EmployeeForm = {
                         response.errors[field];
 
 
-                    if (Array.isArray(message)) {
-                        message = message[0];
+                    if (
+                        Array.isArray(message)
+                    ) {
+
+                        message =
+                            message[0];
                     }
 
 
@@ -727,8 +1463,17 @@ const EmployeeForm = {
             response.message ||
             'Please correct the highlighted fields.'
         );
+
+
+        this.updateSubmitButtonState();
     },
 
+
+    /*
+     * -------------------------------------------------------------
+     * Field Error
+     * -------------------------------------------------------------
+     */
 
     setFieldError(
         field,
@@ -737,13 +1482,17 @@ const EmployeeForm = {
 
         const cleanField =
             String(field)
-                .replace(/\[\]$/, '');
+                .replace(
+                    /\[\]$/,
+                    ''
+                );
 
 
-        const $target = $(
-            `[name="${cleanField}"],` +
-            `[name="${cleanField}[]"]`
-        );
+        const $target =
+            $(
+                `[name="${cleanField}"],` +
+                `[name="${cleanField}[]"]`
+            );
 
 
         if (!$target.length) {
@@ -769,6 +1518,7 @@ const EmployeeForm = {
                 .addClass('d-block');
         }
 
+
         if (
             $target.hasClass(
                 'employee-select2'
@@ -778,87 +1528,127 @@ const EmployeeForm = {
             $target
                 .next('.select2-container')
                 .find('.select2-selection')
-                .addClass('is-invalid');
+                .addClass(
+                    'is-invalid'
+                );
         }
     },
 
 
+    /*
+     * -------------------------------------------------------------
+     * Clear Errors
+     * -------------------------------------------------------------
+     */
+
     clearErrors() {
 
-        $('.is-invalid')
-            .removeClass('is-invalid');
-
-
-        $('[data-field-error]')
-            .text('')
-            .removeClass('d-block');
+        $('#employeeForm')
+            .find('.is-invalid')
+            .removeClass(
+                'is-invalid'
+            );
 
 
         $('#employeeForm')
+            .find('[data-field-error]')
+            .text('')
             .removeClass(
-                'was-validated'
+                'd-block'
             );
     },
 
-    setSaving(isSaving) {
-        const $button = $('#employeeSaveBtn');
+
+    /*
+     * -------------------------------------------------------------
+     * Save Button
+     * -------------------------------------------------------------
+     */
+
+    setSaving(
+        isSaving
+    ) {
+
+        const $button =
+            $('#employeeSaveBtn');
+
 
         if (!$button.length) {
             return;
         }
 
+
         if (isSaving) {
+
             $button
-                .data('saving', true)
-                .prop('disabled', true)
+                .prop(
+                    'disabled',
+                    true
+                )
                 .html(`
-                <span
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                ></span>
-                Saving...
-            `);
+                    <span
+                        class="spinner-border spinner-border-sm me-2"
+                        role="status">
+                    </span>
+                    Saving...
+                `);
 
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Request finished
-        |--------------------------------------------------------------------------
-        |
-        | Don't blindly enable the button.
-        | Recalculate the actual form state.
-        |
-        */
 
-        $button.data('saving', false);
+        $button
+            .html(
+                this.config.mode === 'edit'
+                    ? `
+                        <i class="bi bi-check2 me-1"></i>
+                        Update Employee
+                      `
+                    : `
+                        <i class="bi bi-check2 me-1"></i>
+                        Create Employee
+                      `
+            );
 
-        $button.html(
-            this.config.mode === 'edit'
-                ? `
-                <i class="bi bi-check2 me-1"></i>
-                Update Employee
-              `
-                : `
-                <i class="bi bi-check2 me-1"></i>
-                Create Employee
-              `
-        );
 
         this.updateSubmitButtonState();
     },
 
 
-    setPageLoading(isLoading) {
+    /*
+     * -------------------------------------------------------------
+     * Page Loading
+     * -------------------------------------------------------------
+     */
 
-        const $form = $('#employeeForm');
+    setPageLoading(
+        isLoading
+    ) {
+
+        const $form =
+            $('#employeeForm');
+
+
         if (isLoading) {
-            $form.addClass('employee-form-loading');
+
+            $form.addClass(
+                'employee-form-loading'
+            );
+
         } else {
-            $form.removeClass('employee-form-loading');
+
+            $form.removeClass(
+                'employee-form-loading'
+            );
         }
     },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Photo Preview
+     * -------------------------------------------------------------
+     */
 
     previewPhoto(file) {
 
@@ -868,13 +1658,13 @@ const EmployeeForm = {
 
 
         if (
-
             ![
                 'image/jpeg',
                 'image/png',
                 'image/webp'
-            ].includes(file.type)
-
+            ].includes(
+                file.type
+            )
         ) {
 
             APP.error(
@@ -885,12 +1675,14 @@ const EmployeeForm = {
             $('#profile_photo')
                 .val('');
 
+
             return;
         }
 
 
         if (
-            file.size > 2 * 1024 * 1024
+            file.size >
+            2 * 1024 * 1024
         ) {
 
             APP.error(
@@ -901,6 +1693,7 @@ const EmployeeForm = {
             $('#profile_photo')
                 .val('');
 
+
             return;
         }
 
@@ -909,44 +1702,75 @@ const EmployeeForm = {
             new FileReader();
 
 
-        reader.onload = (event) => {
+        reader.onload =
+            (event) => {
 
-            this.setPhotoPreview(
-                event.target.result
-            );
-        };
+                this.setPhotoPreview(
+                    event.target.result
+                );
+            };
 
 
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(
+            file
+        );
     },
 
 
-    setPhotoPreview(src) {
+    /*
+     * -------------------------------------------------------------
+     * Photo Preview UI
+     * -------------------------------------------------------------
+     */
+
+    setPhotoPreview(
+        src
+    ) {
 
         $('#employeePhotoPreview')
             .html(`
                 <img
                     src="${this.escapeAttribute(src)}"
-                    alt="Profile photo"
-                >
+                    alt="Profile photo">
             `);
     },
 
 
-    setSelectValue(selector, value) {
+    /*
+     * -------------------------------------------------------------
+     * Select Value
+     * -------------------------------------------------------------
+     */
+
+    setSelectValue(
+        selector,
+        value
+    ) {
 
         if (
             value === null ||
-            value === undefined
+            value === undefined ||
+            value === ''
         ) {
             return;
         }
 
 
         $(selector)
-            .val(String(value))
-            .trigger('change');
+            .val(
+                String(value)
+            )
+            .trigger(
+                'change'
+            );
     },
+
+
+    /*
+     * -------------------------------------------------------------
+     * Photo URL
+     * -------------------------------------------------------------
+     */
 
     resolvePhoto(path) {
         if (!path) {
@@ -962,30 +1786,28 @@ const EmployeeForm = {
 
             return path;
         }
+
+
         return `${APP.baseUrl}${path}`;
     },
 
-    escapeAttribute(value) {
 
+    /*
+     * -------------------------------------------------------------
+     * Escape HTML Attribute
+     * -------------------------------------------------------------
+     */
+
+    escapeAttribute(value) {
         return String(value ?? '')
-            .replace(
-                /&/g,
-                '&amp;'
-            )
-            .replace(
-                /"/g,
-                '&quot;'
-            )
-            .replace(
-                /</g,
-                '&lt;'
-            )
-            .replace(
-                />/g,
-                '&gt;'
-            );
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
+
 };
+
 
 $(function () {
     EmployeeForm.init();

@@ -25,7 +25,6 @@
     };
 </script>
 
-<script
-    src="<?= base_url('assets/js/employees/employee-form.js') ?>"></script>
+<script src="<?= base_url('assets/js/employees/employee-form.js') ?>"></script>
 
 <?= $this->endSection() ?>

@@ -7,10 +7,12 @@ use App\Repositories\MenuRepository;
 class MenuService
 {
     protected MenuRepository $repository;
+    protected MenuGeneratorService $menuGenerator;
 
     public function __construct()
     {
         $this->repository = new MenuRepository();
+        $this->menuGenerator = new MenuGeneratorService();
     }
 
     public function getAll(): array
@@ -37,92 +39,156 @@ class MenuService
     {
         $this->validateRoute($data);
 
-        // $this->validateParent($data);
-
-        // if (empty($data['parent_id'])) {
-        //     $data['parent_id'] = null;
-        // }
-
         if (empty($data['permission_id'])) {
             $data['permission_id'] = null;
         }
 
-        return $this->repository->create($data);
+        $db = db_connect();
+
+        $db->transBegin();
+
+        try {
+
+            $menuId = $this->repository->create($data);
+
+            $actions = $this->normalizePermissionActions(
+                $data['permission_actions'] ?? []
+            );
+
+            /*
+             * Generate/sync permissions for this menu.
+             */
+            $this->menuGenerator->syncPermissions(
+                $menuId,
+                $actions
+            );
+
+            if ($db->transStatus() === false) {
+                throw new \RuntimeException(
+                    'Menu creation transaction failed.'
+                );
+            }
+
+            $db->transCommit();
+
+            return $menuId;
+        } catch (\Throwable $e) {
+
+            $db->transRollback();
+
+            throw $e;
+        }
+    }
+
+    protected function normalizePermissionActions(
+        mixed $actions
+    ): array {
+        if (!is_array($actions)) {
+            return [];
+        }
+
+        $allowed = [
+            'view',
+            'create',
+            'edit',
+            'delete',
+            'import',
+            'export',
+            'permission',
+        ];
+
+        $actions = array_map(
+            static fn($action) =>
+            strtolower(trim((string) $action)),
+            $actions
+        );
+
+        return array_values(
+            array_unique(
+                array_intersect(
+                    $actions,
+                    $allowed
+                )
+            )
+        );
     }
 
     public function update(int $id, array $data): bool
     {
         $this->validateRoute($data, $id);
 
-        // $this->validateParent($data, $id);
-
-        // if (empty($data['parent_id'])) {
-        //     $data['parent_id'] = null;
-        // }
-
         if (empty($data['permission_id'])) {
             $data['permission_id'] = null;
         }
 
-        return $this->repository->update($id, $data);
+        $updated = $this->repository->update(
+            $id,
+            $data
+        );
+
+        /*
+         * Keep permissions synchronized with the menu.
+         *
+         * Existing permissions are preserved.
+         * Missing standard permissions are created.
+         */
+        if ($updated) {
+
+            $actions = $this->normalizePermissionActions(
+                $data['permission_actions'] ?? []
+            );
+
+            $this->menuGenerator->syncPermissions(
+                $id,
+                $actions
+            );
+        }
+
+        return $updated;
     }
 
     public function delete(int $id): bool
     {
         $menu = $this->repository->find($id);
 
-        if (! $menu) {
-            throw new \RuntimeException('Menu not found.');
+        if (!$menu) {
+            throw new \RuntimeException(
+                'Menu not found.'
+            );
         }
 
         if (!empty($menu['is_system'])) {
-            throw new \RuntimeException('System menus cannot be deleted.');
+            throw new \RuntimeException(
+                'System menus cannot be deleted.'
+            );
         }
-
-        // if ($this->repository->hasChildren($id)) {
-        //     throw new \RuntimeException(
-        //         'This menu contains child menus. Remove or reassign them first.'
-        //     );
-        // }
 
         return $this->repository->delete($id);
     }
 
-    protected function validateRoute(array $data, ?int $ignoreId = null): void
-    {
-        $route = trim($data['route'] ?? '');
+    protected function validateRoute(
+        array $data,
+        ?int $ignoreId = null
+    ): void {
+        $route = trim(
+            (string) ($data['route'] ?? '')
+        );
 
         if ($route === '') {
             return;
         }
 
-        if ($this->repository->existsRoute($route, $ignoreId)) {
-            throw new \RuntimeException('Route already exists.');
+        if (
+            $this->repository->existsRoute(
+                $route,
+                $ignoreId
+            )
+        ) {
+            throw new \RuntimeException(
+                'Route already exists.'
+            );
         }
     }
-
-    // protected function validateParent(array $data, ?int $id = null): void
-    // {
-    //     if (empty($data['parent_id'])) {
-    //         return;
-    //     }
-
-    //     $parentId = (int) $data['parent_id'];
-
-    //     if ($id !== null && $parentId === $id) {
-    //         throw new \RuntimeException(
-    //             'A menu cannot be its own parent.'
-    //         );
-    //     }
-
-    //     $parent = $this->repository->find($parentId);
-
-    //     if (!$parent) {
-    //         throw new \RuntimeException(
-    //             'Selected parent menu does not exist.'
-    //         );
-    //     }
-    // }
 
     public function getSidebarMenus(): array
     {

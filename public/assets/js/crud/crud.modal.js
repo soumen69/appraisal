@@ -1,48 +1,91 @@
+
+
 // const CrudModal = {
 
 //     bind(crud) {
-//         $('#btnAdd').on('click', function () {
-//             CrudForm.reset(crud);
-//             $('#crudModalTitle').text(`Create ${crud.entity}`);
-//             new bootstrap.Modal(crud.modal).show();
-//         });
 
-//         $(document).on('click', '.btn-edit', function (e) {
-//             e.preventDefault();
-//             CrudForm.load(
-//                 crud,
-//                 $(this).data('id')
+//         if (!crud.modal) {
+//             return;
+//         }
+//         $(document)
+//             .off(
+//                 'click.crudModal',
+//                 '#btnAdd'
+//             )
+//             .on(
+//                 'click.crudModal',
+//                 '#btnAdd',
+//                 function (e) {
+
+//                     e.preventDefault();
+
+//                     CrudForm.reset(crud);
+
+//                     $('#crudModalTitle')
+//                         .text(
+//                             `Create ${crud.entity}`
+//                         );
+
+//                     bootstrap.Modal
+//                         .getOrCreateInstance(
+//                             crud.modal
+//                         )
+//                         .show();
+//                 }
 //             );
-//         });
 
-//         $(crud.modal).on('hidden.bs.modal', function () {
-//             CrudForm.reset(crud);
-//         });
+//         $(document)
+//             .off(
+//                 'click.crudModalEdit',
+//                 '.btn-edit'
+//             )
+//             .on(
+//                 'click.crudModalEdit',
+//                 '.btn-edit',
+//                 function (e) {
+
+//                     e.preventDefault();
+
+//                     CrudForm.load(
+//                         crud,
+//                         $(this).data('id')
+//                     );
+//                 }
+//             );
+
+
+//         $(crud.modal)
+//             .off(
+//                 'hidden.bs.modal.crudModal'
+//             )
+//             .on(
+//                 'hidden.bs.modal.crudModal',
+//                 function () {
+
+//                     CrudForm.reset(crud);
+
+//                 }
+//             );
 //     }
+
 // };
+
 
 const CrudModal = {
 
     bind(crud) {
 
-        /*
-         * ---------------------------------------------------------
-         * Modal CRUD only
-         *
-         * Employee uses dedicated create/edit pages,
-         * therefore it has no modal and no CRUD form.
-         * ---------------------------------------------------------
-         */
         if (!crud.modal) {
             return;
         }
 
 
         /*
-         * ---------------------------------------------------------
-         * Create
-         * ---------------------------------------------------------
-         */
+        |--------------------------------------------------------------------------
+        | Create
+        |--------------------------------------------------------------------------
+        */
+
         $(document)
             .off(
                 'click.crudModal',
@@ -54,6 +97,14 @@ const CrudModal = {
                 function (e) {
 
                     e.preventDefault();
+
+                    if (!crud.can('create')) {
+                        APP.error(
+                            'You are not authorized to create this record.'
+                        );
+
+                        return;
+                    }
 
                     CrudForm.reset(crud);
 
@@ -72,10 +123,11 @@ const CrudModal = {
 
 
         /*
-         * ---------------------------------------------------------
-         * Edit
-         * ---------------------------------------------------------
-         */
+        |--------------------------------------------------------------------------
+        | Edit
+        |--------------------------------------------------------------------------
+        */
+
         $(document)
             .off(
                 'click.crudModalEdit',
@@ -88,6 +140,14 @@ const CrudModal = {
 
                     e.preventDefault();
 
+                    if (!crud.can('edit')) {
+                        APP.error(
+                            'You are not authorized to edit this record.'
+                        );
+
+                        return;
+                    }
+
                     CrudForm.load(
                         crud,
                         $(this).data('id')
@@ -96,11 +156,6 @@ const CrudModal = {
             );
 
 
-        /*
-         * ---------------------------------------------------------
-         * Reset when modal closes
-         * ---------------------------------------------------------
-         */
         $(crud.modal)
             .off(
                 'hidden.bs.modal.crudModal'
@@ -114,5 +169,4 @@ const CrudModal = {
                 }
             );
     }
-
 };

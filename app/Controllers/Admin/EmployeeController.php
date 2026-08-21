@@ -149,6 +149,8 @@ class EmployeeController extends BaseController
             'employees/edit',
             [
                 'title' => 'Edit Employee',
+                'page_title' => 'Edit Employee',
+                'page_subtitle' => 'Edit employee and configure their system access.',
                 'employee' => $employee
             ]
         );
@@ -162,13 +164,15 @@ class EmployeeController extends BaseController
                 $this->employeeService
                 ->getEmployee($id);
 
+
             if (!$employee) {
 
                 return $this->response
                     ->setStatusCode(404)
                     ->setJSON([
                         'success' => false,
-                        'message' => 'Employee not found.'
+                        'message' =>
+                        'Employee not found.'
                     ]);
             }
 
@@ -183,10 +187,12 @@ class EmployeeController extends BaseController
                 $employee['remember_token']
             );
 
-            return $this->response->setJSON([
-                'success' => true,
-                'data' => $employee
-            ]);
+
+            return $this->response
+                ->setJSON([
+                    'success' => true,
+                    'data' => $employee
+                ]);
         } catch (Throwable $e) {
 
             log_message(
@@ -194,6 +200,7 @@ class EmployeeController extends BaseController
                 'Employee details error: ' .
                     $e->getMessage()
             );
+
 
             return $this->response
                 ->setStatusCode(500)

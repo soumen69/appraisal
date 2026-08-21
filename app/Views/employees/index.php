@@ -42,13 +42,6 @@
 
 <script>
     $(function() {
-
-        /*
-         * ---------------------------------------------------------
-         * Employee CRUD
-         * ---------------------------------------------------------
-         */
-
         const employeeCrud = new Crud({
 
             endpoint: '<?= base_url('employees') ?>',
@@ -61,36 +54,49 @@
 
             entityPlural: 'Employees',
 
-            actionRenderer: function(row, id) {
+            actionRenderer: function(row, id, crud) {
 
                 const isActive =
                     row.status === 'active';
 
-                return `
+                const actions = [];
 
+                if (crud.can('view')) {
+
+                    actions.push(`
+                <li>
+                    <a
+                        class="dropdown-item btn-view"
+                        href="#"
+                        data-id="${id}">
+
+                        <i class="bi bi-eye me-2"></i>
+                        View
+
+                    </a>
+                </li>
+            `);
+                }
+
+                if (crud.can('edit')) {
+
+                    actions.push(`
             <li>
                 <a
-                    class="dropdown-item btn-view"
-                    href="#"
-                    data-id="${id}">
-
-                    <i class="bi bi-eye me-2"></i>
-                    View
-
-                </a>
-            </li>
-
-            <li>
-                <a
-                    class="dropdown-item"
-                    href="<?= base_url('employees/edit') ?>/${id}">
+                    class="dropdown-item employee-edit"
+                    href="${APP.baseUrl}/employees/edit/${id}">
 
                     <i class="bi bi-pencil me-2"></i>
                     Edit
 
                 </a>
             </li>
+        `);
+                }
 
+                if (crud.can('edit')) {
+
+                    actions.push(`
             <li>
                 <a
                     class="dropdown-item employee-toggle-status"
@@ -107,14 +113,24 @@
 
                 </a>
             </li>
+        `);
+                }
 
-            <li>
-                <hr class="dropdown-divider">
-            </li>
+                if (crud.can('delete')) {
 
+                    if (actions.length) {
+
+                        actions.push(`
+                <li>
+                    <hr class="dropdown-divider">
+                </li>
+            `);
+                    }
+
+                    actions.push(`
             <li>
                 <a
-                    class="dropdown-item text-danger btn-delete"
+                    class="dropdown-item text-danger employee-delete"
                     href="#"
                     data-id="${id}">
 
@@ -123,16 +139,24 @@
 
                 </a>
             </li>
+        `);
+                }
+                if (!actions.length) {
 
-        `;
+                    actions.push(`
+            <li>
+                <span class="dropdown-item-text text-muted">
+                    No available actions
+                </span>
+            </li>
+        `);
+                }
+
+
+                return actions.join('');
             },
 
-            columns: [
-
-                /*
-                 * Employee
-                 */
-                {
+            columns: [{
                     key: 'employee',
                     label: 'Employee',
 
@@ -147,130 +171,117 @@
                             .join(' ') ||
                             'Employee';
 
-
                         const initials =
                             getEmployeeInitials(
                                 fullName
                             );
 
-
                         const avatar =
-                            row.profile_photo
-
-                            ?
+                            row.profile_photo ?
                             `
-                                    <img
-                                        src="${escapeEmployeeAttribute(
-                                            resolveEmployeePhoto(
-                                                row.profile_photo
-                                            )
-                                        )}"
-                                        alt="${escapeEmployeeAttribute(
-                                            fullName
-                                        )}">
-                                  `
-
-                            :
+                        <img
+                            src="${escapeEmployeeAttribute(
+                                resolveEmployeePhoto(
+                                    row.profile_photo
+                                )
+                            )}"
+                            alt="${escapeEmployeeAttribute(
+                                fullName
+                            )}">
+                      ` :
                             `
-                                    <span class="employee-avatar-fallback">
-                                        ${escapeEmployeeHtml(
-                                            initials
-                                        )}
-                                    </span>
-                                  `;
-
+                        <span class="employee-avatar-fallback">
+                            ${escapeEmployeeHtml(
+                                initials
+                            )}
+                        </span>
+                      `;
 
                         return `
+                <div class="employee-identity">
 
-                            <div class="employee-identity">
+                    <div class="employee-avatar">
+                        ${avatar}
+                    </div>
 
-                                <div class="employee-avatar">
-                                    ${avatar}
-                                </div>
+                    <div class="employee-identity-content">
 
+                        <div class="employee-name">
+                            ${escapeEmployeeHtml(
+                                fullName
+                            )}
+                        </div>
 
-                                <div>
+                        <div class="employee-code">
+                            ${escapeEmployeeHtml(
+                                row.employee_code ||
+                                'No employee code'
+                            )}
+                        </div>
 
-                                    <div class="employee-name">
-                                        ${escapeEmployeeHtml(
-                                            fullName
-                                        )}
-                                    </div>
+                    </div>
 
-
-                                    <div class="employee-code">
-                                        ${escapeEmployeeHtml(
-                                            row.employee_code ||
-                                            'No employee code'
-                                        )}
-                                    </div>
-
-                                </div>
-
-                            </div>
-
-                        `;
+                </div>
+            `;
                     }
                 },
 
-
-                /*
-                 * Organization
-                 */
                 {
                     key: 'organization_name',
                     label: 'Organization',
 
                     render: function(value, row) {
 
+                        const organization =
+                            value || '-';
+
+                        const department =
+                            row.department_name ||
+                            'No department';
+
+                        const branch =
+                            row.branch_name || '';
+
                         return `
+                <div class="employee-org-cell">
 
-                            <div class="employee-primary-text">
-                                ${escapeEmployeeHtml(
-                                    value || '-'
-                                )}
-                            </div>
+                    <div class="employee-primary-text">
+                        ${escapeEmployeeHtml(
+                            organization
+                        )}
+                    </div>
 
-                            ${
-                                row.branch_name
-                                    ? `
-                                        <div class="employee-secondary-text">
-                                            ${escapeEmployeeHtml(
-                                                row.branch_name
-                                            )}
-                                        </div>
-                                      `
-                                    : ''
-                            }
+                    <div class="employee-secondary-text">
 
-                        `;
+                        <i class="bi bi-diagram-3"></i>
+
+                        ${escapeEmployeeHtml(
+                            department
+                        )}
+
+                    </div>
+
+                    ${
+                        branch
+                            ? `
+                                <div class="employee-tertiary-text">
+
+                                    <i class="bi bi-geo-alt"></i>
+
+                                    ${escapeEmployeeHtml(
+                                        branch
+                                    )}
+
+                                </div>
+                              `
+                            : ''
+                    }
+
+                </div>
+            `;
                     }
                 },
 
-
-                /*
-                 * Department
-                 */
-                {
-                    key: 'department_name',
-                    label: 'Department',
-
-                    render: function(value) {
-
-                        return `
-                            <div class="employee-primary-text">
-                                ${escapeEmployeeHtml(
-                                    value || '-'
-                                )}
-                            </div>
-                        `;
-                    }
-                },
-
-
-                /*
-                 * Designation
-                 */
                 {
                     key: 'designation_name',
                     label: 'Designation',
@@ -278,32 +289,34 @@
                     render: function(value) {
 
                         return `
-                            <div class="employee-primary-text">
-                                ${escapeEmployeeHtml(
-                                    value || '-'
-                                )}
-                            </div>
-                        `;
+                <div class="employee-primary-text">
+                    ${escapeEmployeeHtml(
+                        value || 'Not assigned'
+                    )}
+                </div>`;
                     }
                 },
 
 
-                /*
-                 * Reporting Manager
-                 */
                 {
-                    key: 'reporting_manager_name',
-                    label: 'Reporting Manager',
+                    key: 'role_name',
+                    label: 'Role',
 
                     render: function(value) {
 
+                        if (!value) {
+
+                            return `
+                    <span class="employee-role-badge employee-role-unassigned">
+                        <i class="bi bi-shield-x"></i>
+                        Unassigned
+                    </span>`;
+                        }
                         return `
-                            <div class="employee-primary-text">
-                                ${escapeEmployeeHtml(
-                                    value || 'Not assigned'
-                                )}
-                            </div>
-                        `;
+                            <span class="employee-role-badge">
+                                <i class="bi bi-shield-check"></i>
+                                ${escapeEmployeeHtml(value)}
+                            </span>`;
                     }
                 },
 
@@ -525,10 +538,7 @@
      * =============================================================
      */
 
-    function toggleEmployeeStatus(
-        crud,
-        id
-    ) {
+    function toggleEmployeeStatus(crud, id) {
 
         const employee =
             crud.data.find(

@@ -60,13 +60,6 @@ class MenuRepository
         return $this->model->delete($id);
     }
 
-    // public function hasChildren(int $id): bool
-    // {
-    //     return $this->model
-    //         ->where('parent_id', $id)
-    //         ->countAllResults() > 0;
-    // }
-
     public function existsRoute(string $route, ?int $ignoreId = null): bool
     {
         if ($route === '') {
@@ -182,31 +175,4 @@ class MenuRepository
             ->get()
             ->getResultArray();
     }
-
-    // public function getSidebarMenus(): array
-    // {
-    //     return db_connect()
-    //         ->table('menus m')
-    //         ->select([
-    //             'm.id',
-    //             'm.parent_id',
-    //             'm.title',
-    //             'm.icon',
-    //             'm.route',
-    //             'm.sort_order',
-    //             'p.slug AS permission_slug'
-    //         ])
-
-    //         ->join(
-    //             'permissions p',
-    //             'p.id=m.permission_id',
-    //             'left'
-    //         )
-    //         ->where('m.status', 'active')
-    //         ->where('m.is_sidebar', 1)
-    //         ->where('m.is_visible', 1)
-    //         ->orderBy('m.sort_order', 'ASC')
-    //         ->get()
-    //         ->getResultArray();
-    // }
 }

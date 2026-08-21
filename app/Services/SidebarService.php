@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+
 class SidebarService
 {
     protected MenuService $menus;
@@ -16,17 +17,27 @@ class SidebarService
         $rows = $this->menus->getSidebarMenus();
 
         $isSuper = (bool) session('is_super');
-
         $permissions = session('permissions') ?? [];
 
         $sidebar = [];
 
         foreach ($rows as $row) {
 
+            /*
+             * Every non-super user must have the menu's VIEW
+             * permission to see the menu.
+             *
+             * Menus without a permission are treated as public
+             * within the authenticated application shell.
+             */
             if (
                 !$isSuper &&
                 !empty($row['permission_slug']) &&
-                !in_array($row['permission_slug'], $permissions, true)
+                !in_array(
+                    $row['permission_slug'],
+                    $permissions,
+                    true
+                )
             ) {
                 continue;
             }
@@ -34,7 +45,6 @@ class SidebarService
             $module = $row['module_name'];
 
             if (!isset($sidebar[$module])) {
-
                 $sidebar[$module] = [
                     'module' => $module,
                     'menus'  => []
@@ -47,3 +57,51 @@ class SidebarService
         return array_values($sidebar);
     }
 }
+
+
+
+// class SidebarService
+// {
+//     protected MenuService $menus;
+
+//     public function __construct()
+//     {
+//         $this->menus = new MenuService();
+//     }
+
+//     public function get(): array
+//     {
+//         $rows = $this->menus->getSidebarMenus();
+
+//         $isSuper = (bool) session('is_super');
+
+//         $permissions = session('permissions') ?? [];
+
+//         $sidebar = [];
+
+//         foreach ($rows as $row) {
+
+//             if (
+//                 !$isSuper &&
+//                 !empty($row['permission_slug']) &&
+//                 !in_array($row['permission_slug'], $permissions, true)
+//             ) {
+//                 continue;
+//             }
+
+//             $module = $row['module_name'];
+
+//             if (!isset($sidebar[$module])) {
+
+//                 $sidebar[$module] = [
+//                     'module' => $module,
+//                     'menus'  => []
+//                 ];
+//             }
+
+//             $sidebar[$module]['menus'][] = $row;
+//         }
+
+//         return array_values($sidebar);
+//     }
+// }

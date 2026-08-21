@@ -128,11 +128,6 @@ class AuthService
                 'active'
             )
 
-            // ->orderBy(
-            //     'ur.is_primary',
-            //     'DESC'
-            // )
-
             ->get()
 
             ->getResultArray();

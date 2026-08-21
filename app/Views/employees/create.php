@@ -23,13 +23,13 @@
 
 <?= $this->section('scripts') ?>
 
-<script src="<?= base_url('assets/js/employees/employee-form.js') ?>"></script>
-
 <script>
     window.EmployeeFormConfig = {
         mode: 'create',
         employee: null
     };
 </script>
+
+<script src="<?= base_url('assets/js/employees/employee-form.js') ?>"></script>
 
 <?= $this->endSection() ?>
