@@ -12,12 +12,9 @@
 
 <?= view('layouts/components/crud_table') ?>
 
-
 <?= view('layouts/components/crud_drawer') ?>
 
-
 <?= $this->endSection() ?>
-
 
 <?= $this->section('scripts') ?>
 
@@ -525,7 +522,6 @@
 
 
     function escapeEmployeeAttribute(value) {
-
         return escapeEmployeeHtml(
             value
         );
@@ -539,114 +535,55 @@
      */
 
     function toggleEmployeeStatus(crud, id) {
-
-        const employee =
-            crud.data.find(
-                item =>
-                parseInt(item.id, 10) ===
-                parseInt(id, 10)
-            );
-
+        const employee = crud.data.find(item => parseInt(item.id, 10) === parseInt(id, 10));
 
         if (!employee) {
             return;
         }
 
-
-        const activate =
-            employee.status !== 'active';
-
-
+        const activate = employee.status !== 'active';
         Swal.fire({
-
-            title: activate ?
-                'Activate employee?' : 'Deactivate employee?',
-
-
-            text: activate ?
-                'This employee will be allowed to access the system.' : 'This employee will no longer be able to log in.',
-
-
+            title: activate ? 'Activate employee?' : 'Deactivate employee?',
+            text: activate ? 'This employee will be allowed to access the system.' : 'This employee will no longer be able to log in.',
             icon: 'warning',
-
-
             showCancelButton: true,
-
-
             confirmButtonText: activate ?
                 'Activate' : 'Deactivate',
-
-
             cancelButtonText: 'Cancel',
-
-
             confirmButtonColor: activate ?
                 '#198754' : '#dc3545'
-
         }).then(function(result) {
-
             if (!result.isConfirmed) {
                 return;
             }
 
-
             $.ajax({
-
                 url: `<?= base_url('employees/toggle-status') ?>/${id}`,
-
                 type: 'POST',
-
                 data: {
-
                     [APP.csrfName]: APP.csrfHash
-
                 },
 
                 success: function(response) {
-
                     if (!response.success) {
-
                         APP.error(
                             response.message ||
                             'Unable to update employee status.'
                         );
-
                         return;
                     }
-
-
-                    APP.success(
-                        response.message
-                    );
-
-
+                    APP.success(response.message);
                     crud.reload();
-
                 },
-
-
                 error: function(xhr) {
-
                     if (xhr.status === 403) {
-
-                        APP.error(
-                            'You are not authorized.'
-                        );
-
+                        APP.error('You are not authorized.');
                         return;
                     }
-
-
-                    APP.error(
-                        'Unable to update employee status.'
-                    );
-
+                    APP.error('Unable to update employee status.');
                 }
-
             });
-
         });
-
     }
 </script>
 

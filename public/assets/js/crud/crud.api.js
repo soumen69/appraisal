@@ -83,57 +83,28 @@ const CrudApi = {
 
 
         $.ajax({
-
-            url:
-                crud.endpoint + '/list',
-
+            url: crud.endpoint + '/list',
             type: 'GET',
-
             data: {
-                page:
-                    crud.page,
-
-                pageSize:
-                    crud.pageSize,
-
-                search:
-                    crud.search,
-
-                status:
-                    crud.status,
-
-                orderBy:
-                    crud.orderBy,
-
-                direction:
-                    crud.direction
+                page: crud.page,
+                pageSize: crud.pageSize,
+                search: crud.search,
+                status: crud.status,
+                orderBy: crud.orderBy,
+                direction: crud.direction
             },
 
             success(response) {
-
                 if (!response.success) {
-
-                    APP.error(
-                        response.message
-                    );
-
+                    APP.error(response.message);
                     return;
                 }
-
-                crud.data =
-                    response.data?.data || [];
-
-                crud.total =
-                    response.data?.total || 0;
-
-                crud.page =
-                    response.data?.page || 1;
-
-                crud.lastPage =
-                    response.data?.lastPage || 1;
-
+                crud.data = response.data?.data || [];
+                crud.total = response.data?.total || 0;
+                crud.page = response.data?.page || 1;
+                crud.lastPage = response.data?.lastPage || 1;
+                
                 CrudTable.render(crud);
-
                 CrudPagination.render(crud);
 
                 $('#crudSummary').html(

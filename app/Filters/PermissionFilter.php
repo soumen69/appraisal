@@ -74,7 +74,9 @@ class PermissionFilter implements FilterInterface
             }
         }
 
-        if ($request->isAJAX()) {
+        $isAjax = strtolower($request->getHeaderLine('X-Requested-With')) === 'xmlhttprequest';
+
+        if ($isAjax) {
             return Services::response()
                 ->setStatusCode(403)
                 ->setJSON([

@@ -87,13 +87,76 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     $routes->get('/', 'RoleController::index');
                     $routes->get('list', 'RoleController::list');
                     $routes->get('edit/(:num)', 'RoleController::edit/$1', ['filter' => 'permission:role.edit']);
-                    $routes->get('options', 'RoleController::options', ['filter' => 'permission_dependency:employee.create,employee.edit']);
+                    // $routes->get('options', 'RoleController::options', ['filter' => 'permission_dependency:employee.create,employee.edit']);
                     $routes->get('permissions/(:num)', 'RoleController::permissions/$1');
                     $routes->get('permissions-data/(:num)', 'RoleController::permissionData/$1');
                     $routes->post('store', 'RoleController::store', ['filter' => 'permission:role.create']);
                     $routes->post('update/(:num)', 'RoleController::update/$1', ['filter' => 'permission:role.edit']);
                     $routes->post('delete/(:num)', 'RoleController::delete/$1', ['filter' => 'permission:role.delete']);
                     $routes->post('permissions/(:num)', 'RoleController::updatePermissions/$1', ['filter' => 'permission:role.permission']);
+                }
+            );
+
+            $routes->group(
+                '',
+                [
+                    'namespace' => 'App\Controllers\Admin'
+                ],
+                static function ($routes) {
+
+                    $routes->get(
+                        'roles/options',
+                        'RoleController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        'organizations/options',
+                        'OrganizationController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        'branches/options',
+                        'BranchController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        'departments/options',
+                        'DepartmentController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        'designations/options',
+                        'DesignationController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        'employees/options',
+                        'EmployeeController::options',
+                        [
+                            'filter' =>
+                            'permission_dependency:employee.create,employee.edit'
+                        ]
+                    );
                 }
             );
 
@@ -117,10 +180,7 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                     $routes->get(
                         'options',
                         'EmployeeController::options',
-                        [
-                            'filter' =>
-                            'permission_dependency:employee.create,employee.edit'
-                        ]
+                        ['filter' => 'permission_dependency:employee.create,employee.edit']
                     );
                 }
             );
@@ -165,14 +225,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'BranchController::edit/$1'
                     );
 
-                    $routes->get(
-                        'options',
-                        'BranchController::options',
-                        [
-                            'filter' =>
-                            'permission_dependency:employee.create,employee.edit'
-                        ]
-                    );
+                    // $routes->get(
+                    //     'options',
+                    //     'BranchController::options',
+                    //     [
+                    //         'filter' =>
+                    //         'permission_dependency:employee.create,employee.edit'
+                    //     ]
+                    // );
 
                     $routes->post(
                         'store',
@@ -240,14 +300,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'OrganizationController::toggleStatus/$1',
                         ['filter' => 'permission:organization.edit']
                     );
-                    $routes->get(
-                        'options',
-                        'OrganizationController::options',
-                        [
-                            'filter' =>
-                            'permission_dependency:employee.create,employee.edit'
-                        ]
-                    );
+                    // $routes->get(
+                    //     'options',
+                    //     'OrganizationController::options',
+                    //     [
+                    //         'filter' =>
+                    //         'permission_dependency:employee.create,employee.edit'
+                    //     ]
+                    // );
                 }
             );
 
@@ -255,22 +315,9 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 'departments',
                 ['filter' => 'permission:department.view'],
                 static function ($routes) {
-
-                    $routes->get(
-                        '/',
-                        'DepartmentController::index'
-                    );
-
-                    $routes->get(
-                        'list',
-                        'DepartmentController::list'
-                    );
-
-                    $routes->get(
-                        'edit/(:num)',
-                        'DepartmentController::edit/$1',
-                        ['filter' => 'permission:department.edit']
-                    );
+                    $routes->get('/', 'DepartmentController::index');
+                    $routes->get('list', 'DepartmentController::list');
+                    $routes->get('edit/(:num)', 'DepartmentController::edit/$1', ['filter' => 'permission:department.edit']);
 
                     $routes->post(
                         'store',
@@ -300,14 +347,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                         'group/(:any)',
                         'DepartmentController::group/$1'
                     );
-                    $routes->get(
-                        'options',
-                        'DepartmentController::options',
-                        [
-                            'filter' =>
-                            'permission_dependency:employee.create,employee.edit'
-                        ]
-                    );
+                    // $routes->get(
+                    //     'options',
+                    //     'DepartmentController::options',
+                    //     [
+                    //         'filter' =>
+                    //         'permission_dependency:employee.create,employee.edit'
+                    //     ]
+                    // );
                 }
             );
 
@@ -315,57 +362,402 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 'designations',
                 ['filter' => 'permission:designation.view'],
                 static function ($routes) {
+                    $routes->get('/', 'DesignationController::index');
+                    $routes->get('list', 'DesignationController::list');
+                    $routes->get('edit/(:num)', 'DesignationController::edit/$1', ['filter' => 'permission:designation.edit']);
+                    $routes->post('store', 'DesignationController::store', ['filter' => 'permission:designation.create']);
+                    $routes->post('update/(:num)', 'DesignationController::update/$1', ['filter' => 'permission:designation.edit']);
+                    $routes->post('delete/(:num)', 'DesignationController::delete/$1', ['filter' => 'permission:designation.delete']);
+                    $routes->post('toggle-status/(:num)', 'DesignationController::toggleStatus/$1', ['filter' => 'permission:designation.edit']);
+                    $routes->get('group/(:any)', 'DesignationController::group/$1');
+                    // $routes->get(
+                    //     'options',
+                    //     'DesignationController::options',
+                    //     [
+                    //         'filter' =>
+                    //         'permission_dependency:employee.create,employee.edit'
+                    //     ]
+                    // );
+                }
+            );
 
-                    $routes->get(
-                        '/',
-                        'DesignationController::index'
-                    );
+            $routes->group(
+                'cycles',
+                [
+                    'filter' =>
+                    'permission:appraisal_cycle.view'
+                ],
+                static function ($routes) {
 
-                    $routes->get(
-                        'list',
-                        'DesignationController::list'
-                    );
-
+                    $routes->get('/', 'AppraisalCycleController::index');
+                    $routes->get('list', 'AppraisalCycleController::list');
                     $routes->get(
                         'edit/(:num)',
-                        'DesignationController::edit/$1',
-                        ['filter' => 'permission:designation.edit']
+                        'AppraisalCycleController::edit/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_cycle.edit'
+                        ]
                     );
 
                     $routes->post(
                         'store',
-                        'DesignationController::store',
-                        ['filter' => 'permission:designation.create']
+                        'AppraisalCycleController::store',
+                        [
+                            'filter' =>
+                            'permission:appraisal_cycle.create'
+                        ]
                     );
 
                     $routes->post(
                         'update/(:num)',
-                        'DesignationController::update/$1',
-                        ['filter' => 'permission:designation.edit']
+                        'AppraisalCycleController::update/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_cycle.edit'
+                        ]
                     );
 
                     $routes->post(
                         'delete/(:num)',
-                        'DesignationController::delete/$1',
-                        ['filter' => 'permission:designation.delete']
-                    );
-
-                    $routes->post(
-                        'toggle-status/(:num)',
-                        'DesignationController::toggleStatus/$1',
-                        ['filter' => 'permission:designation.edit']
-                    );
-                    $routes->get('group/(:any)', 'DesignationController::group/$1');
-                    $routes->get(
-                        'options',
-                        'DesignationController::options',
+                        'AppraisalCycleController::delete/$1',
                         [
                             'filter' =>
-                            'permission_dependency:employee.create,employee.edit'
+                            'permission:appraisal_cycle.delete'
                         ]
                     );
                 }
             );
+
+            $routes->group(
+                'templates',
+                [
+                    'filter' =>
+                    'permission:appraisal_template.view'
+                ],
+                static function ($routes) {
+
+                    $routes->get(
+                        '/',
+                        'AppraisalTemplateController::index'
+                    );
+
+                    $routes->get(
+                        'list',
+                        'AppraisalTemplateController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'AppraisalTemplateController::edit/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'store',
+                        'AppraisalTemplateController::store',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.create'
+                        ]
+                    );
+
+                    $routes->post(
+                        'update/(:num)',
+                        'AppraisalTemplateController::update/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'delete/(:num)',
+                        'AppraisalTemplateController::delete/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.delete'
+                        ]
+                    );
+
+                    $routes->get(
+                        '(:num)/builder',
+                        'AppraisalTemplateController::builder/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->get(
+                        '(:num)/builder-data',
+                        'AppraisalTemplateController::builderData/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        '(:num)/sections',
+                        'AppraisalTemplateController::storeSection/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'sections/(:num)/update',
+                        'AppraisalTemplateController::updateSection/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'sections/(:num)/delete',
+                        'AppraisalTemplateController::deleteSection/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        '(:num)/sections/reorder',
+                        'AppraisalTemplateController::reorderSections/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'sections/(:num)/questions',
+                        'AppraisalTemplateController::storeQuestion/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'questions/(:num)/update',
+                        'AppraisalTemplateController::updateQuestion/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'questions/(:num)/delete',
+                        'AppraisalTemplateController::deleteQuestion/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'sections/(:num)/questions/reorder',
+                        'AppraisalTemplateController::reorderQuestions/$1',
+                        [
+                            'filter' =>
+                            'permission:appraisal_template.edit'
+                        ]
+                    );
+                    $routes->get(
+                        'options',
+                        'AppraisalTemplateController::options'
+                    );
+                }
+            );
+
+            $routes->group(
+                'review-matrix',
+                [
+                    'filter' => 'permission:review_matrix.view'
+                ],
+                static function ($routes) {
+
+                    $routes->get('/', 'ReviewMatrixController::index');
+
+                    $routes->get(
+                        'list',
+                        'ReviewMatrixController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'ReviewMatrixController::edit/$1'
+                    );
+
+                    $routes->post(
+                        'store',
+                        'ReviewMatrixController::store',
+                        [
+                            'filter' =>
+                            'permission:review_matrix.create'
+                        ]
+                    );
+
+                    $routes->post(
+                        'update/(\:num)',
+                        'ReviewMatrixController::update/$1',
+                        [
+                            'filter' =>
+                            'permission:review_matrix.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'delete/(\:num)',
+                        'ReviewMatrixController::delete/$1',
+                        [
+                            'filter' =>
+                            'permission:review_matrix.delete'
+                        ]
+                    );
+                    $routes->get(
+                        'view/(:num)',
+                        'ReviewMatrixController::view/$1'
+                    );
+                }
+            );
+
+            $routes->group(
+                'rating-scales',
+                [
+                    'filter' => 'permission:rating_scale.view'
+                ],
+                static function ($routes) {
+
+                    $routes->get(
+                        '/',
+                        'RatingScaleController::index'
+                    );
+
+                    $routes->get(
+                        'list',
+                        'RatingScaleController::list'
+                    );
+
+                    $routes->get(
+                        'edit/(:num)',
+                        'RatingScaleController::edit/$1',
+                        [
+                            'filter' => 'permission:rating_scale.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'store',
+                        'RatingScaleController::store',
+                        [
+                            'filter' => 'permission:rating_scale.create'
+                        ]
+                    );
+
+                    $routes->post(
+                        'update/(:num)',
+                        'RatingScaleController::update/$1',
+                        [
+                            'filter' => 'permission:rating_scale.edit'
+                        ]
+                    );
+
+                    $routes->post(
+                        'delete/(:num)',
+                        'RatingScaleController::delete/$1',
+                        [
+                            'filter' => 'permission:rating_scale.delete'
+                        ]
+                    );
+                }
+            );
+
+            $routes->group('appraisal/cycles', static function ($routes) {
+
+                // ==========================================
+                // Participants
+                // ==========================================
+
+                $routes->get(
+                    '(:num)/participants',
+                    'AppraisalCycleParticipantController::index/$1'
+                );
+
+                $routes->get(
+                    '(:num)/participants/list',
+                    'AppraisalCycleParticipantController::list/$1'
+                );
+
+                $routes->get(
+                    '(:num)/participants/available-employees',
+                    'AppraisalCycleParticipantController::availableEmployees/$1'
+                );
+
+                $routes->post(
+                    '(:num)/participants',
+                    'AppraisalCycleParticipantController::store/$1'
+                );
+
+                $routes->post(
+                    '(:num)/participants/bulk',
+                    'AppraisalCycleParticipantController::bulkStore/$1'
+                );
+
+                $routes->post(
+                    '(:num)/participants/(:num)/update',
+                    'AppraisalCycleParticipantController::update/$2'
+                );
+
+                $routes->post(
+                    '(:num)/participants/(:num)/delete',
+                    'AppraisalCycleParticipantController::delete/$2'
+                );
+
+
+                // ==========================================
+                // Template Assignments
+                // ==========================================
+
+                $routes->get(
+                    '(:num)/template-assignments',
+                    'AppraisalCycleTemplateAssignmentController::index/$1'
+                );
+
+                $routes->get(
+                    '(:num)/template-assignments/list',
+                    'AppraisalCycleTemplateAssignmentController::list/$1'
+                );
+
+                $routes->get(
+                    '(:num)/template-assignments/options',
+                    'AppraisalCycleTemplateAssignmentController::options/$1'
+                );
+
+                $routes->post(
+                    '(:num)/template-assignments',
+                    'AppraisalCycleTemplateAssignmentController::store/$1'
+                );
+
+                $routes->post(
+                    '(:num)/template-assignments/(:num)/update',
+                    'AppraisalCycleTemplateAssignmentController::update/$2'
+                );
+
+                $routes->post(
+                    '(:num)/template-assignments/(:num)/delete',
+                    'AppraisalCycleTemplateAssignmentController::delete/$2'
+                );
+            });
         }
     );
 });

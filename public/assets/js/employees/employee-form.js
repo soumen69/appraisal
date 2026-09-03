@@ -1723,10 +1723,7 @@ const EmployeeForm = {
      * -------------------------------------------------------------
      */
 
-    setPhotoPreview(
-        src
-    ) {
-
+    setPhotoPreview(src) {
         $('#employeePhotoPreview')
             .html(`
                 <img
@@ -1790,13 +1787,6 @@ const EmployeeForm = {
 
         return `${APP.baseUrl}${path}`;
     },
-
-
-    /*
-     * -------------------------------------------------------------
-     * Escape HTML Attribute
-     * -------------------------------------------------------------
-     */
 
     escapeAttribute(value) {
         return String(value ?? '')

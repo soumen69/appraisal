@@ -1,125 +1,5 @@
 const CrudForm = {
 
-    // bind(crud) {
-
-    //     $(crud.form).off('submit').on('submit', function (e) {
-
-    //         e.preventDefault();
-
-    //         const form = this;
-
-    //         const $button =
-    //             $('#btnSave');
-
-    //         $button
-    //             .prop('disabled', true)
-    //             .html(
-    //                 '<span class="spinner-border spinner-border-sm me-2"></span>Saving...'
-    //             );
-
-
-    //         $.ajax({
-
-    //             url: crud.editId
-    //                 ? crud.endpoint + '/update/' + crud.editId
-    //                 : crud.endpoint + '/store',
-
-    //             type: 'POST',
-
-    //             data: $(form).serialize(),
-
-    //             success(response) {
-
-    //                 $button
-    //                     .prop('disabled', false)
-    //                     .html('Save');
-
-
-    //                 if (!response.success) {
-
-    //                     CrudForm.clearErrors();
-
-    //                     if (response.errors) {
-
-    //                         CrudForm.showErrors(
-    //                             response.errors
-    //                         );
-    //                     }
-
-    //                     APP.error(
-    //                         response.message ||
-    //                         'Please correct the highlighted fields.'
-    //                     );
-
-    //                     return;
-    //                 }
-
-
-    //                 APP.success(
-    //                     response.message
-    //                 );
-
-
-    //                 const modal =
-    //                     bootstrap.Modal
-    //                         .getInstance(
-    //                             crud.modal
-    //                         );
-
-    //                 if (modal) {
-    //                     modal.hide();
-    //                 }
-
-
-    //                 crud.reload();
-    //             },
-
-    //             error(xhr) {
-
-    //                 $button
-    //                     .prop('disabled', false)
-    //                     .html('Save');
-
-
-    //                 if (
-    //                     xhr.responseJSON &&
-    //                     xhr.responseJSON.errors
-    //                 ) {
-
-    //                     CrudForm.clearErrors();
-
-    //                     CrudForm.showErrors(
-    //                         xhr.responseJSON.errors
-    //                     );
-
-    //                     APP.error(
-    //                         xhr.responseJSON.message ||
-    //                         'Please correct the highlighted fields.'
-    //                     );
-
-    //                     return;
-    //                 }
-
-
-    //                 if (xhr.status === 403) {
-
-    //                     APP.error(
-    //                         'You are not authorized.'
-    //                     );
-
-    //                     return;
-    //                 }
-
-
-    //                 APP.error(
-    //                     'Request failed.'
-    //                 );
-    //             }
-    //         });
-    //     });
-    // },
-
-
     bind(crud) {
 
         if (!crud.form) {
@@ -288,7 +168,11 @@ const CrudForm = {
                     response.data
                 );
 
-
+                $(document).trigger(
+                    'crud:editLoaded',
+                    [response.data, crud]
+                );
+                
                 $('#crudModalTitle')
                     .text(
                         `Edit ${crud.entity}`
@@ -591,13 +475,4 @@ const CrudForm = {
             .prop('disabled', false)
             .html('Save');
     },
-
-
-    // reset(crud) {
-    //     crud.form.reset();
-    //     crud.editId = null;
-    //     CrudForm.clearErrors();
-    //     $(crud.form).find('select[multiple]').val([]).trigger('change');
-    //     $('#btnSave').prop('disabled', false).html('Save');
-    // }
 };

@@ -171,125 +171,7 @@ class UserModel extends Model
         ]);
     }
 
-    // public function getEmployees(
-    //     int $page = 1,
-    //     int $pageSize = 10,
-    //     string $search = '',
-    //     string $status = '',
-    //     string $orderBy = 'id',
-    //     string $direction = 'desc'
-    // ): array {
-    //     $builder = $this->builder();
 
-    //     $builder
-    //         ->select([
-    //             'users.id',
-    //             'users.organization_id',
-    //             'users.branch_id',
-    //             'users.department_id',
-    //             'users.designation_id',
-    //             'users.employee_code',
-    //             'users.first_name',
-    //             'users.last_name',
-    //             'users.full_name',
-    //             'users.email',
-    //             'users.phone',
-    //             'users.gender',
-    //             'users.dob',
-    //             'users.joining_date',
-    //             'users.reporting_manager_id',
-    //             'users.profile_photo',
-    //             'users.status',
-    //             'users.created_at',
-
-    //             'organizations.name AS organization_name',
-    //             'branches.name AS branch_name',
-    //             'departments.name AS department_name',
-    //             'designations.title AS designation_name',
-
-    //             'manager.full_name AS reporting_manager_name'
-    //         ])
-    //         ->join(
-    //             'organizations',
-    //             'organizations.id = users.organization_id',
-    //             'left'
-    //         )
-    //         ->join(
-    //             'branches',
-    //             'branches.id = users.branch_id',
-    //             'left'
-    //         )
-    //         ->join(
-    //             'departments',
-    //             'departments.id = users.department_id',
-    //             'left'
-    //         )
-    //         ->join(
-    //             'designations',
-    //             'designations.id = users.designation_id',
-    //             'left'
-    //         )
-    //         ->join(
-    //             'users manager',
-    //             'manager.id = users.reporting_manager_id',
-    //             'left'
-    //         );
-
-    //     if ($search !== '') {
-    //         $builder->groupStart()
-    //             ->like('users.employee_code', $search)
-    //             ->orLike('users.first_name', $search)
-    //             ->orLike('users.last_name', $search)
-    //             ->orLike('users.full_name', $search)
-    //             ->orLike('users.email', $search)
-    //             ->orLike('users.phone', $search)
-    //             ->groupEnd();
-    //     }
-
-    //     if ($status !== '') {
-    //         $builder->where('users.status', $status);
-    //     }
-
-    //     $allowedOrderBy = [
-    //         'id'              => 'users.id',
-    //         'employee_code'   => 'users.employee_code',
-    //         'full_name'       => 'users.full_name',
-    //         'email'           => 'users.email',
-    //         'joining_date'    => 'users.joining_date',
-    //         'status'          => 'users.status',
-    //         'created_at'      => 'users.created_at'
-    //     ];
-
-    //     $orderColumn = $allowedOrderBy[$orderBy]
-    //         ?? 'users.id';
-
-    //     $direction = strtolower($direction) === 'asc'
-    //         ? 'ASC'
-    //         : 'DESC';
-
-    //     $builder->orderBy($orderColumn, $direction);
-
-    //     $totalBuilder = clone $builder;
-
-    //     $total = $totalBuilder->countAllResults();
-
-    //     $offset = max(0, ($page - 1) * $pageSize);
-
-    //     $data = $builder
-    //         ->limit($pageSize, $offset)
-    //         ->get()
-    //         ->getResultArray();
-
-    //     return [
-    //         'data' => $data,
-    //         'total' => $total,
-    //         'page' => $page,
-    //         'pageSize' => $pageSize,
-    //         'lastPage' => $total > 0
-    //             ? (int) ceil($total / $pageSize)
-    //             : 1
-    //     ];
-    // }
 
     public function getEmployees(
         int $page = 1,
@@ -337,9 +219,6 @@ class UserModel extends Model
 
                 'manager.full_name AS reporting_manager_name',
 
-                /*
-             * Role
-             */
                 "(SELECT
                 COALESCE(
                     NULLIF(r.display_name, ''),

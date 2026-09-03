@@ -24,24 +24,14 @@ class AuthController extends BaseController
     {
         try {
             $this->authService->login(
-
                 $this->request->getPost('email'),
-
                 $this->request->getPost('password'),
-
                 $this->request->getIPAddress()
-
             );
 
             return redirect()->to('/dashboard');
         } catch (\Throwable $e) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
+            return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
     }
 
@@ -70,7 +60,6 @@ class AuthController extends BaseController
     public function logout()
     {
         $this->authService->logout();
-
         return redirect()->to('/');
     }
 }
