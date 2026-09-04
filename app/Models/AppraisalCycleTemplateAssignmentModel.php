@@ -370,4 +370,79 @@ class AppraisalCycleTemplateAssignmentModel extends Model
 
             ->getResultArray();
     }
+
+    public function getEmployeeMyReviews(int $employeeId): array
+    {
+        $sql = "
+        SELECT
+            p.id AS participant_id,
+            p.employee_id,
+            p.status AS participant_status,
+            c.id AS cycle_id,
+            c.cycle_name,
+            c.cycle_code,
+            c.description AS cycle_description,
+            c.start_date,
+            c.end_date,
+            c.status AS cycle_status,
+
+            COALESCE(
+                employee_assignment.template_id,
+                designation_assignment.template_id,
+                department_assignment.template_id
+            ) AS resolved_template_id,
+
+            COALESCE(
+                employee_template.template_name,
+                designation_template.template_name,
+                department_template.template_name
+            ) AS resolved_template_name,
+
+            CASE
+                WHEN employee_assignment.template_id IS NOT NULL THEN 'employee'
+                WHEN designation_assignment.template_id IS NOT NULL THEN 'designation'
+                WHEN department_assignment.template_id IS NOT NULL THEN 'department'
+                ELSE NULL
+            END AS template_source
+
+            FROM appraisal_cycle_participants p
+
+            INNER JOIN appraisal_cycles c ON c.id = p.appraisal_cycle_id
+            INNER JOIN users u ON u.id = p.employee_id
+
+            LEFT JOIN appraisal_cycle_template_assignments employee_assignment
+                ON employee_assignment.appraisal_cycle_id = p.appraisal_cycle_id
+                AND employee_assignment.assignment_type = 'employee'
+                AND employee_assignment.employee_id = p.employee_id
+
+            LEFT JOIN appraisal_templates employee_template
+                ON employee_template.id = employee_assignment.template_id
+
+            LEFT JOIN appraisal_cycle_template_assignments designation_assignment
+                ON designation_assignment.appraisal_cycle_id = p.appraisal_cycle_id
+                AND designation_assignment.assignment_type = 'designation'
+                AND designation_assignment.designation_id = u.designation_id
+
+            LEFT JOIN appraisal_templates designation_template
+                ON designation_template.id = designation_assignment.template_id
+
+            LEFT JOIN appraisal_cycle_template_assignments department_assignment
+                ON department_assignment.appraisal_cycle_id = p.appraisal_cycle_id
+                AND department_assignment.assignment_type = 'department'
+                AND department_assignment.department_id = u.department_id
+
+            LEFT JOIN appraisal_templates department_template
+                ON department_template.id = department_assignment.template_id
+
+            WHERE p.employee_id = ?
+                AND p.status = 'active'
+                AND c.status = 'active'
+
+            HAVING resolved_template_id IS NOT NULL
+
+            ORDER BY c.start_date DESC, c.id DESC
+        ";
+
+        return db_connect()->query($sql, [$employeeId])->getResultArray();
+    }
 }

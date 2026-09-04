@@ -249,24 +249,7 @@ class AppraisalCycleTemplateAssignmentService
                 'Unable to delete template assignment.'
             );
         }
-
-
-        // $this->resolveTemplates(
-        //     $cycleId
-        // );
     }
-
-    // public function resolveTemplates(
-    //     int $cycleId
-    // ): void {
-
-    //     $this
-    //         ->assignments
-    //         ->resolveCycleTemplates(
-    //             $cycleId
-    //         );
-    // }
-
 
     protected function validateCycle(
         int $cycleId
@@ -439,10 +422,8 @@ class AppraisalCycleTemplateAssignmentService
     }
 
 
-    protected function getTargetId(
-        string $assignmentType,
-        array $data
-    ): int {
+    protected function getTargetId(string $assignmentType, array $data): int
+    {
 
         return match ($assignmentType) {
 
@@ -470,18 +451,12 @@ class AppraisalCycleTemplateAssignmentService
     }
 
 
-    protected function getPriority(
-        string $assignmentType
-    ): int {
-
+    protected function getPriority(string $assignmentType): int
+    {
         return match ($assignmentType) {
-
             'department' => 100,
-
             'designation' => 200,
-
             'employee' => 300,
-
             default => 0
         };
     }
@@ -514,12 +489,12 @@ class AppraisalCycleTemplateAssignmentService
         $designations =
             $db
             ->table('designations')
-            ->select('id, name')
+            ->select('id, title AS name')
             ->where(
                 'organization_id',
                 $organizationId
             )
-            ->orderBy('name', 'ASC')
+            ->orderBy('title', 'ASC')
             ->get()
             ->getResultArray();
 
@@ -554,7 +529,7 @@ class AppraisalCycleTemplateAssignmentService
         $templates =
             $this
             ->templates
-            ->select('id, name')
+            ->select('id, template_name AS name')
             ->where(
                 'organization_id',
                 $organizationId
@@ -564,7 +539,7 @@ class AppraisalCycleTemplateAssignmentService
                 'active'
             )
             ->orderBy(
-                'name',
+                'template_name',
                 'ASC'
             )
             ->findAll();

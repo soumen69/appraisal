@@ -32,6 +32,18 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
     $routes->get('profile', 'AuthController::profile');
     $routes->get('logout', 'AuthController::logout');
 
+
+    $routes->group('my-reviews', static function ($routes) {
+        $routes->get('/', 'MyReviewController::index');
+        $routes->get('list', 'MyReviewController::list');
+        $routes->post('(:num)/start', 'MyReviewController::start/$1');
+        $routes->get('review/(:num)', 'MyReviewController::review/$1');
+        $routes->get('review/(:num)/data', 'MyReviewController::reviewData/$1');
+        $routes->post('review/(:num)/save-draft', 'MyReviewController::saveDraft/$1');
+        $routes->post('review/(:num)/submit', 'MyReviewController::submit/$1');
+    });
+
+
     $routes->group(
         '',
         ['namespace' => 'App\Controllers\Admin'],

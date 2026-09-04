@@ -29,168 +29,216 @@
 
     <div class="row g-4">
         <div class="col-xl-4">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
-                    <div class="d-flex align-items-start gap-3 mb-4">
-                        <div class="bg-primary-subtle text-primary rounded-3 p-2">
-                            <i class="bi bi-person-plus fs-5"></i>
+
+            <!-- Individual Participant -->
+
+            <div class="card border-0 shadow-sm mb-3">
+
+                <div class="card-body p-3">
+
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+
+                        <div class="d-flex align-items-center gap-2">
+
+                            <div class="bg-primary-subtle text-primary rounded-2 px-2 py-1">
+                                <i class="bi bi-person-plus"></i>
+                            </div>
+
+                            <div>
+
+                                <div class="fw-semibold">
+                                    Add Participant
+                                </div>
+
+                                <small class="text-muted">
+                                    Individual employee
+                                </small>
+
+                            </div>
+
                         </div>
-                        <div>
-                            <h5 class="mb-1">Add Participant</h5>
-                            <div class="small text-muted">Add an individual employee to this appraisal cycle.</div>
-                        </div>
+
                     </div>
 
+
                     <form id="crudForm">
+
                         <div class="mb-3">
-                            <label for="employee_id" class="form-label">Employee <span class="text-danger">*</span></label>
-                            <select id="employee_id" name="employee_id" class="form-select">
-                                <option value="">Select Employee</option>
+
+                            <label
+                                for="employee_id"
+                                class="form-label small mb-1">
+
+                                Employee
+                                <span class="text-danger">*</span>
+
+                            </label>
+
+                            <select
+                                id="employee_id"
+                                name="employee_id"
+                                class="form-select form-select-sm">
+                                <option value="">
+                                    Select Employee
+                                </option>
                             </select>
                         </div>
 
                         <input type="hidden" id="participant_id" name="participant_id">
-
                         <div id="participantStatusWrapper" class="mb-3 d-none">
-                            <label for="status" class="form-label">Status</label>
-                            <select id="status" name="status" class="form-select">
-                                <option value="active">Active</option>
-                                <option value="excluded">Excluded</option>
+                            <label for="status" class="form-label small mb-1">
+                                Status
+                            </label>
+
+                            <select id="status" name="status" class="form-select form-select-sm">
+                                <option value="active">
+                                    Active
+                                </option>
+                                <option value="excluded">
+                                    Excluded
+                                </option>
                             </select>
-                            <div class="form-text">Excluded employees remain in the cycle but are not considered active participants.</div>
                         </div>
-
                         <div class="d-flex gap-2">
-                            <button type="submit" class="btn btn-primary flex-grow-1" id="participantSubmitButton">
+                            <button type="submit" class="btn btn-primary btn-sm flex-grow-1" id="participantSubmitButton">
                                 <i class="bi bi-person-plus me-1"></i>
-                                Add Participant
+                                Add
                             </button>
-
-                            <button type="button" class="btn btn-light d-none" id="participantCancelButton">
+                            <button type="button" class="btn btn-light btn-sm d-none" id="participantCancelButton">
                                 Cancel
                             </button>
                         </div>
-
                     </form>
-
                 </div>
             </div>
 
+            <!-- Bulk Participants -->
             <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-
-                    <div class="d-flex align-items-start gap-3 mb-4">
-                        <div class="bg-success-subtle text-success rounded-3 p-2">
-                            <i class="bi bi-people fs-5"></i>
+                <div class="card-body p-3">
+                    <!-- Header -->
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="bg-success-subtle text-success rounded-2 px-2 py-1">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <div>
+                                <div class="fw-semibold">
+                                    Bulk Add
+                                </div>
+                                <small class="text-muted">
+                                    By department or employee
+                                </small>
+                            </div>
                         </div>
-
-                        <div>
-                            <h5 class="mb-1">Bulk Add Participants</h5>
-                            <div class="small text-muted">Select multiple employees and add them to the cycle at once.</div>
+                        <span class="badge bg-primary-subtle text-primary" id="selectedEmployeeCount">
+                            0 selected
+                        </span>
+                    </div>
+                    <!-- Global Actions -->
+                    <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-2">
+                        <small class="fw-semibold text-muted">
+                            AVAILABLE EMPLOYEES
+                        </small>
+                        <div class="form-check form-check-sm mb-0">
+                            <input class="form-check-input" type="checkbox" id="selectAllEmployees">
+                            <label class="form-check-label small" for="selectAllEmployees">
+                                All
+                            </label>
                         </div>
                     </div>
-
-                    <div class="mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-
-                            <label class="form-label mb-0">Available Employees</label>
-
-                            <div class="form-check mb-0">
-                                <input class="form-check-input" type="checkbox" id="selectAllEmployees">
-                                <label class="form-check-label small fw-semibold" for="selectAllEmployees">
-                                    Select All
-                                </label>
-                            </div>
-
-                        </div>
-
-                        <div class="small text-muted mb-2">
-                            <span id="selectedEmployeeCount">0 selected</span>
-                        </div>
-
-                        <div id="bulkEmployeeList" class="participant-employee-list">
-
-                            <div class="text-center py-4 text-muted">
-                                <div class="spinner-border spinner-border-sm me-2"></div>
-                                Loading employees...
-                            </div>
-
+                    <!-- Department Wise List -->
+                    <div id="bulkEmployeeList" class="participant-employee-list">
+                        <div class="text-center py-4 text-muted">
+                            <div class="spinner-border spinner-border-sm me-2"></div>
+                            Loading...
                         </div>
                     </div>
-
-                    <button type="button" class="btn btn-outline-primary w-100" id="bulkParticipantSubmit">
-                        <i class="bi bi-people me-1"></i>
-                        Add Selected Participants
+                    <button type="button" class="btn btn-primary btn-sm w-100 mt-3" id="bulkParticipantSubmit">
+                        <i class="bi bi-person-plus me-1"></i>
+                        Add Selected
                     </button>
-
                 </div>
             </div>
-
         </div>
 
         <div class="col-xl-8">
 
-            <div class="card border-0 shadow-sm">
+            <?= view('layouts/components/crud_toolbar', [
+                'entity' => 'Participant',
+                'entityPlural' => 'Cycle Participants',
+            ]) ?>
 
-                <div class="card-header bg-white border-bottom py-3 px-4">
-
-                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
-
-                        <div>
-                            <h5 class="mb-1">Participants</h5>
-                            <div class="small text-muted">Employees currently included in this appraisal cycle.</div>
-                        </div>
-
-                        <div id="crudToolbar"></div>
-
-                    </div>
-
-                </div>
-
-                <div class="card-body p-0">
-
-                    <?= view('layouts/components/crud_table') ?>
-
-                </div>
-
-            </div>
+            <?= view('layouts/components/crud_table') ?>
 
         </div>
 
     </div>
 
 </div>
+
 <style>
     .participant-employee-list {
-        max-height: 420px;
+        max-height: 520px;
         overflow-y: auto;
         border: 1px solid var(--bs-border-color);
         border-radius: .5rem;
     }
 
+    .department-group {
+        border-bottom: 1px solid var(--bs-border-color);
+    }
+
+    .department-group:last-child {
+        border-bottom: 0;
+    }
+
+    .department-header {
+        min-height: 38px;
+        padding: .45rem .65rem;
+        background: var(--bs-light);
+
+    }
+
+    .department-employees {
+        background: #fff;
+    }
+
     .employee-selection-row {
         cursor: pointer;
-        transition: background-color .15s ease;
+        min-height: 38px;
+        padding: .4rem .75rem .4rem 2.15rem;
+        border-bottom: 1px solid rgba(0, 0, 0, .04);
+        transition: background-color .12s ease;
     }
 
     .employee-selection-row:last-child {
-        border-bottom: 0 !important;
+        border-bottom: 0;
     }
 
     .employee-selection-row:hover {
-        background-color: var(--bs-light);
+        background: var(--bs-light);
     }
 
     .participant-selected-row {
-        background-color: var(--bs-primary-bg-subtle);
+        background: var(--bs-primary-bg-subtle);
+    }
+
+    .employee-meta {
+        font-size: .72rem;
+    }
+
+    .department-checkbox,
+    .employee-checkbox {
+        cursor: pointer;
     }
 
     @media (max-width: 1199.98px) {
         .participant-employee-list {
-            max-height: 300px;
+            max-height: 400px;
         }
     }
 </style>
+
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
@@ -220,19 +268,14 @@
             entity: 'Participant',
             entityPlural: 'Cycle Participants',
             permissionResource: 'appraisal-cycle',
+
             columns: [{
                     key: 'first_name',
                     label: 'Employee',
                     render: function(value, row) {
-
                         const fullName = [row.first_name, row.last_name].filter(Boolean).join(' ');
 
-                        return `
-                        <div>
-                            <div class="fw-semibold">${CrudUtils.escapeHtml(fullName || '-')}</div>
-                            <small class="text-muted">${CrudUtils.escapeHtml(row.email || '-')}</small>
-                        </div>
-                    `;
+                        return `<div><div class="fw-semibold">${CrudUtils.escapeHtml(fullName || '-')}</div><small class="text-muted">${CrudUtils.escapeHtml(row.email || '-')}</small></div>`;
                     }
                 },
                 {
@@ -260,12 +303,9 @@
                     key: 'resolved_template_name',
                     label: 'Assigned Template',
                     render: function(value, row) {
+
                         if (!value) {
-                            return `
-                                <span class="text-muted small">
-                                    Not Assigned
-                                </span>
-                            `;
+                            return '<span class="text-muted small">Not Assigned</span>';
                         }
 
                         const sourceLabels = {
@@ -274,20 +314,9 @@
                             department: 'Department Rule'
                         };
 
-                        const source =
-                            sourceLabels[row.template_source] ||
-                            'Assignment Rule';
-                        return `
-                        <div>
-                            <div class="fw-semibold">
-                                ${CrudUtils.escapeHtml(value)}
-                            </div>
-                            <small class="text-muted">
-                                ${CrudUtils.escapeHtml(source)}
-                            </small>
+                        const source = sourceLabels[row.template_source] || 'Assignment Rule';
 
-                        </div>
-                    `;
+                        return `<div><div class="fw-semibold">${CrudUtils.escapeHtml(value)}</div><small class="text-muted">${CrudUtils.escapeHtml(source)}</small></div>`;
                     }
                 },
                 {
@@ -303,95 +332,62 @@
                 const actions = [];
 
                 if (crud.can('edit')) {
-                    actions.push(`
-                    <li>
-                        <a class="dropdown-item btn-edit" href="#" data-id="${id}">
-                            <i class="bi bi-pencil me-2"></i>
-                            Manage Status
-                        </a>
-                    </li>
-                `);
+                    actions.push(`<li><a class="dropdown-item btn-edit" href="#" data-id="${id}"><i class="bi bi-pencil me-2"></i>Manage Status</a></li>`);
                 }
 
                 if (crud.can('delete')) {
+
                     if (actions.length) {
-                        actions.push(`
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                    `);
+                        actions.push('<li><hr class="dropdown-divider"></li>');
                     }
 
-                    actions.push(`
-                    <li>
-                        <a class="dropdown-item text-danger btn-delete" href="#" data-id="${id}">
-                            <i class="bi bi-trash me-2"></i>
-                            Remove
-                        </a>
-                    </li>
-                `);
+                    actions.push(`<li><a class="dropdown-item text-danger btn-delete" href="#" data-id="${id}"><i class="bi bi-trash me-2"></i>Remove</a></li>`);
                 }
 
                 if (!actions.length) {
-                    actions.push(`
-                    <li>
-                        <span class="dropdown-item-text text-muted">
-                            No available actions
-                        </span>
-                    </li>
-                `);
+                    actions.push('<li><span class="dropdown-item-text text-muted">No available actions</span></li>');
                 }
+
                 return actions.join('');
-            },
-
-            drawerRenderer: function(data) {
-                const fullName = [data.first_name, data.last_name].filter(Boolean).join(' ');
-
-                return `
-                <div class="drawer-row mb-4">
-                    <div class="small text-muted text-uppercase fw-semibold mb-1">Employee</div>
-                    <div class="fw-semibold fs-5">${CrudUtils.escapeHtml(fullName || '-')}</div>
-                    <div class="text-muted small mt-1">${CrudUtils.escapeHtml(data.email || '-')}</div>
-                </div>
-                <div class="drawer-row mb-3">
-                    <div class="small text-muted text-uppercase fw-semibold mb-1">Employee Code</div>
-                    <div>${CrudUtils.escapeHtml(data.employee_code || '-')}</div>
-                </div>
-                <div class="drawer-row mb-3">
-                    <div class="small text-muted text-uppercase fw-semibold mb-1">Department</div>
-                    <div>${CrudUtils.escapeHtml(data.department_name || '-')}</div>
-                </div>
-                <div class="drawer-row mb-3">
-                    <div class="small text-muted text-uppercase fw-semibold mb-1">Designation</div>
-                    <div>${CrudUtils.escapeHtml(data.designation_name || '-')}</div>
-                </div>
-                <div class="drawer-row mb-3">
-                    <div class="small text-muted text-uppercase fw-semibold mb-1">Status</div>
-                    <div>${renderParticipantStatus(data.status)}</div>
-                </div>
-            `;
             }
         });
+
+        $('#btnAdd').on('click', function(e) {
+            e.preventDefault();
+            $('#employee_id').focus();
+            $('html, body').animate({
+                scrollTop: $('#crudForm').offset().top - 100
+            }, 250);
+        });
+
+        $('#btnExport').hide();
+
         loadAvailableEmployees();
 
         $(document).on('click', '.btn-edit', function(e) {
             e.preventDefault();
+
             const participantId = $(this).data('id');
             const row = findParticipantRow(participantId);
+
             if (!row) {
                 APP.error('Unable to load participant details.');
                 return;
             }
+
             openParticipantEdit(row);
         });
 
         $('#crudForm').on('submit', function(e) {
             e.preventDefault();
+
             const participantId = $('#participant_id').val();
+
             if (participantId) {
                 updateParticipant(participantId);
                 return;
             }
+
             addParticipant();
         });
 
@@ -405,48 +401,45 @@
     });
 
     function renderParticipantStatus(status) {
+
         const statuses = {
             active: '<span class="badge bg-success-subtle text-success">Active</span>',
             excluded: '<span class="badge bg-secondary-subtle text-secondary">Excluded</span>'
         };
 
-        return statuses[status] || `
-        <span class="badge bg-light text-dark border">
-            ${CrudUtils.escapeHtml(status || '-')}
-        </span>
-    `;
+        return statuses[status] || `<span class="badge bg-light text-dark border">${CrudUtils.escapeHtml(status || '-')}</span>`;
     }
 
     function findParticipantRow(participantId) {
-        let participant = null;
-        $('#crudTable tbody tr').each(function() {
-            const rowData = $(this).data('row');
-            if (rowData && String(rowData.id) === String(participantId)) {
-                participant = rowData;
-                return false;
-            }
-        });
-        return participant;
+        return (window.participantCrud.data || []).find(row => String(row.id) === String(participantId)) || null;
     }
 
     function loadAvailableEmployees() {
         const cycleId = <?= (int) $cycleId ?>;
 
+        $('#bulkEmployeeList').html('<div class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm me-2"></div>Loading employees...</div>');
+
         $.ajax({
             url: '<?= base_url('appraisal/cycles') ?>/' + cycleId + '/participants/available-employees',
             type: 'GET',
             success(response) {
-                if (!response.success) {
-                    APP.error(response.message || 'Unable to load employees.');
+                console.log('Available Employees Response:', response);
+
+                if (!response || !response.success) {
+                    $('#bulkEmployeeList').html('<div class="text-center py-4 text-danger"><small>' + CrudUtils.escapeHtml(response?.message || 'Unable to load employees.') + '</small></div>');
+                    APP.error(response?.message || 'Unable to load employees.');
                     return;
                 }
+
                 renderAvailableEmployees(response.data || []);
             },
-
             error(xhr) {
-                if (APP.handleUnauthorized(xhr)) {
-                    return;
-                }
+                if (APP.handleUnauthorized(xhr)) return;
+
+                console.error('Available Employees Error:', xhr);
+
+                $('#bulkEmployeeList').html('<div class="text-center py-4 text-danger"><small>' + CrudUtils.escapeHtml(xhr.responseJSON?.message || 'Unable to load employees.') + '</small></div>');
+
                 APP.error(xhr.responseJSON?.message || 'Unable to load employees.');
             }
         });
@@ -455,51 +448,58 @@
     function renderAvailableEmployees(employees) {
         const $employeeSelect = $('#employee_id');
         const $employeeList = $('#bulkEmployeeList');
+
         $employeeSelect.empty().append('<option value="">Select Employee</option>');
 
-        if (!employees.length) {
-            $employeeList.html(`
-            <div class="text-center py-4 text-muted">
-                <i class="bi bi-people fs-3 d-block mb-2"></i>
-                No employees available to add.
-            </div>
-        `);
+        if (!Array.isArray(employees) || !employees.length) {
+            $employeeList.html('<div class="text-center py-4 text-muted"><i class="bi bi-people fs-4 d-block mb-2"></i><small>No employees available.</small></div>');
             return;
         }
 
-        let html = '';
+        const departments = {};
 
         employees.forEach(function(employee) {
+            const departmentName = employee.department_name && String(employee.department_name).trim() ? String(employee.department_name).trim() : 'Unassigned';
+
+            if (!departments[departmentName]) departments[departmentName] = [];
+
+            departments[departmentName].push(employee);
+
             const fullName = [employee.first_name, employee.last_name].filter(Boolean).join(' ');
-            $employeeSelect.append(
-                $('<option>', {
-                    value: employee.id,
-                    text: fullName + (employee.employee_code ? ' (' + employee.employee_code + ')' : '')
-                })
-            );
 
-            html += `
-            <label class="d-flex align-items-center gap-3 p-3 border-bottom mb-0 employee-selection-row">
-                <input class="form-check-input employee-checkbox m-0" type="checkbox" value="${employee.id}">
+            $employeeSelect.append($('<option>', {
+                value: employee.id,
+                text: fullName + (employee.employee_code ? ' (' + employee.employee_code + ')' : '')
+            }));
+        });
 
-                <div class="flex-grow-1 overflow-hidden">
-                    <div class="fw-semibold text-truncate">${CrudUtils.escapeHtml(fullName || '-')}</div>
+        let html = '';
 
-                    <div class="small text-muted text-truncate">
-                        ${CrudUtils.escapeHtml(employee.employee_code || '-')}
-                        ${employee.department_name ? ' · ' + CrudUtils.escapeHtml(employee.department_name) : ''}
-                        ${employee.designation_name ? ' · ' + CrudUtils.escapeHtml(employee.designation_name) : ''}
-                    </div>
-                </div>
-            </label>
-        `;
+        Object.keys(departments).sort().forEach(function(departmentName, index) {
+            const departmentEmployees = departments[departmentName];
+            const departmentId = 'departmentEmployees' + index;
+
+            html += `<div class="department-group"><div class="department-header d-flex align-items-center gap-2"><button type="button" class="btn btn-sm p-0 border-0 text-muted department-toggle" data-target="${departmentId}"><i class="bi bi-chevron-down"></i></button><input type="checkbox" class="form-check-input m-0 department-checkbox" data-department="${departmentId}"><div class="flex-grow-1 text-truncate"><span class="fw-semibold small">${CrudUtils.escapeHtml(departmentName)}</span><span class="text-muted small ms-1">(${departmentEmployees.length})</span></div></div><div class="department-employees" id="${departmentId}">`;
+
+            departmentEmployees.forEach(function(employee) {
+                const fullName = [employee.first_name, employee.last_name].filter(Boolean).join(' ');
+                const employeeCode = employee.employee_code ? CrudUtils.escapeHtml(employee.employee_code) : '';
+                const designationName = employee.designation_name ? ' · ' + CrudUtils.escapeHtml(employee.designation_name) : '';
+
+                html += `<label class="employee-selection-row d-flex align-items-center gap-2 mb-0"><input class="form-check-input employee-checkbox m-0" type="checkbox" value="${employee.id}" data-department="${departmentId}"><div class="flex-grow-1 overflow-hidden"><div class="small fw-medium text-truncate">${CrudUtils.escapeHtml(fullName || '-')}</div><div class="employee-meta text-muted text-truncate">${employeeCode}${designationName}</div></div></label>`;
+            });
+
+            html += `</div></div>`;
         });
 
         $employeeList.html(html);
     }
 
+
     function addParticipant() {
+
         const employeeId = $('#employee_id').val();
+
         if (!employeeId) {
             APP.error('Please select an employee.');
             return;
@@ -507,6 +507,7 @@
 
         const cycleId = <?= (int) $cycleId ?>;
         const $button = $('#participantSubmitButton');
+
         $button.prop('disabled', true);
 
         $.ajax({
@@ -517,19 +518,23 @@
             },
 
             success(response) {
+
                 if (!response.success) {
                     APP.error(response.message || 'Unable to add participant.');
                     return;
                 }
+
                 APP.success(response.message || 'Participant added successfully.');
                 resetParticipantForm();
                 refreshParticipantData();
             },
 
             error(xhr) {
+
                 if (APP.handleUnauthorized(xhr)) {
                     return;
                 }
+
                 APP.error(xhr.responseJSON?.message || 'Unable to add participant.');
             },
 
@@ -540,19 +545,23 @@
     }
 
     function openParticipantEdit(participant) {
+
         $('#participant_id').val(participant.id);
         $('#employee_id').val(participant.employee_id).prop('disabled', true);
         $('#status').val(participant.status || 'active');
         $('#participantStatusWrapper').removeClass('d-none');
         $('#participantSubmitButton').html('<i class="bi bi-check2 me-1"></i> Update Status');
         $('#participantCancelButton').removeClass('d-none');
+
         $('html, body').animate({
             scrollTop: $('#crudForm').offset().top - 100
         }, 250);
     }
 
     function updateParticipant(participantId) {
+
         const $button = $('#participantSubmitButton');
+
         $button.prop('disabled', true);
 
         $.ajax({
@@ -563,19 +572,23 @@
             },
 
             success(response) {
+
                 if (!response.success) {
                     APP.error(response.message || 'Unable to update participant.');
                     return;
                 }
+
                 APP.success(response.message || 'Participant updated successfully.');
                 resetParticipantForm();
                 refreshParticipantData();
             },
 
             error(xhr) {
+
                 if (APP.handleUnauthorized(xhr)) {
                     return;
                 }
+
                 APP.error(xhr.responseJSON?.message || 'Unable to update participant.');
             },
 
@@ -586,48 +599,104 @@
     }
 
     function resetParticipantForm() {
+
         $('#crudForm')[0].reset();
         $('#participant_id').val('');
         $('#employee_id').prop('disabled', false);
         $('#participantStatusWrapper').addClass('d-none');
-        $('#participantSubmitButton')
-            .html('<i class="bi bi-person-plus me-1"></i> Add Participant');
+        $('#participantSubmitButton').html('<i class="bi bi-person-plus me-1"></i> Add Participant');
         $('#participantCancelButton').addClass('d-none');
     }
 
-    $(document).on('change', '#selectAllEmployees', function() {
-        $('.employee-checkbox').prop('checked', $(this).is(':checked'));
-        updateSelectedEmployeeCount();
+    $(document).on('change', '#selectAllEmployees',
+        function() {
+            const checked = $(this).is(':checked');
+            $('.employee-checkbox').prop('checked', checked).trigger('change');
+            updateDepartmentCheckboxes();
+            updateSelectedEmployeeCount();
+        }
+    );
+
+    $(document).on('change', '.department-checkbox',
+        function() {
+            const departmentId = $(this).data('department');
+            const checked = $(this).is(':checked');
+            $(`#${departmentId}`).find('.employee-checkbox').prop('checked', checked);
+            $(`#${departmentId}`).find('.employee-selection-row').toggleClass('participant-selected-row', checked);
+            updateGlobalCheckbox();
+            updateSelectedEmployeeCount();
+        }
+    );
+
+    $(document).on('change', '.employee-checkbox',
+        function() {
+            $(this).closest('.employee-selection-row').toggleClass('participant-selected-row', $(this).is(':checked'));
+            updateDepartmentCheckboxes();
+            updateGlobalCheckbox();
+            updateSelectedEmployeeCount();
+        }
+    );
+
+    $(document).on('click', '.department-toggle', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const targetId = $(this).data('target');
+        const $employees = $('#' + targetId);
+        const $icon = $(this).find('i');
+
+        $employees.stop(true, true).slideToggle(150);
+
+        $icon.toggleClass('bi-chevron-down bi-chevron-up');
     });
 
-    $(document).on('change', '.employee-checkbox', function() {
+    function updateDepartmentCheckboxes() {
+        $('.department-group')
+            .each(
+                function() {
+                    const $group = $(this);
+                    const $employees = $group.find('.employee-checkbox');
+                    const total = $employees.length;
+                    const selected = $employees.filter(':checked').length;
+                    const $checkbox = $group.find('.department-checkbox');
+                    $checkbox.prop('checked', total > 0 && total === selected);
+                    $checkbox.prop('indeterminate', selected > 0 && selected < total);
+                }
+            );
+    }
+
+    function updateGlobalCheckbox() {
         const total = $('.employee-checkbox').length;
         const selected = $('.employee-checkbox:checked').length;
-        $('#selectAllEmployees').prop('checked', total > 0 && total === selected);
-        updateSelectedEmployeeCount();
-    });
+        $('#selectAllEmployees').prop('checked', total > 0 && total === selected).prop('indeterminate', selected > 0 && selected < total);
+    }
+
+    function updateSelectedEmployeeCount() {
+        const selected = $('.employee-checkbox:checked').length;
+        $('#selectedEmployeeCount').text(selected + ' selected');
+    }
 
     $(document).on('change', '.employee-checkbox', function() {
 
-        $(this)
-            .closest('.employee-selection-row')
-            .toggleClass('participant-selected-row', $(this).is(':checked'));
+        const total = $('.employee-checkbox').length;
+        const selected = $('.employee-checkbox:checked').length;
+
+        $('#selectAllEmployees').prop('checked', total > 0 && total === selected);
+
+        $(this).closest('.employee-selection-row').toggleClass('participant-selected-row', $(this).is(':checked'));
+
+        updateSelectedEmployeeCount();
     });
 
     function updateSelectedEmployeeCount() {
-
-        const count = $('.employee-checkbox:checked').length;
-
-        $('#selectedEmployeeCount').text(count + ' selected');
+        $('#selectedEmployeeCount').text($('.employee-checkbox:checked').length + ' selected');
     }
 
     function addParticipantsBulk() {
 
-        const employeeIds = $('.employee-checkbox:checked')
-            .map(function() {
-                return $(this).val();
-            })
-            .get();
+        const employeeIds = $('.employee-checkbox:checked').map(function() {
+            return $(this).val();
+        }).get();
 
         if (!employeeIds.length) {
             APP.error('Please select at least one employee.');
@@ -654,7 +723,6 @@
                 }
 
                 APP.success(response.message || 'Participants added successfully.');
-
                 $('#selectAllEmployees').prop('checked', false);
                 $('#selectedEmployeeCount').text('0 selected');
 
@@ -677,9 +745,7 @@
     }
 
     function refreshParticipantData() {
-
         loadAvailableEmployees();
-
         if (window.participantCrud && typeof window.participantCrud.load === 'function') {
             window.participantCrud.load();
             return;

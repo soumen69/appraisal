@@ -35,45 +35,25 @@ class AppraisalCycleTemplateAssignmentController extends BaseController
     }
 
 
-    public function list(
-        int $cycleId
-    ) {
-
+    public function list(int $cycleId)
+    {
         try {
+            $assignments = $this->assignmentService->getAssignments($cycleId);
 
-            $assignments =
-                $this
-                ->assignmentService
-                ->getAssignments(
-                    $cycleId
-                );
-
-
-            return $this
-                ->response
-                ->setJSON([
-                    'success' =>
-                    true,
-
-                    'data' =>
-                    $assignments
-                ]);
-        } catch (
-            Throwable $e
-        ) {
-
-            return $this
-                ->response
-                ->setStatusCode(
-                    500
-                )
-                ->setJSON([
-                    'success' =>
-                    false,
-
-                    'message' =>
-                    $e->getMessage()
-                ]);
+            return $this->response->setJSON([
+                'success' => true,
+                'data' => [
+                    'data' => $assignments,
+                    'total' => count($assignments),
+                    'page' => 1,
+                    'lastPage' => 1
+                ]
+            ]);
+        } catch (Throwable $e) {
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
         }
     }
 
@@ -258,13 +238,7 @@ class AppraisalCycleTemplateAssignmentController extends BaseController
     {
         try {
 
-            $options =
-                $this
-                ->assignmentService
-                ->getAssignmentOptions(
-                    $cycleId
-                );
-
+            $options = $this->assignmentService->getAssignmentOptions($cycleId);
             return $this
                 ->response
                 ->setJSON([
