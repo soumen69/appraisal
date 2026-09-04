@@ -54,7 +54,10 @@ class MyReviewController extends BaseController
     public function review($reviewId)
     {
         return view('appraisal/my_reviews/review', [
-            'reviewId' => (int) $reviewId
+            'reviewId' => (int) $reviewId,
+            'title'          => 'My Reviews',
+            'page_title'     => 'My Reviews',
+            'page_subtitle'  => 'Welcome back, Super Admin'
         ]);
     }
 

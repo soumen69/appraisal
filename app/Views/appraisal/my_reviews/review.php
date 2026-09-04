@@ -2,209 +2,610 @@
 
 <?= $this->section('content') ?>
 
-<div class="container-fluid py-4" id="reviewPage">
-    <div class="d-flex align-items-center justify-content-between mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <a href="<?= base_url('my-reviews') ?>" class="btn btn-light border btn-sm px-3"><i class="bi bi-arrow-left"></i></a>
-            <div>
-                <div class="d-flex align-items-center gap-2 mb-1">
-                    <h2 class="mb-0 fw-semibold" id="reviewTitle">Appraisal Review</h2>
+<div id="reviewPage">
+    <div class="rv-header">
+        <div class="rv-header-row">
+            <a href="<?= base_url('my-reviews') ?>" class="btn btn-light border btn-sm rv-back"><i class="bi bi-arrow-left"></i></a>
+            <div class="rv-title-block">
+                <div class="rv-title-line">
+                    <h1 id="reviewTitle">Appraisal Review</h1>
                     <span id="reviewStatusBadge"></span>
                 </div>
-                <p class="text-muted mb-0" id="reviewSubtitle">Loading your appraisal review...</p>
-            </div>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-light border" id="btnSaveDraft" disabled><i class="bi bi-cloud-arrow-down me-1"></i> Save Draft</button>
-            <button type="button" class="btn btn-primary" id="btnSubmitReview" disabled><i class="bi bi-check2-circle me-1"></i> Submit Review</button>
-        </div>
-    </div>
-
-    <div id="reviewLoading">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body py-5 text-center">
-                <div class="spinner-border text-primary mb-3" role="status"></div>
-                <div class="fw-semibold fs-5">Loading Review...</div>
-                <div class="text-muted mt-1">Please wait while your appraisal review is prepared.</div>
+                <div class="rv-context" id="reviewContext">
+                    <span id="cycleName">-</span><span class="rv-dot">•</span><span id="templateName">-</span><span class="rv-dot">•</span><span id="appraisalPeriod">-</span>
+                </div>
             </div>
         </div>
     </div>
 
-    <div id="reviewError" class="d-none">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body py-5 text-center">
-                <div class="mb-3"><i class="bi bi-exclamation-circle text-danger" style="font-size: 3rem;"></i></div>
-                <h4 class="fw-semibold mb-2">Unable to Load Review</h4>
-                <p class="text-muted mb-4" id="reviewErrorMessage">Unable to load appraisal review.</p>
-                <a href="<?= base_url('my-reviews') ?>" class="btn btn-primary"><i class="bi bi-arrow-left me-1"></i> Back to My Reviews</a>
-            </div>
+    <div id="reviewLockedNotice" class="rv-locked-banner d-none">
+        <i class="bi bi-lock-fill"></i>
+        <span id="reviewLockedText">This review has been finalized and can no longer be edited.</span>
+    </div>
+
+    <div id="reviewLoading" class="rv-skeleton">
+        <div class="rv-skel rv-skel-line" style="width:40%;height:22px;"></div>
+        <div class="rv-skel rv-skel-line" style="width:60%;height:14px;margin-top:8px;"></div>
+        <div class="rv-skel-section">
+            <div class="rv-skel rv-skel-line" style="width:30%;height:16px;"></div>
+            <div class="rv-skel rv-skel-row"></div>
+            <div class="rv-skel rv-skel-row"></div>
+            <div class="rv-skel rv-skel-row"></div>
         </div>
+        <div class="rv-skel-section">
+            <div class="rv-skel rv-skel-line" style="width:35%;height:16px;"></div>
+            <div class="rv-skel rv-skel-row"></div>
+            <div class="rv-skel rv-skel-row"></div>
+        </div>
+    </div>
+
+    <div id="reviewError" class="rv-state-panel d-none">
+        <i class="bi bi-exclamation-circle"></i>
+        <div class="rv-state-title">Unable to load review</div>
+        <p id="reviewErrorMessage" class="rv-state-text">Unable to load appraisal review.</p>
+        <a href="<?= base_url('my-reviews') ?>" class="btn btn-primary btn-sm"><i class="bi bi-arrow-left me-1"></i>Back to My Reviews</a>
     </div>
 
     <div id="reviewContent" class="d-none">
-        <div class="row g-4">
-            <div class="col-xl-9">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body p-4">
-                        <div class="row g-4">
-                            <div class="col-md-6 col-lg-4">
-                                <div class="text-muted small mb-1">Appraisal Cycle</div>
-                                <div class="fw-semibold" id="cycleName">-</div>
-                                <small class="text-muted" id="cycleCode"></small>
-                            </div>
+        <div id="reviewSections"></div>
 
-                            <div class="col-md-6 col-lg-4">
-                                <div class="text-muted small mb-1">Review Template</div>
-                                <div class="fw-semibold" id="templateName">-</div>
-                            </div>
-
-                            <div class="col-md-6 col-lg-4">
-                                <div class="text-muted small mb-1">Appraisal Period</div>
-                                <div class="fw-semibold" id="appraisalPeriod">-</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="reviewSections"></div>
-            </div>
-
-            <div class="col-xl-3">
-                <div class="card border-0 shadow-sm position-sticky" style="top: 20px;">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h6 class="fw-semibold mb-0">Review Progress</h6>
-                            <span class="fw-semibold text-primary" id="progressPercentage">0%</span>
-                        </div>
-
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar" id="progressBar" role="progressbar" style="width: 0%;"></div>
-                        </div>
-
-                        <div class="small text-muted mb-4"><span id="answeredCount">0</span> of <span id="totalQuestions">0</span> questions answered</div>
-
-                        <div class="border-top pt-3">
-                            <div class="d-flex justify-content-between mb-2">
-                                <span class="text-muted small">Required Questions</span>
-                                <span class="fw-semibold small"><span id="requiredAnsweredCount">0</span>/<span id="requiredQuestionsCount">0</span></span>
-                            </div>
-
-                            <div class="d-flex justify-content-between">
-                                <span class="text-muted small">Overall Score</span>
-                                <span class="fw-semibold text-primary" id="overallScore">Not Rated</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-body p-4">
-                <label class="form-label fw-semibold">Overall Comments <span class="text-muted fw-normal">(Optional)</span></label>
-                <textarea class="form-control" id="overallComment" rows="4" placeholder="Add any overall comments about your performance, achievements, challenges or goals..."></textarea>
+        <div class="rv-overall" id="reviewOverall">
+            <button type="button" class="rv-overall-toggle" id="overallToggle">
+                <span><i class="bi bi-chat-square-text"></i> Overall assessment</span>
+                <i class="bi bi-chevron-down" id="overallChevron"></i>
+            </button>
+            <div class="rv-overall-body" id="overallBody">
+                <textarea class="form-control" id="overallComment" rows="3" placeholder="Add any overall comments about your performance, achievements, challenges or goals..."></textarea>
             </div>
         </div>
     </div>
 </div>
 
-<div class="review-action-bar d-none" id="reviewActionBar">
-    <div class="container-fluid">
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="small text-muted"><span id="bottomAnsweredCount">0</span> of <span id="bottomTotalQuestions">0</span> questions completed</div>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-light border" id="btnSaveDraftBottom"><i class="bi bi-cloud-arrow-down me-1"></i> Save Draft</button>
-                <button type="button" class="btn btn-primary" id="btnSubmitReviewBottom"><i class="bi bi-check2-circle me-1"></i> Submit Review</button>
-            </div>
+<div class="rv-floatbar d-none" id="reviewFloatBar">
+    <div class="rv-fb-progress">
+        <span class="rv-fb-percent" id="progressPercentage">0%</span>
+        <div class="rv-fb-track">
+            <div class="rv-fb-fill" id="progressBar"></div>
         </div>
+    </div>
+    <div class="rv-fb-stats">
+        <span title="Questions answered"><span id="answeredCount">0</span>/<span id="totalQuestions">0</span> done</span>
+        <span class="rv-fb-sep"></span>
+        <span title="Required questions answered">Req <span id="requiredAnsweredCount">0</span>/<span id="requiredQuestionsCount">0</span></span>
+        <span class="rv-fb-sep"></span>
+        <span title="Weighted average of rated questions">Score <strong id="overallScore">Not Rated</strong></span>
+        <span class="rv-fb-save-state" id="saveStateIndicator"></span>
+    </div>
+    <div class="rv-fb-actions">
+        <button type="button" class="btn btn-light border btn-sm" id="btnSaveDraft" disabled><i class="bi bi-cloud-arrow-down me-1"></i>Save Draft</button>
+        <button type="button" class="btn btn-primary btn-sm" id="btnSubmitReview" disabled><i class="bi bi-check2-circle me-1"></i>Submit Review</button>
     </div>
 </div>
 
 <style>
-    .review-question-card {
-        transition: box-shadow .2s ease, border-color .2s ease;
+    #reviewPage {
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 1rem 1rem 6.5rem;
     }
 
-    .review-question-card:hover {
-        border-color: rgba(var(--bs-primary-rgb), .35) !important;
-        box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+    .rv-header {
+        padding-bottom: .75rem;
+        margin-bottom: 1rem;
+        border-bottom: 1px solid var(--bs-border-color);
     }
 
-    .review-question-number {
-        width: 32px;
-        height: 32px;
-        min-width: 32px;
-        border-radius: 50%;
+    .rv-header-row {
+        display: flex;
+        align-items: flex-start;
+        gap: .75rem;
+    }
+
+    .rv-back {
+        flex-shrink: 0;
+        margin-top: .1rem;
+    }
+
+    .rv-title-block {
+        min-width: 0;
+        flex: 1;
+    }
+
+    .rv-title-line {
         display: flex;
         align-items: center;
-        justify-content: center;
-        background: var(--bs-primary-bg-subtle);
-        color: var(--bs-primary);
-        font-size: .8rem;
-        font-weight: 700;
+        gap: .6rem;
+        flex-wrap: wrap;
     }
 
-    .rating-option {
-        min-width: 64px;
-        padding: .7rem .5rem;
+    .rv-title-line h1 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .rv-context {
+        font-size: .8rem;
+        color: var(--bs-secondary-color);
+        margin-top: .2rem;
+    }
+
+    .rv-dot {
+        margin: 0 .45rem;
+        opacity: .5;
+    }
+
+    .rv-locked-banner {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .8rem;
+        padding: .5rem .75rem;
+        background: var(--bs-warning-bg-subtle);
+        border: 1px solid var(--bs-warning-border-subtle);
+        border-radius: .4rem;
+        margin-bottom: 1rem;
+    }
+
+    .rv-state-panel {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--bs-secondary-color);
+    }
+
+    .rv-state-panel i {
+        font-size: 2rem;
+        color: var(--bs-danger);
+    }
+
+    .rv-state-title {
+        font-weight: 600;
+        font-size: 1rem;
+        margin-top: .75rem;
+        color: var(--bs-body-color);
+    }
+
+    .rv-state-text {
+        font-size: .85rem;
+        margin: .35rem 0 1rem;
+    }
+
+    .rv-skel-line,
+    .rv-skel-row {
+        background: var(--bs-secondary-bg);
+        border-radius: .3rem;
+        animation: rv-pulse 1.3s ease-in-out infinite;
+    }
+
+    .rv-skel-row {
+        height: 40px;
+        margin-top: .6rem;
+    }
+
+    .rv-skel-section {
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--bs-border-color);
+    }
+
+    @keyframes rv-pulse {
+
+        0%,
+        100% {
+            opacity: .55;
+        }
+
+        50% {
+            opacity: 1;
+        }
+    }
+
+    .rv-section {
         border: 1px solid var(--bs-border-color);
         border-radius: .5rem;
-        background: #fff;
-        cursor: pointer;
-        transition: all .15s ease;
-        text-align: center;
-    }
-
-    .rating-option:hover {
-        border-color: var(--bs-primary);
-    }
-
-    .rating-option.active {
-        background: var(--bs-primary);
-        color: #fff;
-        border-color: var(--bs-primary);
-    }
-
-    .rating-option .rating-value {
-        font-weight: 700;
-        font-size: 1rem;
-        display: block;
-    }
-
-    .rating-option .rating-label {
-        font-size: .7rem;
-        display: block;
-        margin-top: .15rem;
-        white-space: nowrap;
+        margin-bottom: .75rem;
         overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .answer-yes-no .btn-check:checked+.btn {
+    /* .rv-section-head {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .55rem .85rem;
+        background: var(--bs-tertiary-bg);
+        border-bottom: 1px solid var(--bs-border-color);
+    } */
+
+
+    .rv-section-head {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .65rem .85rem;
+        background: var(--bs-tertiary-bg);
+        border: none;
+        cursor: pointer;
+        text-align: left;
+    }
+
+    .rv-section-head:hover {
+        background: var(--bs-secondary-bg);
+    }
+
+    .rv-section-head:focus {
+        outline: none;
+    }
+
+    .rv-section-chevron {
+        font-size: .8rem;
+        color: var(--bs-secondary-color);
+        transition: transform .2s ease;
+        flex-shrink: 0;
+    }
+
+    .rv-section.rv-collapsed .rv-section-chevron {
+        transform: rotate(-90deg);
+    }
+
+    .rv-section-index {
+        font-size: .7rem;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        width: 1.4rem;
+        flex-shrink: 0;
+    }
+
+    .rv-section-name {
+        font-weight: 600;
+        font-size: .88rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rv-section-desc {
+        font-size: .75rem;
+        color: var(--bs-secondary-color);
+        margin-top: .1rem;
+    }
+
+    .rv-section-count {
+        font-size: .72rem;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        white-space: nowrap;
+    }
+
+    .rv-section-count.rv-complete {
+        color: var(--bs-success);
+    }
+
+    .rv-section-bar {
+        height: 3px;
+        background: var(--bs-border-color-translucent);
+    }
+
+    .rv-section-bar-fill {
+        height: 100%;
         background: var(--bs-primary);
-        color: #fff;
+        transition: width .2s ease;
+    }
+
+    .rv-section-body {
+        display: block;
+    }
+
+    .rv-section.rv-collapsed .rv-section-body {
+        display: none;
+    }
+
+    .rv-section.rv-collapsed .rv-section-head {
+        border-bottom: none;
+    }
+
+    .rv-question {
+        display: flex;
+        gap: .65rem;
+        padding: .7rem .85rem;
+        border-bottom: 1px solid var(--bs-border-color);
+        position: relative;
+    }
+
+    .rv-question:last-child {
+        border-bottom: none;
+    }
+
+    .rv-question.rv-answered {
+        background: var(--bs-success-bg-subtle);
+    }
+
+    .rv-question.rv-flag-error {
+        background: var(--bs-danger-bg-subtle);
+    }
+
+    .rv-q-number {
+        font-size: .7rem;
+        font-weight: 600;
+        color: var(--bs-secondary-color);
+        width: 1.4rem;
+        flex-shrink: 0;
+        padding-top: .15rem;
+    }
+
+    .rv-q-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rv-q-text {
+        font-size: .85rem;
+        font-weight: 500;
+        line-height: 1.35;
+    }
+
+    .rv-q-req {
+        color: var(--bs-danger);
+        margin-left: .15rem;
+    }
+
+    .rv-q-answer {
+        margin-top: .5rem;
+        max-width: 640px;
+    }
+
+    .rv-q-status {
+        width: 1.1rem;
+        flex-shrink: 0;
+        text-align: center;
+        padding-top: .2rem;
+        color: var(--bs-success);
+        font-size: .95rem;
+    }
+
+    .rv-answer-text {
+        min-height: 2.4rem;
+        resize: none;
+        overflow: hidden;
+        font-size: .85rem;
+    }
+
+    .rv-answer-number {
+        max-width: 160px;
+        font-size: .85rem;
+    }
+
+    .rv-rating {
+        display: flex;
+        gap: .35rem;
+        flex-wrap: wrap;
+    }
+
+    .rv-rating-opt {
+        min-width: 2.6rem;
+        padding: .3rem .5rem;
+        border: 1px solid var(--bs-border-color);
+        border-radius: .35rem;
+        background: var(--bs-body-bg);
+        cursor: pointer;
+        text-align: center;
+        font-size: .8rem;
+        font-weight: 600;
+        line-height: 1.15;
+        transition: background .12s ease, border-color .12s ease, color .12s ease;
+    }
+
+    .rv-rating-opt .rv-rating-label {
+        display: block;
+        font-size: .62rem;
+        font-weight: 400;
+        color: var(--bs-secondary-color);
+        white-space: nowrap;
+    }
+
+    .rv-rating-opt:hover {
         border-color: var(--bs-primary);
     }
 
-    .review-section-header {
-        border-left: 4px solid var(--bs-primary);
+    .rv-rating-opt.active {
+        background: var(--bs-primary);
+        border-color: var(--bs-primary);
+        color: #fff;
     }
 
-    .review-action-bar {
+    .rv-rating-opt.active .rv-rating-label {
+        color: rgba(255, 255, 255, .85);
+    }
+
+    .rv-rating-opt:disabled,
+    .rv-rating-opt.rv-disabled {
+        pointer-events: none;
+        opacity: .65;
+    }
+
+    .rv-yesno {
+        display: inline-flex;
+        border: 1px solid var(--bs-border-color);
+        border-radius: .35rem;
+        overflow: hidden;
+    }
+
+    .rv-yesno-opt {
+        padding: .3rem .85rem;
+        font-size: .8rem;
+        font-weight: 600;
+        background: var(--bs-body-bg);
+        border: none;
+        cursor: pointer;
+        color: var(--bs-secondary-color);
+    }
+
+    .rv-yesno-opt+.rv-yesno-opt {
+        border-left: 1px solid var(--bs-border-color);
+    }
+
+    .rv-yesno-opt.active-yes {
+        background: var(--bs-success);
+        color: #fff;
+    }
+
+    .rv-yesno-opt.active-no {
+        background: var(--bs-danger);
+        color: #fff;
+    }
+
+    .rv-comment-toggle {
+        border: none;
+        background: none;
+        padding: 0;
+        font-size: .74rem;
+        color: var(--bs-primary);
+        margin-top: .4rem;
+        font-weight: 500;
+    }
+
+    .rv-comment-input {
+        margin-top: .4rem;
+        font-size: .8rem;
+        max-width: 640px;
+    }
+
+    .rv-overall {
+        border: 1px solid var(--bs-border-color);
+        border-radius: .5rem;
+        margin-bottom: 1rem;
+        overflow: hidden;
+    }
+
+    .rv-overall-toggle {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: .6rem .85rem;
+        background: var(--bs-tertiary-bg);
+        border: none;
+        font-size: .85rem;
+        font-weight: 600;
+    }
+
+    .rv-overall-body {
+        padding: .75rem .85rem;
+        display: none;
+    }
+
+    .rv-overall-body.rv-open {
+        display: block;
+    }
+
+    .rv-empty {
+        text-align: center;
+        padding: 2.5rem 1rem;
+        color: var(--bs-secondary-color);
+    }
+
+    .rv-empty i {
+        font-size: 1.8rem;
+    }
+
+    .rv-floatbar {
         position: sticky;
         bottom: 0;
-        z-index: 1000;
-        background: rgba(255, 255, 255, .96);
-        border-top: 1px solid var(--bs-border-color);
-        padding: .85rem 0;
-        box-shadow: 0 -.25rem .75rem rgba(0, 0, 0, .06);
-        margin-top: 2rem;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+        padding: .55rem .9rem;
+        margin: 0 auto;
+        max-width: 1180px;
+        background: rgba(var(--bs-body-bg-rgb), .92);
+        backdrop-filter: blur(8px);
+        border: 1px solid var(--bs-border-color);
+        border-radius: .6rem;
+        box-shadow: 0 .35rem 1rem rgba(0, 0, 0, .08);
     }
 
-    .question-required::after {
-        content: ' *';
-        color: var(--bs-danger);
+    .rv-fb-progress {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        flex-shrink: 0;
+    }
+
+    .rv-fb-percent {
+        font-size: .8rem;
+        font-weight: 700;
+        color: var(--bs-primary);
+        width: 2.4rem;
+    }
+
+    .rv-fb-track {
+        width: 70px;
+        height: 5px;
+        border-radius: 3px;
+        background: var(--bs-border-color-translucent);
+        overflow: hidden;
+    }
+
+    .rv-fb-fill {
+        height: 100%;
+        background: var(--bs-primary);
+        transition: width .2s ease;
+    }
+
+    .rv-fb-stats {
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        font-size: .74rem;
+        color: var(--bs-secondary-color);
+        flex-wrap: wrap;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rv-fb-sep {
+        width: 1px;
+        height: 12px;
+        background: var(--bs-border-color);
+    }
+
+    .rv-fb-save-state {
+        font-size: .72rem;
+        font-style: italic;
+    }
+
+    .rv-fb-actions {
+        display: flex;
+        gap: .5rem;
+        margin-left: auto;
+    }
+
+    @media (max-width: 767px) {
+        #reviewPage {
+            padding: .75rem .75rem 8rem;
+        }
+
+        .rv-floatbar {
+            flex-direction: column;
+            align-items: stretch;
+            gap: .5rem;
+            border-radius: .5rem;
+        }
+
+        .rv-fb-actions {
+            margin-left: 0;
+        }
+
+        .rv-fb-actions .btn {
+            flex: 1;
+        }
+
+        .rv-fb-stats {
+            order: 3;
+        }
     }
 </style>
 
@@ -216,28 +617,45 @@
 
 <script>
     const REVIEW_ID = <?= (int) $reviewId ?>;
+    const REVIEW_BASE_URL = '<?= base_url('my-reviews/review') ?>';
     let reviewData = null;
     let reviewAnswers = {};
     let reviewQuestions = [];
+    let reviewLocked = false;
+    let saveState = 'idle';
 
     $(function() {
         loadReviewData();
-        $('#btnSaveDraft, #btnSaveDraftBottom').on('click', saveDraft);
-        $('#btnSubmitReview, #btnSubmitReviewBottom').on('click', submitReview);
+        $('#btnSaveDraft').on('click', saveDraft);
+        $('#btnSubmitReview').on('click', submitReview);
+        $('#overallToggle').on('click', () => {
+            $('#overallBody').toggleClass('rv-open');
+            $('#overallChevron').toggleClass('bi-chevron-down bi-chevron-up');
+        });
+        $(document).on('click', '.rv-section-head', function() {
+            const $section = $(this).closest('.rv-section');
+            $section.toggleClass('rv-collapsed');
+        });
         $(document).on('input change', '.review-answer-input', handleAnswerChange);
-        $(document).on('click', '.rating-option', handleRatingSelection);
+        $(document).on('input', '.rv-answer-text', autoSizeTextarea);
+        $(document).on('click', '.rv-rating-opt', handleRatingSelection);
+        $(document).on('click', '.rv-yesno-opt', handleYesNoSelection);
+        $(document).on('click', '.rv-comment-toggle', function() {
+            $(this).next('.rv-comment-input').removeClass('d-none').trigger('focus');
+            $(this).addClass('d-none');
+        });
+        $(document).on('input', '#overallComment', () => setSaveState('unsaved'));
     });
 
     function loadReviewData() {
         $.ajax({
-            url: '<?= base_url('my-reviews/review') ?>/' + REVIEW_ID + '/data',
+            url: REVIEW_BASE_URL + '/' + REVIEW_ID + '/data',
             type: 'GET',
             success(response) {
                 if (!response.success) {
                     showReviewError(response.message || 'Unable to load appraisal review.');
                     return;
                 }
-
                 reviewData = response.data || {};
                 renderReview();
             },
@@ -255,19 +673,22 @@
     }
 
     function renderReview() {
+        const review = reviewData.review || {};
+        const cycle = reviewData.cycle || {};
+        const template = reviewData.template || {};
+
         $('#reviewLoading').addClass('d-none');
         $('#reviewContent').removeClass('d-none');
-        $('#reviewActionBar').removeClass('d-none');
+        $('#reviewFloatBar').removeClass('d-none');
 
-        $('#reviewTitle').text(reviewData.cycle_name || 'Appraisal Review');
-        $('#reviewSubtitle').text(reviewData.template_name || 'Complete your appraisal review.');
-        $('#cycleName').text(reviewData.cycle_name || '-');
-        $('#cycleCode').text(reviewData.cycle_code || '');
-        $('#templateName').text(reviewData.template_name || '-');
-        $('#appraisalPeriod').text(formatReviewDate(reviewData.start_date) + ' to ' + formatReviewDate(reviewData.end_date));
-        $('#overallComment').val(reviewData.overall_comment || '');
-        $('#reviewStatusBadge').html(renderReviewStatus(reviewData.status));
+        $('#reviewTitle').text(cycle.name || 'Appraisal Review');
+        $('#cycleName').text(cycle.name || '-');
+        $('#templateName').text(template.name || '-');
+        $('#appraisalPeriod').text(formatReviewDate(cycle.start_date) + ' – ' + formatReviewDate(cycle.end_date));
+        $('#overallComment').val(review.overall_comment || '');
+        $('#reviewStatusBadge').html(renderReviewStatus(review.status));
 
+        reviewLocked = ['submitted', 'approved'].includes(review.status);
         reviewQuestions = [];
         reviewAnswers = {};
 
@@ -280,26 +701,71 @@
 
         renderSections(reviewData.sections || []);
         updateReviewProgress();
-
-        const locked = ['submitted', 'approved'].includes(reviewData.status);
-        $('#btnSaveDraft, #btnSaveDraftBottom, #btnSubmitReview, #btnSubmitReviewBottom').prop('disabled', locked);
-
-        if (locked) {
-            $('#overallComment').prop('readonly', true);
-            $('.review-answer-input').prop('disabled', true);
-            $('.rating-option').css('pointer-events', 'none');
-        }
+        applyLockedState(review.status);
     }
+
+    function applyLockedState(status) {
+        if (!reviewLocked) {
+            $('#btnSaveDraft, #btnSubmitReview').prop('disabled', false);
+            return;
+        }
+
+        const label = status === 'approved' ? 'This review has been approved and is now read-only.' : 'This review has been submitted and is now read-only.';
+        $('#reviewLockedText').text(label);
+        $('#reviewLockedNotice').removeClass('d-none');
+        $('#overallComment').prop('readonly', true);
+        $('.review-answer-input').prop('disabled', true);
+        $('.rv-rating-opt, .rv-yesno-opt, .rv-comment-toggle').addClass('rv-disabled').prop('disabled', true);
+        $('#btnSaveDraft, #btnSubmitReview').prop('disabled', true);
+    }
+
+    // function renderSections(sections) {
+    //     if (!sections.length) {
+    //         $('#reviewSections').html(`
+    //             <div class="rv-empty">
+    //                 <i class="bi bi-clipboard-x"></i>
+    //                 <div class="fw-semibold mt-2">No questions available</div>
+    //                 <p class="mb-0 small">No questions are configured for this appraisal template.</p>
+    //             </div>
+    //         `);
+    //         return;
+    //     }
+
+    //     let html = '';
+
+    //     sections.forEach((section, sectionIndex) => {
+    //         const questions = section.questions || [];
+    //         const answeredCount = questions.filter(isQuestionAnswered).length;
+    //         const indexLabel = String(sectionIndex + 1).padStart(2, '0');
+
+    //         html += `
+    //             <div class="rv-section" data-section-id="${section.id}">
+    //                 <div class="rv-section-head">
+    //                     <span class="rv-section-index">${indexLabel}</span>
+    //                     <div class="rv-section-name">${CrudUtils.escapeHtml(section.section_name || 'Untitled section')}${section.description ? `<div class="rv-section-desc">${CrudUtils.escapeHtml(section.description)}</div>` : ''}</div>
+    //                     <span class="rv-section-count" data-section-total="${questions.length}">${answeredCount} / ${questions.length}</span>
+    //                 </div>
+    //                 <div class="rv-section-bar"><div class="rv-section-bar-fill" style="width:${questions.length ? (answeredCount / questions.length) * 100 : 0}%"></div></div>
+    //                 <div class="rv-section-questions">
+    //                     ${questions.map((question, questionIndex) => renderQuestion(question, questionIndex + 1)).join('')}
+    //                 </div>
+    //             </div>
+    //         `;
+    //     });
+
+    //     $('#reviewSections').html(html);
+    //     $('.rv-answer-text').each(function() {
+    //         autoSizeTextarea.call(this);
+    //     });
+    // }
 
     function renderSections(sections) {
         if (!sections.length) {
             $('#reviewSections').html(`
-            <div class="card border-0 shadow-sm">
-                <div class="card-body py-5 text-center">
-                    <i class="bi bi-clipboard-x fs-1 text-muted"></i>
-                    <h5 class="fw-semibold mt-3">No Questions Available</h5>
-                    <p class="text-muted mb-0">No questions are configured for this appraisal template.</p>
-                </div>
+            <div class="rv-empty">
+                <i class="bi bi-clipboard-x"></i>
+                <div class="fw-semibold mt-2">No questions available</div>
+                <p class="mb-0 small">No questions are configured for this appraisal template.</p>
             </div>
         `);
             return;
@@ -309,23 +775,33 @@
 
         sections.forEach((section, sectionIndex) => {
             const questions = section.questions || [];
+            const answeredCount = questions.filter(isQuestionAnswered).length;
+            const indexLabel = String(sectionIndex + 1).padStart(2, '0');
 
             html += `
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-0">
-                    <div class="p-4 border-bottom review-section-header">
-                        <div class="d-flex align-items-start justify-content-between gap-3">
-                            <div>
-                                <div class="text-primary small fw-semibold text-uppercase mb-1">Section ${sectionIndex + 1}</div>
-                                <h5 class="fw-semibold mb-1">${CrudUtils.escapeHtml(section.section_name || 'Untitled Section')}</h5>
-                                ${section.description ? `<p class="text-muted small mb-0">${CrudUtils.escapeHtml(section.description)}</p>` : ''}
-                            </div>
-                            <span class="badge bg-light text-dark border">${questions.length} Question${questions.length !== 1 ? 's' : ''}</span>
-                        </div>
+            <div class="rv-section ${sectionIndex === 0 ? '' : 'rv-collapsed'}" data-section-id="${section.id}">
+                <button type="button" class="rv-section-head">
+                    <span class="rv-section-index">${indexLabel}</span>
+
+                    <div class="rv-section-name">
+                        ${CrudUtils.escapeHtml(section.section_name || 'Untitled section')}
+                        ${section.description ? `<div class="rv-section-desc">${CrudUtils.escapeHtml(section.description)}</div>` : ''}
                     </div>
 
-                    <div class="p-4">
-                        ${questions.map((question, questionIndex) => renderQuestion(question, questionIndex + 1)).join('<hr class="my-4">')}
+                    <span class="rv-section-count ${questions.length > 0 && answeredCount === questions.length ? 'rv-complete' : ''}" data-section-total="${questions.length}">
+                        ${answeredCount} / ${questions.length}
+                    </span>
+
+                    <i class="bi bi-chevron-down rv-section-chevron"></i>
+                </button>
+
+                <div class="rv-section-body">
+                    <div class="rv-section-bar">
+                        <div class="rv-section-bar-fill" style="width:${questions.length ? (answeredCount / questions.length) * 100 : 0}%"></div>
+                    </div>
+
+                    <div class="rv-section-questions">
+                        ${questions.map((question, questionIndex) => renderQuestion(question, questionIndex + 1)).join('')}
                     </div>
                 </div>
             </div>
@@ -333,42 +809,33 @@
         });
 
         $('#reviewSections').html(html);
+
+        $('.rv-answer-text').each(function() {
+            autoSizeTextarea.call(this);
+        });
     }
 
     function renderQuestion(question, questionNumber) {
         const answer = reviewAnswers[question.id] || {};
         const required = Number(question.is_required) === 1 || question.is_required === true;
-        const questionText = CrudUtils.escapeHtml(question.question_text || question.question || 'Question');
-        const questionDescription = question.description || question.help_text || '';
-        const answerType = question.answer_type || question.question_type || 'text';
+        const questionText = CrudUtils.escapeHtml(question.question || 'Question');
+        const answerType = question.answer_type || 'text';
+        const answered = isQuestionAnswered(question);
+        const hasComment = answer.comment !== null && answer.comment !== undefined && String(answer.comment).trim() !== '';
+        const indexLabel = String(questionNumber).padStart(2, '0');
 
         return `
-        <div class="review-question-card" data-question-id="${question.id}">
-            <div class="d-flex gap-3">
-                <div class="review-question-number">${questionNumber}</div>
-
-                <div class="flex-grow-1">
-                    <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
-                        <div class="fw-semibold ${required ? 'question-required' : ''}">${questionText}</div>
-                        ${required ? '<span class="badge bg-danger-subtle text-danger border">Required</span>' : ''}
-                    </div>
-
-                    ${questionDescription ? `<div class="small text-muted mb-3">${CrudUtils.escapeHtml(questionDescription)}</div>` : ''}
-
-                    <div class="question-answer-container">
-                        ${renderQuestionInput(question, answer, answerType)}
-                    </div>
-
-                    ${question.allow_comment || question.enable_comment ? `
-                        <div class="mt-3">
-                            <label class="form-label small text-muted mb-1">Comment <span class="fw-normal">(Optional)</span></label>
-                            <textarea class="form-control form-control-sm review-answer-input" data-question-id="${question.id}" data-answer-field="comment" rows="2" placeholder="Add supporting comments...">${CrudUtils.escapeHtml(answer.comment || '')}</textarea>
-                        </div>
-                    ` : ''}
+            <div class="rv-question ${answered ? 'rv-answered' : ''}" data-question-id="${question.id}" data-required="${required ? 1 : 0}">
+                <div class="rv-q-number">${indexLabel}</div>
+                <div class="rv-q-body">
+                    <div class="rv-q-text">${questionText}${required ? '<span class="rv-q-req">*</span>' : ''}</div>
+                    <div class="rv-q-answer">${renderQuestionInput(question, answer, answerType)}</div>
+                    <button type="button" class="rv-comment-toggle ${hasComment ? 'd-none' : ''}"><i class="bi bi-plus-lg"></i> Add comment</button>
+                    <textarea class="form-control form-control-sm rv-comment-input review-answer-input ${hasComment ? '' : 'd-none'}" data-question-id="${question.id}" data-answer-field="comment" rows="2" placeholder="Add supporting comments...">${CrudUtils.escapeHtml(answer.comment || '')}</textarea>
                 </div>
+                <div class="rv-q-status" data-status-icon>${answered ? '<i class="bi bi-check-circle-fill"></i>' : ''}</div>
             </div>
-        </div>
-    `;
+        `;
     }
 
     function renderQuestionInput(question, answer, answerType) {
@@ -376,107 +843,125 @@
 
         switch (answerType) {
             case 'rating':
-            case 'scale':
                 return renderRatingInput(question, answer);
 
             case 'yes_no':
-            case 'boolean':
                 return `
-                <div class="answer-yes-no d-flex gap-2">
-                    <input type="radio" class="btn-check review-answer-input" name="question_${questionId}" id="question_${questionId}_yes" value="1" data-question-id="${questionId}" data-answer-field="answer_yes_no" ${Number(answer.answer_yes_no) === 1 ? 'checked' : ''}>
-                    <label class="btn btn-outline-primary px-4" for="question_${questionId}_yes"><i class="bi bi-check-lg me-1"></i> Yes</label>
-
-                    <input type="radio" class="btn-check review-answer-input" name="question_${questionId}" id="question_${questionId}_no" value="0" data-question-id="${questionId}" data-answer-field="answer_yes_no" ${Number(answer.answer_yes_no) === 0 && answer.answer_yes_no !== null ? 'checked' : ''}>
-                    <label class="btn btn-outline-secondary px-4" for="question_${questionId}_no"><i class="bi bi-x-lg me-1"></i> No</label>
-                </div>
-            `;
+                    <div class="rv-yesno" data-question-id="${questionId}">
+                        <button type="button" class="rv-yesno-opt review-answer-input ${Number(answer.answer_yes_no) === 1 ? 'active-yes' : ''}" data-question-id="${questionId}" data-answer-field="answer_yes_no" data-value="1" type="button"><i class="bi bi-check-lg"></i> Yes</button>
+                        <button type="button" class="rv-yesno-opt review-answer-input ${answer.answer_yes_no !== null && Number(answer.answer_yes_no) === 0 ? 'active-no' : ''}" data-question-id="${questionId}" data-answer-field="answer_yes_no" data-value="0" type="button"><i class="bi bi-x-lg"></i> No</button>
+                    </div>
+                `;
 
             case 'number':
-            case 'numeric':
-                return `<input type="number" step="0.01" class="form-control review-answer-input" data-question-id="${questionId}" data-answer-field="answer_number" value="${answer.answer_number ?? ''}" placeholder="Enter your answer">`;
-
-            case 'textarea':
-            case 'long_text':
-                return `<textarea class="form-control review-answer-input" data-question-id="${questionId}" data-answer-field="answer_text" rows="5" placeholder="Enter your response...">${CrudUtils.escapeHtml(answer.answer_text || '')}</textarea>`;
+                return `<input type="number" step="0.01" class="form-control form-control-sm review-answer-input rv-answer-number" data-question-id="${questionId}" data-answer-field="answer_number" value="${answer.answer_number ?? ''}" placeholder="0.00">`;
 
             case 'text':
             default:
-                return `<textarea class="form-control review-answer-input" data-question-id="${questionId}" data-answer-field="answer_text" rows="4" placeholder="Enter your response...">${CrudUtils.escapeHtml(answer.answer_text || '')}</textarea>`;
+                return `<textarea class="form-control form-control-sm review-answer-input rv-answer-text" data-question-id="${questionId}" data-answer-field="answer_text" rows="1" placeholder="Enter your response...">${CrudUtils.escapeHtml(answer.answer_text || '')}</textarea>`;
         }
     }
 
     function renderRatingInput(question, answer) {
         const questionId = question.id;
-        const ratingValues = question.rating_values || question.scale_values || reviewData.rating_values || [];
-
-        if (!ratingValues.length) {
-            const maxRating = Number(question.max_rating || reviewData.max_rating || 5);
-            for (let value = 1; value <= maxRating; value++) ratingValues.push({
-                value: value,
-                label: value
-            });
-        }
+        const maxRating = Number(question.max_rating || 5);
+        const ratingValues = [];
+        for (let value = 1; value <= maxRating; value++) ratingValues.push(value);
 
         return `
-        <div class="d-flex flex-wrap gap-2 rating-options" data-question-id="${questionId}">
-            ${ratingValues.map(item => {
-                const value = typeof item === 'object' ? (item.value ?? item.score ?? item.rating) : item;
-                const label = typeof item === 'object' ? (item.label ?? item.name ?? value) : value;
-                const active = Number(answer.rating) === Number(value);
-
-                return `
-                    <button type="button" class="rating-option ${active ? 'active' : ''}" data-question-id="${questionId}" data-rating="${value}">
-                        <span class="rating-value">${CrudUtils.escapeHtml(String(value))}</span>
-                        <span class="rating-label">${CrudUtils.escapeHtml(String(label))}</span>
-                    </button>
-                `;
-            }).join('')}
-        </div>
-    `;
+            <div class="rv-rating" data-question-id="${questionId}">
+                ${ratingValues.map(value => `
+                    <button type="button" class="rv-rating-opt review-answer-input ${Number(answer.rating) === value ? 'active' : ''}" data-question-id="${questionId}" data-answer-field="rating" data-value="${value}">${value}</button>
+                `).join('')}
+            </div>
+        `;
     }
 
     function handleRatingSelection() {
+        if (reviewLocked) return;
         const $button = $(this);
         const questionId = $button.data('question-id');
-        const rating = $button.data('rating');
+        const value = $button.data('value');
 
         reviewAnswers[questionId] = {
             ...(reviewAnswers[questionId] || {}),
-            rating: rating
+            rating: value
         };
-
-        $button.closest('.rating-options').find('.rating-option').removeClass('active');
+        $button.closest('.rv-rating').find('.rv-rating-opt').removeClass('active');
         $button.addClass('active');
 
-        updateReviewProgress();
+        onAnswerUpdated(questionId);
+    }
+
+    function handleYesNoSelection() {
+        if (reviewLocked) return;
+        const $button = $(this);
+        const questionId = $button.data('question-id');
+        const value = $button.data('value');
+
+        reviewAnswers[questionId] = {
+            ...(reviewAnswers[questionId] || {}),
+            answer_yes_no: value
+        };
+        const $group = $button.closest('.rv-yesno');
+        $group.find('.rv-yesno-opt').removeClass('active-yes active-no');
+        $button.addClass(Number(value) === 1 ? 'active-yes' : 'active-no');
+
+        onAnswerUpdated(questionId);
     }
 
     function handleAnswerChange() {
         const $input = $(this);
         const questionId = $input.data('question-id');
         const field = $input.data('answer-field');
-
         if (!questionId || !field) return;
-
-        let value;
-
-        if ($input.attr('type') === 'radio') {
-            if (!$input.is(':checked')) return;
-            value = $input.val();
-        } else {
-            value = $input.val();
-        }
 
         reviewAnswers[questionId] = {
             ...(reviewAnswers[questionId] || {}),
-            [field]: value
+            [field]: $input.val()
         };
+
+        if (field === 'comment') {
+            setSaveState('unsaved');
+            return;
+        }
+
+        onAnswerUpdated(questionId);
+    }
+
+    function onAnswerUpdated(questionId) {
+        const question = reviewQuestions.find(item => String(item.id) === String(questionId));
+        if (!question) return;
+
+        const answered = isQuestionAnswered(question);
+        const $row = $(`.rv-question[data-question-id="${questionId}"]`);
+        $row.toggleClass('rv-answered', answered).removeClass('rv-flag-error');
+        $row.find('[data-status-icon]').html(answered ? '<i class="bi bi-check-circle-fill"></i>' : '');
+
+        updateSectionCompletion(question.section_id);
         updateReviewProgress();
+        setSaveState('unsaved');
+    }
+
+    function updateSectionCompletion(sectionId) {
+        const $section = $(`.rv-section[data-section-id="${sectionId}"]`);
+        if (!$section.length) return;
+
+        const questionsInSection = reviewQuestions.filter(question => String(question.section_id) === String(sectionId));
+        const total = questionsInSection.length;
+        const answered = questionsInSection.filter(isQuestionAnswered).length;
+
+        $section.find('.rv-section-count').text(`${answered} / ${total}`).toggleClass('rv-complete', total > 0 && answered === total);
+        $section.find('.rv-section-bar-fill').css('width', total ? (answered / total) * 100 + '%' : '0%');
+    }
+
+    function autoSizeTextarea() {
+        this.style.height = 'auto';
+        this.style.height = Math.max(this.scrollHeight, 38) + 'px';
     }
 
     function normalizeExistingAnswer(question) {
-        const answer = question.answer || question.existing_answer || {};
-
+        const answer = question.answer || {};
         return {
             rating: answer.rating ?? null,
             answer_text: answer.answer_text ?? null,
@@ -488,7 +973,6 @@
 
     function isQuestionAnswered(question) {
         const answer = reviewAnswers[question.id] || {};
-
         return (answer.rating !== null && answer.rating !== undefined && answer.rating !== '') ||
             (answer.answer_text !== null && answer.answer_text !== undefined && String(answer.answer_text).trim() !== '') ||
             (answer.answer_number !== null && answer.answer_number !== undefined && answer.answer_number !== '') ||
@@ -497,15 +981,15 @@
 
     function updateReviewProgress() {
         const total = reviewQuestions.length;
-        const answered = reviewQuestions.filter(question => isQuestionAnswered(question)).length;
+        const answered = reviewQuestions.filter(isQuestionAnswered).length;
         const requiredQuestions = reviewQuestions.filter(question => Number(question.is_required) === 1 || question.is_required === true);
-        const requiredAnswered = requiredQuestions.filter(question => isQuestionAnswered(question)).length;
+        const requiredAnswered = requiredQuestions.filter(isQuestionAnswered).length;
         const percentage = total ? Math.round((answered / total) * 100) : 0;
 
         $('#progressPercentage').text(percentage + '%');
         $('#progressBar').css('width', percentage + '%');
-        $('#answeredCount, #bottomAnsweredCount').text(answered);
-        $('#totalQuestions, #bottomTotalQuestions').text(total);
+        $('#answeredCount').text(answered);
+        $('#totalQuestions').text(total);
         $('#requiredAnsweredCount').text(requiredAnswered);
         $('#requiredQuestionsCount').text(requiredQuestions.length);
 
@@ -513,17 +997,30 @@
     }
 
     function updateOverallScore() {
-        const ratings = reviewQuestions
-            .map(question => Number(reviewAnswers[question.id]?.rating))
-            .filter(value => Number.isFinite(value) && value > 0);
+        let weightedSum = 0;
+        let weightTotal = 0;
 
-        if (!ratings.length) {
-            $('#overallScore').text('Not Rated');
-            return;
-        }
+        reviewQuestions.forEach(question => {
+            if ((question.answer_type || 'text') !== 'rating') return;
+            const rating = Number(reviewAnswers[question.id]?.rating);
+            if (!Number.isFinite(rating) || rating <= 0) return;
+            const weight = Number(question.weight) > 0 ? Number(question.weight) : 1;
+            weightedSum += rating * weight;
+            weightTotal += weight;
+        });
 
-        const average = ratings.reduce((total, value) => total + value, 0) / ratings.length;
-        $('#overallScore').text(average.toFixed(2));
+        $('#overallScore').text(weightTotal > 0 ? (weightedSum / weightTotal).toFixed(2) : 'Not Rated');
+    }
+
+    function setSaveState(state) {
+        if (reviewLocked) return;
+        saveState = state;
+        const labels = {
+            unsaved: 'Unsaved changes',
+            saving: 'Saving…',
+            saved: 'Saved'
+        };
+        $('#saveStateIndicator').text(labels[state] || '');
     }
 
     function getReviewPayload() {
@@ -541,31 +1038,32 @@
     }
 
     function saveDraft() {
-        const $buttons = $('#btnSaveDraft, #btnSaveDraftBottom');
+        if ($('#btnSaveDraft').prop('disabled')) return;
 
-        if ($buttons.prop('disabled')) return;
-
-        $buttons.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Saving...');
+        setSaveState('saving');
+        $('#btnSaveDraft').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Saving...');
 
         $.ajax({
-            url: '<?= base_url('my-reviews/review') ?>/' + REVIEW_ID + '/save-draft',
+            url: REVIEW_BASE_URL + '/' + REVIEW_ID + '/save-draft',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(getReviewPayload()),
             success(response) {
                 if (!response.success) {
                     APP.error(response.message || 'Unable to save draft.');
+                    setSaveState('unsaved');
                     return;
                 }
-
                 APP.success(response.message || 'Draft saved successfully.');
+                setSaveState('saved');
             },
             error(xhr) {
                 if (APP.handleUnauthorized(xhr)) return;
                 APP.error(xhr.responseJSON?.message || 'Unable to save draft.');
+                setSaveState('unsaved');
             },
             complete() {
-                $buttons.prop('disabled', false).html('<i class="bi bi-cloud-arrow-down me-1"></i> Save Draft');
+                $('#btnSaveDraft').prop('disabled', reviewLocked).html('<i class="bi bi-cloud-arrow-down me-1"></i>Save Draft');
             }
         });
     }
@@ -574,19 +1072,37 @@
         const requiredQuestions = reviewQuestions.filter(question => Number(question.is_required) === 1 || question.is_required === true);
         const unansweredRequired = requiredQuestions.filter(question => !isQuestionAnswered(question));
 
+        $('.rv-question').removeClass('rv-flag-error');
+
         if (unansweredRequired.length) {
+            unansweredRequired.forEach(question => $(`.rv-question[data-question-id="${question.id}"]`).addClass('rv-flag-error'));
+            // const $first = $(`.rv-question[data-question-id="${unansweredRequired[0].id}"]`);
+            // if ($first.length) $first[0].scrollIntoView({
+            //     behavior: 'smooth',
+            //     block: 'center'
+            // });
+            const $first = $(`.rv-question[data-question-id="${unansweredRequired[0].id}"]`);
+
+            if ($first.length) {
+                $first.closest('.rv-section').removeClass('rv-collapsed');
+
+                setTimeout(() => {
+                    $first[0].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }, 100);
+            }
             APP.error('Please complete all required questions before submitting the review.');
             return;
         }
 
-        const $buttons = $('#btnSubmitReview, #btnSubmitReviewBottom');
+        if ($('#btnSubmitReview').prop('disabled')) return;
 
-        if ($buttons.prop('disabled')) return;
-
-        $buttons.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span> Submitting...');
+        $('#btnSubmitReview').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Submitting...');
 
         $.ajax({
-            url: '<?= base_url('my-reviews/review') ?>/' + REVIEW_ID + '/submit',
+            url: REVIEW_BASE_URL + '/' + REVIEW_ID + '/submit',
             type: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(getReviewPayload()),
@@ -595,9 +1111,7 @@
                     APP.error(response.message || 'Unable to submit review.');
                     return;
                 }
-
                 APP.success(response.message || 'Review submitted successfully.');
-
                 setTimeout(() => {
                     window.location.href = '<?= base_url('my-reviews') ?>';
                 }, 800);
@@ -607,7 +1121,7 @@
                 APP.error(xhr.responseJSON?.message || 'Unable to submit review.');
             },
             complete() {
-                $buttons.prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i> Submit Review');
+                $('#btnSubmitReview').prop('disabled', false).html('<i class="bi bi-check2-circle me-1"></i>Submit Review');
             }
         });
     }
@@ -620,7 +1134,6 @@
             approved: '<span class="badge bg-success-subtle text-success border">Approved</span>',
             rejected: '<span class="badge bg-danger-subtle text-danger border">Rejected</span>'
         };
-
         return statuses[status] || '';
     }
 
