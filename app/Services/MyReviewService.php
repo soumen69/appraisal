@@ -107,7 +107,7 @@ class MyReviewService
             return ['success' => false, 'message' => 'Self review is not enabled for your role.'];
         }
 
-        $template = $this->resolveTemplate($cycleId, $employee);
+        $template = $this->assignments->resolveTemplate($cycleId, $userId, 'self');
 
         if (!$template) {
             return ['success' => false, 'message' => 'No appraisal template is assigned to you for this cycle.'];
@@ -122,6 +122,34 @@ class MyReviewService
             ->getRowArray();
 
         if ($existingAppraisal) {
+            $existingTemplateId = (int) $existingAppraisal['template_id'];
+            $resolvedTemplateId = (int) $template['template_id'];
+            $lockedStatuses = ['submitted', 'approved'];
+
+            if (
+                $existingTemplateId !== $resolvedTemplateId
+                && !in_array($existingAppraisal['status'], $lockedStatuses, true)
+            ) {
+                $this->db->transStart();
+
+                $this->db->table('appraisal_answers')
+                    ->where('appraisal_id', $existingAppraisal['id'])
+                    ->delete();
+
+                $this->db->table('appraisals')
+                    ->where('id', $existingAppraisal['id'])
+                    ->update([
+                        'template_id' => $resolvedTemplateId,
+                        'updated_at' => date('Y-m-d H:i:s')
+                    ]);
+
+                $this->db->transComplete();
+
+                if (!$this->db->transStatus()) {
+                    return ['success' => false, 'message' => 'Unable to update the appraisal template. Please try again.'];
+                }
+            }
+
             return [
                 'success' => true,
                 'message' => 'Review loaded successfully.',
@@ -141,6 +169,7 @@ class MyReviewService
             'employee_id' => $userId,
             'reviewer_id' => $userId,
             'reviewer_role_id' => $role['role_id'],
+            'review_type' => 'self',
             'template_id' => $template['template_id'],
             'status' => 'in_progress',
             'overall_score' => 0,
@@ -166,37 +195,39 @@ class MyReviewService
         ];
     }
 
-    protected function resolveTemplate(int $cycleId, array $employee): ?array
-    {
-        return $this->db->query("
-            SELECT template_id
-            FROM appraisal_cycle_template_assignments
-            WHERE appraisal_cycle_id = ?
-                AND (
-                    (assignment_type = 'employee' AND employee_id = ?)
-                    OR (assignment_type = 'designation' AND designation_id = ?)
-                    OR (assignment_type = 'department' AND department_id = ?)
-                )
-            ORDER BY
-                CASE
-                    WHEN assignment_type = 'employee' AND employee_id = ? THEN 1
-                    WHEN assignment_type = 'designation' AND designation_id = ? THEN 2
-                    WHEN assignment_type = 'department' AND department_id = ? THEN 3
-                    ELSE 999
-                END,
-                priority ASC,
-                id ASC
-            LIMIT 1
-        ", [
-            $cycleId,
-            $employee['id'],
-            $employee['designation_id'],
-            $employee['department_id'],
-            $employee['id'],
-            $employee['designation_id'],
-            $employee['department_id']
-        ])->getRowArray();
-    }
+    // protected function resolveTemplate(int $cycleId, array $employee, int $reviewerRoleId): ?array
+    // {
+    //     return $this->db->query("
+    //     SELECT template_id
+    //     FROM appraisal_cycle_template_assignments
+    //     WHERE appraisal_cycle_id = ?
+    //         AND review_type = 'self'
+    //         AND reviewer_role_id = ?
+    //         AND (
+    //             (assignment_type = 'employee' AND employee_id = ?)
+    //             OR (assignment_type = 'designation' AND designation_id = ?)
+    //             OR (assignment_type = 'department' AND department_id = ?)
+    //         )
+    //     ORDER BY
+    //         CASE
+    //             WHEN assignment_type = 'employee' AND employee_id = ? THEN 1
+    //             WHEN assignment_type = 'designation' AND designation_id = ? THEN 2
+    //             WHEN assignment_type = 'department' AND department_id = ? THEN 3
+    //             ELSE 999
+    //         END,
+    //         priority ASC,
+    //         id ASC
+    //     LIMIT 1", [
+    //         $cycleId,
+    //         $reviewerRoleId,
+    //         $employee['id'],
+    //         $employee['designation_id'],
+    //         $employee['department_id'],
+    //         $employee['id'],
+    //         $employee['designation_id'],
+    //         $employee['department_id']
+    //     ])->getRowArray();
+    // }
 
     public function getReviewData(int $reviewId, int $userId): array
     {

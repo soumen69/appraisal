@@ -719,46 +719,6 @@
         $('#btnSaveDraft, #btnSubmitReview').prop('disabled', true);
     }
 
-    // function renderSections(sections) {
-    //     if (!sections.length) {
-    //         $('#reviewSections').html(`
-    //             <div class="rv-empty">
-    //                 <i class="bi bi-clipboard-x"></i>
-    //                 <div class="fw-semibold mt-2">No questions available</div>
-    //                 <p class="mb-0 small">No questions are configured for this appraisal template.</p>
-    //             </div>
-    //         `);
-    //         return;
-    //     }
-
-    //     let html = '';
-
-    //     sections.forEach((section, sectionIndex) => {
-    //         const questions = section.questions || [];
-    //         const answeredCount = questions.filter(isQuestionAnswered).length;
-    //         const indexLabel = String(sectionIndex + 1).padStart(2, '0');
-
-    //         html += `
-    //             <div class="rv-section" data-section-id="${section.id}">
-    //                 <div class="rv-section-head">
-    //                     <span class="rv-section-index">${indexLabel}</span>
-    //                     <div class="rv-section-name">${CrudUtils.escapeHtml(section.section_name || 'Untitled section')}${section.description ? `<div class="rv-section-desc">${CrudUtils.escapeHtml(section.description)}</div>` : ''}</div>
-    //                     <span class="rv-section-count" data-section-total="${questions.length}">${answeredCount} / ${questions.length}</span>
-    //                 </div>
-    //                 <div class="rv-section-bar"><div class="rv-section-bar-fill" style="width:${questions.length ? (answeredCount / questions.length) * 100 : 0}%"></div></div>
-    //                 <div class="rv-section-questions">
-    //                     ${questions.map((question, questionIndex) => renderQuestion(question, questionIndex + 1)).join('')}
-    //                 </div>
-    //             </div>
-    //         `;
-    //     });
-
-    //     $('#reviewSections').html(html);
-    //     $('.rv-answer-text').each(function() {
-    //         autoSizeTextarea.call(this);
-    //     });
-    // }
-
     function renderSections(sections) {
         if (!sections.length) {
             $('#reviewSections').html(`
@@ -1076,11 +1036,7 @@
 
         if (unansweredRequired.length) {
             unansweredRequired.forEach(question => $(`.rv-question[data-question-id="${question.id}"]`).addClass('rv-flag-error'));
-            // const $first = $(`.rv-question[data-question-id="${unansweredRequired[0].id}"]`);
-            // if ($first.length) $first[0].scrollIntoView({
-            //     behavior: 'smooth',
-            //     block: 'center'
-            // });
+            
             const $first = $(`.rv-question[data-question-id="${unansweredRequired[0].id}"]`);
 
             if ($first.length) {

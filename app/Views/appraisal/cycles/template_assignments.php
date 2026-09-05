@@ -14,7 +14,8 @@
                 <span class="text-muted small">Template Assignments</span>
             </div>
             <h3 class="mb-1">Template Assignments</h3>
-            <p class="text-muted mb-0">Assign appraisal templates based on department, designation or specific employees.</p>
+            <p class="text-muted mb-0">
+                Configure appraisal templates for self and matrix reviews based on department, designation or specific employees.</p>
         </div>
 
         <a href="<?= base_url('appraisal/cycles/' . $cycleId . '/participants') ?>" class="btn btn-outline-secondary">
@@ -33,11 +34,11 @@
                         </div>
                         <div>
                             <h5 class="mb-1" id="assignmentFormTitle">Add Template Assignment</h5>
-                            <div class="small text-muted">Configure which employees should receive an appraisal template.</div>
+                            <div class="small text-muted">Configure who will be reviewed, who performs the review and which template applies.</div>
                         </div>
                     </div>
 
-                    <form id="assignmentForm">
+                    <!-- <form id="assignmentForm">
                         <input type="hidden" id="assignment_id" name="assignment_id">
 
                         <div class="mb-3">
@@ -86,6 +87,94 @@
                                 Cancel
                             </button>
                         </div>
+                    </form> -->
+                    <form id="assignmentForm">
+                        <input type="hidden" id="assignment_id" name="assignment_id">
+
+                        <div class="mb-3">
+                            <label for="review_type" class="form-label">
+                                Review Type
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <select id="review_type" name="review_type" class="form-select">
+                                <option value="">Select Review Type</option>
+                                <option value="self">Self Review</option>
+                                <option value="matrix">Matrix Review</option>
+                            </select>
+
+                            <div class="form-text">
+                                Choose who will perform the appraisal.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-none" id="reviewerRoleWrapper">
+                            <label for="reviewer_role_id" class="form-label">
+                                Reviewer Role
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <select id="reviewer_role_id" name="reviewer_role_id" class="form-select">
+                                <option value="">Select Reviewer Role</option>
+                            </select>
+
+                            <div class="form-text">
+                                Select the role responsible for reviewing employees.
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <div class="mb-3">
+                            <label for="assignment_type" class="form-label">
+                                Applies To
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <select id="assignment_type" name="assignment_type" class="form-select">
+                                <option value="">Select Assignment Type</option>
+                                <option value="department">Department</option>
+                                <option value="designation">Designation</option>
+                                <option value="employee">Specific Employee</option>
+                            </select>
+
+                            <div class="form-text">
+                                Choose which employees should receive this appraisal assignment.
+                            </div>
+                        </div>
+
+                        <div class="mb-3 d-none" id="targetWrapper">
+                            <label for="assignment_target" class="form-label" id="targetLabel">
+                                Target
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <select id="assignment_target" class="form-select">
+                                <option value="">Select Target</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="template_id" class="form-label">
+                                Appraisal Template
+                                <span class="text-danger">*</span>
+                            </label>
+
+                            <select id="template_id" name="template_id" class="form-select">
+                                <option value="">Select Template</option>
+                            </select>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="assignmentSubmitButton">
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Add Assignment
+                            </button>
+
+                            <button type="button" class="btn btn-light d-none" id="assignmentCancelButton">
+                                Cancel
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -98,22 +187,26 @@
                         </div>
 
                         <div>
-                            <h6 class="mb-2">Assignment Priority</h6>
+                            <h6 class="mb-2">Assignment Resolution</h6>
 
                             <div class="small text-muted">
+                                <div class="mb-2">
+                                    Templates are resolved separately for each review type.
+                                </div>
+
                                 <div class="mb-1">
-                                    <strong>Employee</strong>
-                                    overrides everything.
+                                    <strong>Specific Employee</strong>
+                                    overrides designation and department assignments.
                                 </div>
 
                                 <div class="mb-1">
                                     <strong>Designation</strong>
-                                    overrides department.
+                                    overrides department assignments.
                                 </div>
 
                                 <div>
                                     <strong>Department</strong>
-                                    is the default assignment.
+                                    acts as the default assignment.
                                 </div>
                             </div>
                         </div>
@@ -185,7 +278,8 @@
             departments: [],
             designations: [],
             employees: [],
-            templates: []
+            templates: [],
+            reviewer_roles: []
         };
 
         window.assignmentCrud = new Crud({
@@ -196,17 +290,29 @@
             permissionResource: 'appraisal-cycle',
 
             columns: [{
-                    key: 'assignment_type',
-                    label: 'Assignment Type',
+                    key: 'review_type',
+                    label: 'Review Type',
                     render: function(value) {
-                        return renderAssignmentType(value);
+                        return renderReviewType(value);
                     }
                 },
                 {
-                    key: 'target_name',
-                    label: 'Target',
+                    key: 'reviewer_role_name',
+                    label: 'Reviewer',
                     render: function(value, row) {
-                        return renderAssignmentTarget(value, row);
+                        return renderReviewer(value, row);
+                    }
+                },
+                {
+                    key: 'assignment_type',
+                    label: 'Applies To',
+                    render: function(value, row) {
+                        return `
+                <div class="mb-1">
+                    ${renderAssignmentType(value)}
+                </div>
+                ${renderAssignmentTarget(row.target_name, row)}
+            `;
                     }
                 },
                 {
@@ -227,41 +333,51 @@
 
             actionRenderer: function(row, id, crud) {
                 const actions = [];
+                const editable = canModifyAssignment(row);
 
-                if (crud.can('edit')) {
+                if (editable && crud.can('edit')) {
                     actions.push(`
-                        <li>
-                            <a href="#" class="dropdown-item btn-edit-assignment" data-id="${id}">
-                                <i class="bi bi-pencil me-2"></i>
-                                Change Template
-                            </a>
-                        </li>
-                    `);
+            <li>
+                <a href="#" class="dropdown-item btn-edit-assignment" data-id="${id}">
+                    <i class="bi bi-pencil me-2"></i>
+                    Edit Assignment
+                </a>
+            </li>
+        `);
                 }
 
-                if (crud.can('delete')) {
+                if (editable && crud.can('delete')) {
                     if (actions.length) {
                         actions.push(`<li><hr class="dropdown-divider"></li>`);
                     }
 
                     actions.push(`
-                        <li>
-                            <a href="#" class="dropdown-item text-danger btn-delete-assignment" data-id="${id}">
-                                <i class="bi bi-trash me-2"></i>
-                                Remove
-                            </a>
-                        </li>
-                    `);
+            <li>
+                <a href="#" class="dropdown-item text-danger btn-delete-assignment" data-id="${id}">
+                    <i class="bi bi-trash me-2"></i>
+                    Remove
+                </a>
+            </li>
+        `);
+                }
+
+                if (!editable) {
+                    actions.push(`
+            <li>
+                <span class="dropdown-item-text text-muted">
+                    <i class="bi bi-lock me-2"></i>
+                    Locked
+                </span>
+            </li>`);
                 }
 
                 if (!actions.length) {
                     actions.push(`
-                        <li>
-                            <span class="dropdown-item-text text-muted">
-                                No available actions
-                            </span>
-                        </li>
-                    `);
+            <li>
+                <span class="dropdown-item-text text-muted">
+                    No available actions
+                </span>
+            </li>`);
                 }
 
                 return actions.join('');
@@ -281,6 +397,10 @@
 
         $('#assignment_type').on('change', function() {
             populateTargets($(this).val());
+        });
+
+        $('#review_type').on('change', function() {
+            handleReviewTypeChange($(this).val());
         });
 
         $('#assignmentForm').on('submit', function(e) {
@@ -311,12 +431,31 @@
                 return;
             }
 
+            if (!canModifyAssignment(row)) {
+                APP.error(getAssignmentLockedMessage());
+                return;
+            }
+
             openAssignmentEdit(row);
         });
 
         $(document).on('click', '.btn-delete-assignment', function(e) {
             e.preventDefault();
-            deleteAssignment($(this).data('id'));
+
+            const assignmentId = $(this).data('id');
+            const row = findAssignmentRow(assignmentId);
+
+            if (!row) {
+                APP.error('Unable to load assignment details.');
+                return;
+            }
+
+            if (!canModifyAssignment(row)) {
+                APP.error(getAssignmentLockedMessage());
+                return;
+            }
+
+            deleteAssignment(assignmentId);
         });
     });
 
@@ -342,10 +481,12 @@
                     departments: [],
                     designations: [],
                     employees: [],
-                    templates: []
+                    templates: [],
+                    reviewer_roles: []
                 };
 
                 populateTemplates();
+                populateReviewerRoles();
             },
 
             error(xhr) {
@@ -373,6 +514,36 @@
                 })
             );
         });
+    }
+
+    function populateReviewerRoles() {
+        const $select = $('#reviewer_role_id');
+
+        $select
+            .empty()
+            .append('<option value="">Select Reviewer Role</option>');
+
+        (assignmentOptions.reviewer_roles || []).forEach(function(role) {
+            $select.append(
+                $('<option>', {
+                    value: role.id,
+                    text: role.display_name || role.name
+                })
+            );
+        });
+    }
+
+    function handleReviewTypeChange(reviewType) {
+        const $wrapper = $('#reviewerRoleWrapper');
+        const $select = $('#reviewer_role_id');
+
+        if (reviewType === 'matrix') {
+            $wrapper.removeClass('d-none');
+            return;
+        }
+
+        $select.val('');
+        $wrapper.addClass('d-none');
     }
 
     function populateTargets(type) {
@@ -440,14 +611,94 @@
         $wrapper.removeClass('d-none');
     }
 
+    // function createAssignment() {
+    //     const cycleId = <?= (int) $cycleId ?>;
+    //     const assignmentType = $('#assignment_type').val();
+    //     const targetId = $('#assignment_target').val();
+    //     const templateId = $('#template_id').val();
+
+    //     if (!assignmentType) {
+    //         APP.error('Please select an assignment type.');
+    //         return;
+    //     }
+
+    //     if (!targetId) {
+    //         APP.error('Please select an assignment target.');
+    //         return;
+    //     }
+
+    //     if (!templateId) {
+    //         APP.error('Please select an appraisal template.');
+    //         return;
+    //     }
+
+    //     const data = {
+    //         assignment_type: assignmentType,
+    //         template_id: templateId
+    //     };
+
+    //     if (assignmentType === 'department') {
+    //         data.department_id = targetId;
+    //     }
+
+    //     if (assignmentType === 'designation') {
+    //         data.designation_id = targetId;
+    //     }
+
+    //     if (assignmentType === 'employee') {
+    //         data.employee_id = targetId;
+    //     }
+
+    //     const $button = $('#assignmentSubmitButton');
+
+    //     $button.prop('disabled', true);
+
+    //     $.ajax({
+    //         url: '<?= base_url('appraisal/cycles') ?>/' + cycleId + '/template-assignments',
+    //         type: 'POST',
+    //         data: data,
+    //         success(response) {
+    //             if (!response.success) {
+    //                 APP.error(response.message || 'Unable to create template assignment.');
+    //                 return;
+    //             }
+
+    //             APP.success(response.message || 'Template assignment created successfully.');
+    //             resetAssignmentForm();
+    //             refreshAssignmentData();
+    //         },
+    //         error(xhr) {
+    //             if (APP.handleUnauthorized(xhr)) {
+    //                 return;
+    //             }
+
+    //             APP.error(xhr.responseJSON?.message || 'Unable to create template assignment.');
+    //         },
+    //         complete() {
+    //             $button.prop('disabled', false);
+    //         }
+    //     });
+    // }
+
     function createAssignment() {
-        const cycleId = <?= (int) $cycleId ?>;
+        const reviewType = $('#review_type').val();
+        const reviewerRoleId = $('#reviewer_role_id').val();
         const assignmentType = $('#assignment_type').val();
         const targetId = $('#assignment_target').val();
         const templateId = $('#template_id').val();
 
+        if (!reviewType) {
+            APP.error('Please select a review type.');
+            return;
+        }
+
+        if (reviewType === 'matrix' && !reviewerRoleId) {
+            APP.error('Please select a reviewer role.');
+            return;
+        }
+
         if (!assignmentType) {
-            APP.error('Please select an assignment type.');
+            APP.error('Please select who this assignment applies to.');
             return;
         }
 
@@ -462,6 +713,8 @@
         }
 
         const data = {
+            review_type: reviewType,
+            reviewer_role_id: reviewType === 'matrix' ? reviewerRoleId : '',
             assignment_type: assignmentType,
             template_id: templateId
         };
@@ -486,6 +739,7 @@
             url: '<?= base_url('appraisal/cycles') ?>/' + cycleId + '/template-assignments',
             type: 'POST',
             data: data,
+
             success(response) {
                 if (!response.success) {
                     APP.error(response.message || 'Unable to create template assignment.');
@@ -496,6 +750,7 @@
                 resetAssignmentForm();
                 refreshAssignmentData();
             },
+
             error(xhr) {
                 if (APP.handleUnauthorized(xhr)) {
                     return;
@@ -503,6 +758,7 @@
 
                 APP.error(xhr.responseJSON?.message || 'Unable to create template assignment.');
             },
+
             complete() {
                 $button.prop('disabled', false);
             }
@@ -516,11 +772,26 @@
     }
 
     function openAssignmentEdit(assignment) {
+        if (!canModifyAssignment(assignment)) {
+            APP.error(getAssignmentLockedMessage());
+            return;
+        }
+
         $('#assignment_id').val(assignment.id);
+
+        $('#review_type')
+            .val(assignment.review_type)
+            .prop('disabled', false);
+
+        handleReviewTypeChange(assignment.review_type);
+
+        $('#reviewer_role_id')
+            .val(assignment.reviewer_role_id || '')
+            .prop('disabled', false);
 
         $('#assignment_type')
             .val(assignment.assignment_type)
-            .prop('disabled', true);
+            .prop('disabled', false);
 
         populateTargets(assignment.assignment_type);
 
@@ -542,29 +813,82 @@
 
         $('#assignment_target')
             .val(targetId)
-            .prop('disabled', true);
+            .prop('disabled', false);
 
-        $('#template_id').val(assignment.template_id);
+        $('#template_id')
+            .val(assignment.template_id)
+            .prop('disabled', false);
 
         $('#targetWrapper').removeClass('d-none');
 
-        $('#assignmentFormTitle').text('Update Template Assignment');
+        $('#assignmentFormTitle').text('Edit Template Assignment');
 
         $('#assignmentSubmitButton').html(
-            '<i class="bi bi-check2 me-1"></i> Update Template'
+            '<i class="bi bi-check2 me-1"></i> Update Assignment'
         );
 
         $('#assignmentCancelButton').removeClass('d-none');
 
-        scrollToAssignmentForm('#template_id');
+        scrollToAssignmentForm('#review_type');
     }
 
     function updateAssignment(assignmentId) {
+        const assignment = findAssignmentRow(assignmentId);
+
+        if (!assignment) {
+            APP.error('Unable to load assignment details.');
+            return;
+        }
+
+        if (!canModifyAssignment(assignment)) {
+            APP.error(getAssignmentLockedMessage());
+            resetAssignmentForm();
+            return;
+        }
+
+        const reviewType = $('#review_type').val();
+        const reviewerRoleId = $('#reviewer_role_id').val();
+        const assignmentType = $('#assignment_type').val();
+        const targetId = $('#assignment_target').val();
         const templateId = $('#template_id').val();
+
+        if (!reviewType) {
+            APP.error('Please select a review type.');
+            return;
+        }
+
+        if (reviewType === 'matrix' && !reviewerRoleId) {
+            APP.error('Please select a reviewer role.');
+            return;
+        }
+
+        if (!assignmentType || !targetId) {
+            APP.error('Invalid assignment target.');
+            return;
+        }
 
         if (!templateId) {
             APP.error('Please select an appraisal template.');
             return;
+        }
+
+        const data = {
+            review_type: reviewType,
+            reviewer_role_id: reviewType === 'matrix' ? reviewerRoleId : '',
+            assignment_type: assignmentType,
+            template_id: templateId
+        };
+
+        if (assignmentType === 'department') {
+            data.department_id = targetId;
+        }
+
+        if (assignmentType === 'designation') {
+            data.designation_id = targetId;
+        }
+
+        if (assignmentType === 'employee') {
+            data.employee_id = targetId;
         }
 
         const $button = $('#assignmentSubmitButton');
@@ -572,11 +896,9 @@
         $button.prop('disabled', true);
 
         $.ajax({
-            url: '<?= base_url('appraisal/cycles/template-assignments') ?>/' + assignmentId + '/update',
+            url: '<?= base_url('appraisal/cycles') ?>/' + cycleId + '/template-assignments/' + assignmentId + '/update',
             type: 'POST',
-            data: {
-                template_id: templateId
-            },
+            data: data,
 
             success(response) {
                 if (!response.success) {
@@ -585,7 +907,6 @@
                 }
 
                 APP.success(response.message || 'Template assignment updated successfully.');
-
                 resetAssignmentForm();
                 refreshAssignmentData();
             },
@@ -605,39 +926,66 @@
     }
 
     function deleteAssignment(assignmentId) {
-        if (!confirm('Are you sure you want to remove this template assignment?')) {
-            return;
-        }
-
-        $.ajax({
-            url: '<?= base_url('appraisal/cycles/template-assignments') ?>/' + assignmentId + '/delete',
-            type: 'POST',
-            success(response) {
-                if (!response.success) {
-                    APP.error(response.message || 'Unable to remove template assignment.');
-                    return;
-                }
-                APP.success(response.message || 'Template assignment removed successfully.');
-                refreshAssignmentData();
-            },
-
-            error(xhr) {
-                if (APP.handleUnauthorized(xhr)) {
-                    return;
-                }
-                APP.error(xhr.responseJSON?.message || 'Unable to remove template assignment.');
+        Swal.fire({
+            title: 'Remove Template Assignment?',
+            text: 'This assignment will be removed only if all related appraisals are still pending.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Remove',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#dc3545'
+        }).then(result => {
+            if (!result.isConfirmed) {
+                return;
             }
+
+            $.ajax({
+                url: '<?= base_url('appraisal/cycles') ?>/' + cycleId + '/template-assignments/' + assignmentId + '/delete',
+                type: 'POST',
+                data: {
+                    [APP.csrfName]: APP.csrfHash
+                },
+
+                success(response) {
+                    if (!response.success) {
+                        APP.error(response.message || 'Unable to remove template assignment.');
+                        return;
+                    }
+
+                    APP.success(response.message || 'Template assignment removed successfully.');
+                    refreshAssignmentData();
+                },
+
+                error(xhr) {
+                    if (APP.handleUnauthorized(xhr)) {
+                        return;
+                    }
+
+                    APP.error(xhr.responseJSON?.message || 'Unable to remove template assignment.');
+                }
+            });
         });
     }
 
     function resetAssignmentForm() {
         $('#assignmentForm')[0].reset();
+
         $('#assignment_id').val('');
+
+        $('#review_type').prop('disabled', false);
+        $('#reviewer_role_id').prop('disabled', false);
         $('#assignment_type').prop('disabled', false);
         $('#assignment_target').prop('disabled', false);
+
+        $('#reviewerRoleWrapper').addClass('d-none');
         $('#targetWrapper').addClass('d-none');
+
         $('#assignmentFormTitle').text('Add Template Assignment');
-        $('#assignmentSubmitButton').html('<i class="bi bi-plus-lg me-1"></i> Add Assignment');
+
+        $('#assignmentSubmitButton').html(
+            '<i class="bi bi-plus-lg me-1"></i> Add Assignment'
+        );
+
         $('#assignmentCancelButton').addClass('d-none');
     }
 
@@ -669,6 +1017,33 @@
         }
 
         location.reload();
+    }
+
+    function renderReviewType(type) {
+        const types = {
+            self: '<span class="badge bg-success-subtle text-success">Self Review</span>',
+            matrix: '<span class="badge bg-primary-subtle text-primary">Matrix Review</span>'
+        };
+
+        return types[type] ||
+            `<span class="badge bg-light text-dark border">${CrudUtils.escapeHtml(type || '-')}</span>`;
+    }
+
+    function renderReviewer(value, row) {
+        if (row.review_type === 'self') {
+            return `
+            <div class="fw-semibold">Employee</div>
+            <div class="small text-muted">Self</div>
+        `;
+        }
+
+        const reviewerName = value || row.reviewer_role_display_name || row.reviewer_role_name;
+
+        if (reviewerName) {
+            return `<div class="fw-semibold">${CrudUtils.escapeHtml(reviewerName)}</div>`;
+        }
+
+        return '<span class="text-muted">-</span>';
     }
 
     function renderAssignmentType(type) {
@@ -711,6 +1086,14 @@
         }
 
         return `<span class="text-muted">-</span>`;
+    }
+
+    function canModifyAssignment(row) {
+        return row && (row.can_edit === true || row.can_edit === 1 || row.can_edit === '1');
+    }
+
+    function getAssignmentLockedMessage() {
+        return 'This assignment cannot be modified because one or more related appraisals are already in progress or completed.';
     }
 </script>
 

@@ -762,12 +762,12 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
 
                 $routes->post(
                     '(:num)/template-assignments/(:num)/update',
-                    'AppraisalCycleTemplateAssignmentController::update/$2'
+                    'AppraisalCycleTemplateAssignmentController::update/$1/$2'
                 );
 
                 $routes->post(
                     '(:num)/template-assignments/(:num)/delete',
-                    'AppraisalCycleTemplateAssignmentController::delete/$2'
+                    'AppraisalCycleTemplateAssignmentController::delete/$1/$2'
                 );
             });
         }

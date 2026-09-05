@@ -131,106 +131,57 @@ class AppraisalCycleTemplateAssignmentController extends BaseController
         }
     }
 
-
-    public function update(
-        int $assignmentId
-    ) {
-
+    public function update(int $cycleId, int $assignmentId)
+    {
         try {
+            $this->assignmentService->updateAssignment(
+                $cycleId,
+                $assignmentId,
+                $this->request->getPost()
+            );
 
-            $this
-                ->assignmentService
-                ->updateAssignment(
-                    $assignmentId,
-                    $this
-                        ->request
-                        ->getPost()
-                );
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Template assignment updated successfully.'
+            ]);
+        } catch (InvalidArgumentException $e) {
+            return $this->response->setStatusCode(422)->setJSON([
+                'success' => false,
+                'message' => $e->getMessage()
+            ]);
+        } catch (Throwable $e) {
+            log_message('error', 'Template assignment update error: ' . $e->getMessage());
 
-
-            return $this
-                ->response
-                ->setJSON([
-                    'success' =>
-                    true,
-
-                    'message' =>
-                    'Template assignment updated successfully.'
-                ]);
-        } catch (
-            InvalidArgumentException $e
-        ) {
-
-            return $this
-                ->response
-                ->setStatusCode(
-                    422
-                )
-                ->setJSON([
-                    'success' =>
-                    false,
-
-                    'message' =>
-                    $e->getMessage()
-                ]);
-        } catch (
-            Throwable $e
-        ) {
-
-            return $this
-                ->response
-                ->setStatusCode(
-                    500
-                )
-                ->setJSON([
-                    'success' =>
-                    false,
-
-                    'message' =>
-                    'Unable to update template assignment.'
-                ]);
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Unable to update template assignment.'
+            ]);
         }
     }
 
 
-    public function delete(
-        int $assignmentId
-    ) {
-
+    public function delete(int $cycleId, int $assignmentId)
+    {
         try {
+            $this->assignmentService->deleteAssignment(
+                $cycleId,
+                $assignmentId
+            );
 
-            $this
-                ->assignmentService
-                ->deleteAssignment(
-                    $assignmentId
-                );
+            return $this->response->setJSON([
+                'success' => true,
+                'message' => 'Template assignment removed successfully.'
+            ]);
+        } catch (Throwable $e) {
+            log_message(
+                'error',
+                'Template assignment delete error: ' . $e->getMessage()
+            );
 
-
-            return $this
-                ->response
-                ->setJSON([
-                    'success' =>
-                    true,
-
-                    'message' =>
-                    'Template assignment removed successfully.'
-                ]);
-        } catch (
-            Throwable $e
-        ) {
-
-            return $this
-                ->response
-                ->setStatusCode(
-                    500
-                )
-                ->setJSON([
-                    'success' =>
-                    false,
-
-                    'message' =>
-                    'Unable to remove template assignment.'
-                ]);
+            return $this->response->setStatusCode(500)->setJSON([
+                'success' => false,
+                'message' => 'Unable to remove template assignment.'
+            ]);
         }
     }
 

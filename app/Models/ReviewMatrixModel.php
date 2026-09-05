@@ -171,4 +171,61 @@ class ReviewMatrixModel extends Model
                 : 1
         ];
     }
+
+    /**
+     * Get active review matrix rules for a reviewee role.
+     */
+    public function getActiveRulesForRevieweeRole(
+        int $organizationId,
+        int $revieweeRoleId
+    ): array {
+        return $this->builder()
+            ->select([
+                'review_matrix.*',
+                'reviewer_role.name AS reviewer_role_name',
+                'reviewer_role.display_name AS reviewer_role_display_name'
+            ])
+            ->join(
+                'roles reviewer_role',
+                'reviewer_role.id = review_matrix.reviewer_role_id',
+                'left'
+            )
+            ->where('review_matrix.organization_id', $organizationId)
+            ->where('review_matrix.reviewee_role_id', $revieweeRoleId)
+            ->where('review_matrix.is_active', 1)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Check whether a reviewer role is allowed
+     * to review a reviewee role.
+     */
+    public function canReview(
+        int $organizationId,
+        int $reviewerRoleId,
+        int $revieweeRoleId
+    ): bool {
+        return $this->builder()
+            ->where('organization_id', $organizationId)
+            ->where('reviewer_role_id', $reviewerRoleId)
+            ->where('reviewee_role_id', $revieweeRoleId)
+            ->where('is_active', 1)
+            ->countAllResults() > 0;
+    }
+
+    /**
+     * Check whether self-review is allowed for a role.
+     */
+    public function allowsSelfReview(
+        int $organizationId,
+        int $roleId
+    ): bool {
+        return $this->builder()
+            ->where('organization_id', $organizationId)
+            ->where('reviewee_role_id', $roleId)
+            ->where('allow_self_review', 1)
+            ->where('is_active', 1)
+            ->countAllResults() > 0;
+    }
 }

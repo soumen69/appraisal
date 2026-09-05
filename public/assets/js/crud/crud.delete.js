@@ -127,16 +127,6 @@ const CrudDelete = {
                         APP.error(
                             'You are not authorized to delete this record.'
                         );
-
-                        return;
-                    }
-
-                    if (!crud.can('delete')) {
-
-                        APP.error(
-                            'You are not authorized to delete this record.'
-                        );
-
                         return;
                     }
 
