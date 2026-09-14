@@ -27,9 +27,9 @@ class AppraisalCycleTemplateAssignmentController extends BaseController
             [
                 'title' =>
                 'Template Assignment',
-
-                'cycleId' =>
-                $cycleId
+                'page_title' => 'Template Assignment',
+                'page_subtitle' => 'Configure appraisal templates for self and matrix reviews based on department, designation or specific employees.',
+                'cycleId' => $cycleId
             ]
         );
     }

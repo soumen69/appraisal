@@ -2,7 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Controllers\BaseController;
 use App\Services\MyReviewService;
+use Throwable;
 
 class MyReviewController extends BaseController
 {
@@ -15,24 +17,48 @@ class MyReviewController extends BaseController
 
     public function index()
     {
-        return view('appraisal/my_reviews/index');
+        return view('appraisal/my_reviews/index', [
+            'title' => 'My Reviews',
+            'page_title' => 'My Reviews',
+            'page_subtitle' => 'View and complete your assigned appraisal reviews.'
+        ]);
     }
 
     public function list()
     {
-        $userId = (int) session()->get('user_id');
+        try {
+            $userId = (int) session()->get('user_id');
 
-        if ($userId <= 0) {
-            return $this->response->setJSON([
-                'success' => false,
-                'message' => 'Unauthorized access.'
-            ]);
+            if ($userId <= 0) {
+                return $this->response
+                    ->setStatusCode(401)
+                    ->setJSON([
+                        'success' => false,
+                        'message' => 'Unauthorized access.'
+                    ]);
+            }
+
+            $data = $this->myReviewService->getMyReviews($userId);
+
+            return $this->response
+                ->setJSON([
+                    'success' => true,
+                    'data' => $data
+                ]);
+        } catch (Throwable $e) {
+
+            log_message(
+                'error',
+                'My reviews list error: ' . $e->getMessage()
+            );
+
+            return $this->response
+                ->setStatusCode(500)
+                ->setJSON([
+                    'success' => false,
+                    'message' => 'Unable to load reviews.'
+                ]);
         }
-
-        return $this->response->setJSON([
-            'success' => true,
-            'data' => $this->myReviewService->getMyReviews($userId)
-        ]);
     }
 
     public function start($cycleId)
@@ -53,11 +79,17 @@ class MyReviewController extends BaseController
 
     public function review($reviewId)
     {
+        $userId = (int) session()->get('user_id');
+
+        if ($userId <= 0) {
+            return redirect()->to(base_url('login'));
+        }
+
         return view('appraisal/my_reviews/review', [
             'reviewId' => (int) $reviewId,
-            'title'          => 'My Reviews',
-            'page_title'     => 'My Reviews',
-            'page_subtitle'  => 'Welcome back, Super Admin'
+            'title' => 'My Reviews',
+            'page_title' => 'My Reviews',
+            'page_subtitle' => 'View appraisal review'
         ]);
     }
 
@@ -101,9 +133,27 @@ class MyReviewController extends BaseController
 
     public function submit($reviewId)
     {
-        return $this->response->setJSON([
-            'success' => false,
-            'message' => 'Review submission is not implemented yet.'
-        ]);
+        $userId = (int) session()->get('user_id');
+
+        if ($userId <= 0) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Unauthorized access.'
+            ]);
+        }
+
+        $payload = $this->request->getJSON(true);
+
+        if (!is_array($payload)) {
+            $payload = $this->request->getPost() ?: [];
+        }
+
+        return $this->response->setJSON(
+            $this->myReviewService->submitReview(
+                (int) $reviewId,
+                $userId,
+                $payload
+            )
+        );
     }
 }

@@ -2,8 +2,8 @@
 
 <?= $this->section('content') ?>
 
-<div id="reviewPage">
-    <div class="rv-header">
+<div class="container-fluid py-0" id="reviewPage">
+    <!-- <div class="rv-header">
         <div class="rv-header-row">
             <a href="<?= base_url('my-reviews') ?>" class="btn btn-light border btn-sm rv-back"><i class="bi bi-arrow-left"></i></a>
             <div class="rv-title-block">
@@ -16,7 +16,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <div id="reviewLockedNotice" class="rv-locked-banner d-none">
         <i class="bi bi-lock-fill"></i>
@@ -672,6 +672,38 @@
         $('#reviewError').removeClass('d-none');
     }
 
+    // function renderReview() {
+    //     const review = reviewData.review || {};
+    //     const cycle = reviewData.cycle || {};
+    //     const template = reviewData.template || {};
+
+    //     $('#reviewLoading').addClass('d-none');
+    //     $('#reviewContent').removeClass('d-none');
+    //     $('#reviewFloatBar').removeClass('d-none');
+
+    //     $('#reviewTitle').text(cycle.name || 'Appraisal Review');
+    //     $('#cycleName').text(cycle.name || '-');
+    //     $('#templateName').text(template.name || '-');
+    //     $('#appraisalPeriod').text(formatReviewDate(cycle.start_date) + ' – ' + formatReviewDate(cycle.end_date));
+    //     $('#overallComment').val(review.overall_comment || '');
+    //     $('#reviewStatusBadge').html(renderReviewStatus(review.status));
+
+    //     reviewLocked = ['submitted', 'approved'].includes(review.status);
+    //     reviewQuestions = [];
+    //     reviewAnswers = {};
+
+    //     (reviewData.sections || []).forEach(section => {
+    //         (section.questions || []).forEach(question => {
+    //             reviewQuestions.push(question);
+    //             reviewAnswers[question.id] = normalizeExistingAnswer(question);
+    //         });
+    //     });
+
+    //     renderSections(reviewData.sections || []);
+    //     updateReviewProgress();
+    //     applyLockedState(review.status);
+    // }
+
     function renderReview() {
         const review = reviewData.review || {};
         const cycle = reviewData.cycle || {};
@@ -679,7 +711,6 @@
 
         $('#reviewLoading').addClass('d-none');
         $('#reviewContent').removeClass('d-none');
-        $('#reviewFloatBar').removeClass('d-none');
 
         $('#reviewTitle').text(cycle.name || 'Appraisal Review');
         $('#cycleName').text(cycle.name || '-');
@@ -688,7 +719,14 @@
         $('#overallComment').val(review.overall_comment || '');
         $('#reviewStatusBadge').html(renderReviewStatus(review.status));
 
-        reviewLocked = ['submitted', 'approved'].includes(review.status);
+        reviewLocked = review.can_edit !== true;
+
+        if (review.can_edit === true) {
+            $('#reviewFloatBar').removeClass('d-none');
+        } else {
+            $('#reviewFloatBar').addClass('d-none');
+        }
+
         reviewQuestions = [];
         reviewAnswers = {};
 
@@ -704,15 +742,46 @@
         applyLockedState(review.status);
     }
 
+    // function applyLockedState(status) {
+    //     if (!reviewLocked) {
+    //         $('#btnSaveDraft, #btnSubmitReview').prop('disabled', false);
+    //         return;
+    //     }
+
+    //     const label = status === 'approved' ? 'This review has been approved and is now read-only.' : 'This review has been submitted and is now read-only.';
+    //     $('#reviewLockedText').text(label);
+    //     $('#reviewLockedNotice').removeClass('d-none');
+    //     $('#overallComment').prop('readonly', true);
+    //     $('.review-answer-input').prop('disabled', true);
+    //     $('.rv-rating-opt, .rv-yesno-opt, .rv-comment-toggle').addClass('rv-disabled').prop('disabled', true);
+    //     $('#btnSaveDraft, #btnSubmitReview').prop('disabled', true);
+    // }
+
     function applyLockedState(status) {
         if (!reviewLocked) {
+            $('#reviewFloatBar').removeClass('d-none');
             $('#btnSaveDraft, #btnSubmitReview').prop('disabled', false);
+            $('#reviewLockedNotice').addClass('d-none');
             return;
         }
 
-        const label = status === 'approved' ? 'This review has been approved and is now read-only.' : 'This review has been submitted and is now read-only.';
+        let label = 'This review is read-only.';
+
+        if (status === 'pending') {
+            label = 'This review has not been completed by the assigned reviewer yet.';
+        } else if (status === 'in_progress') {
+            label = 'This review is currently being completed by the assigned reviewer.';
+        } else if (status === 'submitted') {
+            label = 'This review has been submitted and is now read-only.';
+        } else if (status === 'approved') {
+            label = 'This review has been approved and is now read-only.';
+        } else if (status === 'rejected') {
+            label = 'This review has been rejected and is read-only.';
+        }
+
         $('#reviewLockedText').text(label);
         $('#reviewLockedNotice').removeClass('d-none');
+
         $('#overallComment').prop('readonly', true);
         $('.review-answer-input').prop('disabled', true);
         $('.rv-rating-opt, .rv-yesno-opt, .rv-comment-toggle').addClass('rv-disabled').prop('disabled', true);
@@ -1036,7 +1105,7 @@
 
         if (unansweredRequired.length) {
             unansweredRequired.forEach(question => $(`.rv-question[data-question-id="${question.id}"]`).addClass('rv-flag-error'));
-            
+
             const $first = $(`.rv-question[data-question-id="${unansweredRequired[0].id}"]`);
 
             if ($first.length) {

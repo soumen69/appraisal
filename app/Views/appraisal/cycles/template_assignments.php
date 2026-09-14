@@ -3,7 +3,7 @@
 <?= $this->section('content') ?>
 
 <div class="container-fluid">
-    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+    <!-- <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <a href="<?= base_url('appraisal/cycles/' . $cycleId . '/participants') ?>" class="text-muted text-decoration-none">
@@ -22,8 +22,13 @@
             <i class="bi bi-people me-1"></i>
             Participants
         </a>
+    </div> -->
+    <div class="d-flex flex-wrap align-items-center justify-content-end gap-3 mb-4">
+        <a href="<?= base_url('appraisal/cycles/' . $cycleId . '/participants') ?>" class="btn btn-outline-secondary">
+            <i class="bi bi-people me-1"></i>
+            Participants
+        </a>
     </div>
-
     <div class="row g-4">
         <div class="col-xl-4">
             <div class="card border-0 shadow-sm" id="assignmentFormCard">

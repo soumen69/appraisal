@@ -643,6 +643,14 @@ $routes->group('', ['filter' => 'auth'], static function ($routes) {
                 }
             );
 
+            $routes->group('reviews', ['filter' => 'permission:appraisal_review.view'], static function ($routes) {
+                $routes->get('/', 'ReviewController::index');
+                $routes->get('list', 'ReviewController::list');
+                $routes->get('cycles', 'ReviewController::cycles');
+                $routes->get('view/(:num)', 'ReviewController::view/$1');
+                $routes->get('view/(:num)/data', 'ReviewController::data/$1');
+            });
+
             $routes->group(
                 'rating-scales',
                 [
