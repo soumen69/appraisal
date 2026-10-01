@@ -471,38 +471,9 @@
                             class="invalid-feedback"
                             data-field-error="role_id">
                         </div>
-
                     </div>
-
-                    <?php if (!isset($employee)): ?>
-                        <div class="col-md-6">
-                            <label class="employee-form-label">
-                                Initial Password
-                                <span>*</span>
-                            </label>
-
-                            <input type="password" name="password" id="password" class="form-control employee-form-control" minlength="8" autocomplete="new-password" required>
-                            <div class="employee-form-help">
-                                Minimum 8 characters.
-                            </div>
-                            <div class="invalid-feedback" data-field-error="password"></div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="employee-form-label">
-                                Confirm Password
-                                <span>*</span>
-                            </label>
-                            <input type="password" name="password_confirmation" id="password_confirmation" class="form-control employee-form-control" minlength="8" autocomplete="new-password" required>
-                            <div class="invalid-feedback" data-field-error="password_confirmation"></div>
-                        </div>
-
-                    <?php endif; ?>
-
                 </div>
-
             </div>
-
         </div>
 
 

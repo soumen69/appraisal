@@ -33,165 +33,283 @@ class ReviewModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    public function getReviews(int $page = 1, int $pageSize = 10, string $search = '', string $cycleId = '', string $status = '', string $reviewType = '', string $orderBy = 'id', string $direction = 'desc'): array
-    {
-        $builder = $this->builder();
+    public function getReviews(
+        int $page = 1,
+        int $pageSize = 10,
+        string $search = '',
+        string $cycleId = '',
+        string $status = '',
+        string $reviewType = '',
+        string $orderBy = 'id',
+        string $direction = 'desc'
+    ): array {
+        $db = db_connect();
 
-        $builder->select([
-            'appraisals.id AS appraisal_id',
-            'appraisals.appraisal_cycle_id AS cycle_id',
-            'appraisals.employee_id',
-            'appraisals.reviewer_id',
-            'appraisals.reviewer_role_id',
-            'appraisals.review_type',
-            'appraisals.template_id',
-            'appraisals.status',
-            'appraisals.overall_score',
-            'appraisals.overall_comment',
-            'appraisals.submitted_at',
-            'appraisals.approved_at',
-            'appraisals.created_at',
-            'appraisals.updated_at',
+        $page = max(1, $page);
+        $pageSize = in_array($pageSize, [10, 25, 50, 100], true) ? $pageSize : 10;
 
-            'appraisal_cycles.cycle_name',
-            'appraisal_cycles.cycle_code',
-            'appraisal_cycles.start_date',
-            'appraisal_cycles.end_date',
-            'appraisal_cycles.status AS cycle_status',
-
-            'templates.template_name',
-
-            'employees.employee_code',
-            'employees.full_name AS employee_name',
-            'employees.department_id AS employee_department_id',
-            'employees.designation_id AS employee_designation_id',
-
-            'departments.name AS employee_department',
-            'designations.title AS employee_designation',
-
-            'reviewers.full_name AS reviewer_name',
-        ]);
-
-        $builder->join(
-            'appraisal_cycles',
-            'appraisal_cycles.id = appraisals.appraisal_cycle_id',
-            'left'
-        );
-
-        $builder->join(
-            'appraisal_templates AS templates',
-            'templates.id = appraisals.template_id',
-            'left'
-        );
-
-        $builder->join(
-            'users AS employees',
-            'employees.id = appraisals.employee_id',
-            'left'
-        );
-
-        $builder->join(
-            'users AS reviewers',
-            'reviewers.id = appraisals.reviewer_id',
-            'left'
-        );
-
-        $builder->join(
-            'departments',
-            'departments.id = employees.department_id',
-            'left'
-        );
-
-        $builder->join(
-            'designations',
-            'designations.id = employees.designation_id',
-            'left'
-        );
-
-        if ($search !== '') {
-            $builder
-                ->groupStart()
-                ->like('appraisal_cycles.cycle_name', $search)
-                ->orLike('appraisal_cycles.cycle_code', $search)
-                ->orLike('employees.full_name', $search)
-                ->orLike('employees.employee_code', $search)
-                ->orLike('reviewers.full_name', $search)
-                ->orLike('templates.template_name', $search)
-                ->groupEnd();
-        }
-
-        if ($cycleId !== '' && ctype_digit($cycleId) && (int) $cycleId > 0) {
-            $builder->where(
-                'appraisals.appraisal_cycle_id',
-                (int) $cycleId
-            );
-        }
-
-        if ($status !== '') {
-            $allowedStatuses = [
-                'pending',
-                'in_progress',
-                'submitted',
-                'approved',
-                'rejected',
-            ];
-
-            if (in_array($status, $allowedStatuses, true)) {
-                $builder->where(
-                    'appraisals.status',
-                    $status
-                );
-            }
-        }
-
-        if ($reviewType !== '') {
-            $allowedReviewTypes = [
-                'self',
-                'matrix',
-            ];
-
-            if (in_array($reviewType, $allowedReviewTypes, true)) {
-                $builder->where(
-                    'appraisals.review_type',
-                    $reviewType
-                );
-            }
-        }
-
-        $allowedOrderBy = [
-            'id' => 'appraisals.id',
-            'cycle_name' => 'appraisal_cycles.cycle_name',
-            'employee_name' => 'employees.full_name',
-            'reviewer_name' => 'reviewers.full_name',
-            'review_type' => 'appraisals.review_type',
-            'status' => 'appraisals.status',
-            'overall_score' => 'appraisals.overall_score',
-            'submitted_at' => 'appraisals.submitted_at',
-            'created_at' => 'appraisals.created_at',
+        $allowedStatuses = [
+            'pending',
+            'in_progress',
+            'submitted',
+            'approved',
+            'rejected',
         ];
 
-        $orderColumn = $allowedOrderBy[$orderBy] ?? 'appraisals.id';
+        $allowedReviewTypes = ['self', 'matrix'];
+
+        $allowedOrderBy = [
+            'id'            => 'latest_appraisal_id',
+            'cycle_name'    => 'cycle_name',
+            'employee_name' => 'employee_name',
+            'reviewer_name' => 'reviewer_names',
+            'review_type'   => 'review_types',
+            'status'        => 'review_statuses',
+            'overall_score' => 'average_score',
+            'submitted_at'  => 'latest_submitted_at',
+            'created_at'    => 'latest_created_at',
+        ];
+
+        $orderColumn = $allowedOrderBy[$orderBy] ?? 'latest_appraisal_id';
         $direction = strtolower($direction) === 'asc' ? 'ASC' : 'DESC';
 
-        $builder->orderBy($orderColumn, $direction);
+        /*
+     * Build the grouped reviews query.
+     * One result row represents one employee in one appraisal cycle.
+     */
+        $buildQuery = function () use (
+            $db,
+            $cycleId,
+            $status,
+            $reviewType,
+            $search,
+            $allowedStatuses,
+            $allowedReviewTypes
+        ) {
+            $builder = $db->table('appraisals a');
 
-        $totalBuilder = clone $builder;
-        $total = $totalBuilder->countAllResults();
+            $builder->select([
+                'a.employee_id',
+                'a.appraisal_cycle_id AS cycle_id',
 
-        $offset = max(0, ($page - 1) * $pageSize);
+                'MAX(a.id) AS latest_appraisal_id',
 
-        $data = $builder
-            ->limit($pageSize, $offset)
+                'MAX(c.cycle_name) AS cycle_name',
+                'MAX(c.cycle_code) AS cycle_code',
+                'MAX(c.start_date) AS start_date',
+                'MAX(c.end_date) AS end_date',
+                'MAX(c.status) AS cycle_status',
+
+                'MAX(t.template_name) AS template_name',
+
+                'MAX(e.employee_code) AS employee_code',
+                'MAX(e.full_name) AS employee_name',
+                'MAX(e.department_id) AS employee_department_id',
+                'MAX(e.designation_id) AS employee_designation_id',
+                'MAX(d.name) AS employee_department',
+                'MAX(des.title) AS employee_designation',
+
+                /*
+             * Include each reviewer and their score.
+             * A missing score is displayed as Pending.
+             */
+                "GROUP_CONCAT(
+                DISTINCT CONCAT(
+                    COALESCE(r.full_name, 'Unknown reviewer'),
+                    ' (',
+                    COALESCE(CAST(a.overall_score AS CHAR), 'Pending'),
+                    ')'
+                )
+                ORDER BY r.full_name
+                SEPARATOR ', '
+            ) AS reviewer_names",
+
+                "GROUP_CONCAT(
+                DISTINCT a.review_type
+                ORDER BY a.review_type
+                SEPARATOR ', '
+            ) AS review_types",
+
+                "GROUP_CONCAT(
+                DISTINCT a.status
+                ORDER BY a.status
+                SEPARATOR ', '
+            ) AS review_statuses",
+
+                'AVG(a.overall_score) AS average_score',
+
+                'MAX(a.submitted_at) AS latest_submitted_at',
+                'MAX(a.approved_at) AS latest_approved_at',
+                'MAX(a.created_at) AS latest_created_at',
+                'MAX(a.updated_at) AS latest_updated_at',
+
+                'COUNT(a.id) AS reviewer_count',
+            ]);
+
+            $builder->join(
+                'appraisal_cycles c',
+                'c.id = a.appraisal_cycle_id',
+                'left'
+            );
+
+            $builder->join(
+                'appraisal_templates t',
+                't.id = a.template_id',
+                'left'
+            );
+
+            $builder->join(
+                'users e',
+                'e.id = a.employee_id',
+                'left'
+            );
+
+            $builder->join(
+                'users r',
+                'r.id = a.reviewer_id',
+                'left'
+            );
+
+            $builder->join(
+                'departments d',
+                'd.id = e.department_id',
+                'left'
+            );
+
+            $builder->join(
+                'designations des',
+                'des.id = e.designation_id',
+                'left'
+            );
+
+            /*
+         * If a cycle is selected, show reviews for that cycle.
+         * Otherwise, choose each employee's latest cycle that has
+         * appraisal records.
+         */
+            if ($cycleId !== '' && ctype_digit($cycleId) && (int) $cycleId > 0) {
+                $builder->where('a.appraisal_cycle_id', (int) $cycleId);
+            } else {
+                $builder->where(
+                    "a.appraisal_cycle_id = (
+                    SELECT c2.id
+                    FROM appraisal_cycles c2
+                    INNER JOIN appraisals a2
+                        ON a2.appraisal_cycle_id = c2.id
+                    WHERE a2.employee_id = a.employee_id
+                    ORDER BY
+                        (c2.end_date IS NULL) ASC,
+                        c2.end_date DESC,
+                        c2.id DESC
+                    LIMIT 1
+                )",
+                    null,
+                    false
+                );
+            }
+
+            if ($status !== '' && in_array($status, $allowedStatuses, true)) {
+                $builder->where('a.status', $status);
+            }
+
+            if ($reviewType !== '' && in_array($reviewType, $allowedReviewTypes, true)) {
+                $builder->where('a.review_type', $reviewType);
+            }
+
+            if (trim($search) !== '') {
+                $builder->groupStart()
+                    ->like('c.cycle_name', $search)
+                    ->orLike('c.cycle_code', $search)
+                    ->orLike('e.full_name', $search)
+                    ->orLike('e.employee_code', $search)
+                    ->orLike('r.full_name', $search)
+                    ->orLike('t.template_name', $search)
+                    ->groupEnd();
+            }
+
+            $builder->groupBy([
+                'a.employee_id',
+                'a.appraisal_cycle_id',
+            ]);
+
+            return $builder;
+        };
+
+        /*
+     * Count the grouped rows using a derived table.
+     * Do not add ordering or pagination to this query.
+     */
+        $countBuilder = $buildQuery();
+        $groupedSql = $countBuilder->getCompiledSelect();
+
+        $countSql = "
+        SELECT COUNT(*) AS total
+        FROM ({$groupedSql}) AS grouped_reviews";
+
+        $total = (int) ($db->query($countSql)->getRowArray()['total'] ?? 0);
+
+        /*
+     * Fetch the requested page of grouped results.
+     */
+        $dataBuilder = $buildQuery();
+
+        $data = $dataBuilder
+            ->orderBy($orderColumn, $direction)
+            ->limit($pageSize, ($page - 1) * $pageSize)
             ->get()
             ->getResultArray();
 
         return [
-            'data' => $data,
-            'total' => $total,
-            'page' => $page,
+            'data'     => $data,
+            'total'    => $total,
+            'page'     => $page,
             'pageSize' => $pageSize,
             'lastPage' => $total > 0 ? (int) ceil($total / $pageSize) : 1,
         ];
+    }
+    public function getCompletedReviewsForEmployeeCycle(
+        int $employeeId,
+        int $cycleId
+    ): array {
+        if ($employeeId <= 0 || $cycleId <= 0) {
+            return [];
+        }
+
+        return $this->builder()
+            ->select([
+                'appraisals.id',
+                'appraisals.employee_id',
+                'appraisals.reviewer_id',
+                'appraisals.reviewer_role_id',
+                'appraisals.review_type',
+                'appraisals.overall_score',
+                'appraisals.status',
+                'appraisals.submitted_at',
+                'appraisals.approved_at',
+            ])
+            ->where(
+                'appraisals.employee_id',
+                $employeeId
+            )
+            ->where(
+                'appraisals.appraisal_cycle_id',
+                $cycleId
+            )
+            ->whereIn(
+                'appraisals.status',
+                ['submitted', 'approved']
+            )
+            ->where(
+                'appraisals.overall_score IS NOT NULL',
+                null,
+                false
+            )
+            ->orderBy(
+                'appraisals.id',
+                'ASC'
+            )
+            ->get()
+            ->getResultArray();
     }
 
     public function getReview(int $id): ?array

@@ -443,4 +443,14 @@ class DesignationModel extends Model
             $organizationIds,
         ];
     }
+
+    public function getActiveDesignations(): array
+    {
+        return $this->builder()
+            ->select('id, designation_code, title, level')
+            ->where('status', 'active')
+            ->orderBy('title', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
 }

@@ -15,7 +15,6 @@ class UserModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
-
         'organization_id',
         'branch_id',
         'department_id',
@@ -30,27 +29,20 @@ class UserModel extends Model
         'email',
         'phone',
 
-        'password',
-
-        'password_reset_token',
-        'password_reset_expiry',
-
         'gender',
         'dob',
         'joining_date',
 
         'reporting_manager_id',
 
-        'avatar',
-        'profile_photo',
-
         'last_login',
         'last_login_ip',
 
-        'remember_token',
+        'login_otp_hash',
+        'login_otp_expires_at',
+        'login_otp_attempts',
 
-        'status'
-
+        'status',
     ];
 
     protected $useTimestamps = true;
@@ -72,37 +64,33 @@ class UserModel extends Model
     protected $allowCallbacks = true;
 
     protected $beforeInsert = [
-        'hashPassword',
-        'generateFullName'
+        'generateFullName',
     ];
 
     protected $beforeUpdate = [
-
-        'hashPassword',
-        'generateFullName'
-
+        'generateFullName',
     ];
 
-    protected function hashPassword(array $data)
-    {
-        if (
-            isset($data['data']['password']) &&
-            !empty($data['data']['password'])
-        ) {
+    // protected function hashPassword(array $data)
+    // {
+    //     if (
+    //         isset($data['data']['password']) &&
+    //         !empty($data['data']['password'])
+    //     ) {
 
-            if (
-                password_get_info($data['data']['password'])['algo'] === null
-            ) {
+    //         if (
+    //             password_get_info($data['data']['password'])['algo'] === null
+    //         ) {
 
-                $data['data']['password'] = password_hash(
-                    $data['data']['password'],
-                    PASSWORD_DEFAULT
-                );
-            }
-        }
+    //             $data['data']['password'] = password_hash(
+    //                 $data['data']['password'],
+    //                 PASSWORD_DEFAULT
+    //             );
+    //         }
+    //     }
 
-        return $data;
-    }
+    //     return $data;
+    // }
 
     protected function generateFullName(array $data)
     {
@@ -137,41 +125,9 @@ class UserModel extends Model
     {
         return $this->update($userId, [
             'last_login'    => date('Y-m-d H:i:s'),
-            'last_login_ip' => $ip
+            'last_login_ip' => $ip,
         ]);
     }
-
-    public function updateRememberToken(int $userId, string $token)
-    {
-        return $this->update($userId, [
-            'remember_token' => $token
-        ]);
-    }
-
-    public function clearRememberToken(int $userId)
-    {
-        return $this->update($userId, [
-            'remember_token' => null
-        ]);
-    }
-
-    public function saveResetToken(int $userId, string $token, string $expiry)
-    {
-        return $this->update($userId, [
-            'password_reset_token'  => $token,
-            'password_reset_expiry' => $expiry
-        ]);
-    }
-
-    public function clearResetToken(int $userId)
-    {
-        return $this->update($userId, [
-            'password_reset_token'  => null,
-            'password_reset_expiry' => null
-        ]);
-    }
-
-
 
     public function getEmployees(
         int $page = 1,
@@ -208,7 +164,6 @@ class UserModel extends Model
 
                 'users.reporting_manager_id',
 
-                'users.profile_photo',
                 'users.status',
                 'users.created_at',
 
@@ -364,9 +319,6 @@ class UserModel extends Model
 
                 'users.reporting_manager_id',
 
-                'users.avatar',
-                'users.profile_photo',
-
                 'users.status',
 
                 'users.created_at',
@@ -423,6 +375,32 @@ class UserModel extends Model
                 'users.id',
                 $id
             )
+            ->get()
+            ->getRowArray();
+    }
+
+
+    public function getEmployeeRoleContextByCode(string $employeeCode): ?array
+    {
+        return $this->builder()
+            ->select([
+                'users.id',
+                'users.organization_id',
+
+                "(SELECT ur.role_id
+                FROM user_roles ur
+                INNER JOIN roles r
+                    ON r.id = ur.role_id
+                WHERE ur.user_id = users.id
+                    AND r.status = 'active'
+                ORDER BY
+                    ur.assigned_at DESC,
+                    ur.id DESC
+                LIMIT 1
+            ) AS role_id"
+            ])
+            ->where('users.employee_code', $employeeCode)
+            ->where('users.status', 'active')
             ->get()
             ->getRowArray();
     }

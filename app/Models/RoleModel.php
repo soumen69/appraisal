@@ -1,30 +1,35 @@
 <?php
 
-namespace App\Models\Admin;
+namespace App\Models;
 
 use CodeIgniter\Model;
 
-class MenuModel extends Model
+class RoleModel extends Model
 {
-    protected $table = 'menus';
+    protected $table = 'roles';
+
     protected $primaryKey = 'id';
+
     protected $returnType = 'array';
+
     protected $protectFields = true;
 
     protected $allowedFields = [
-        'module_id',
-        'parent_id',
-        'title',
+        'name',
+        'slug',
+        'display_name',
         'icon',
-        'route',
-        'permission_id',
-        'is_system',
+        'color',
         'sort_order',
-        'is_sidebar',
-        'is_visible',
-        'status'
+        'status',
+        'created_by',
+        'description',
+        'is_system'
     ];
+
     protected $useTimestamps = true;
+
     protected $createdField = 'created_at';
+
     protected $updatedField = 'updated_at';
 }

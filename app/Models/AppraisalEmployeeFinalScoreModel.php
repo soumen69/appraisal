@@ -24,18 +24,51 @@ class AppraisalEmployeeFinalScoreModel extends Model
         'approved_at'
     ];
 
-    protected $useTimestamps = true;
+    protected $useTimestamps = false;
     protected $dateFormat = 'datetime';
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    /**
-     * Get employee final score.
-     */
-    public function getEmployeeFinalScore(
-        int $cycleId,
-        int $employeeId
-    ): ?array {
+    public function saveCalculation(int $cycleId, int $employeeId, ?float $selfScore, ?float $matrixScore, float $finalScore, ?string $performanceGrade = null, ?string $finalComment = null): bool
+    {
+        $existing = $this
+            ->where('appraisal_cycle_id', $cycleId)
+            ->where('employee_id', $employeeId)
+            ->first();
+
+        $data = [
+            'appraisal_cycle_id' => $cycleId,
+            'employee_id' => $employeeId,
+            'self_score' => $selfScore,
+            'matrix_score' => $matrixScore,
+            'final_score' => $finalScore,
+            'performance_grade' => $performanceGrade,
+            'final_comment' => $finalComment,
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
+
+        if ($existing) {
+            return (bool) $this
+                ->where('id', (int) $existing['id'])
+                ->set($data)
+                ->update();
+        }
+
+        $data['created_at'] = date('Y-m-d H:i:s');
+
+        return (bool) $this->insert($data);
+    }
+
+    public function getByCycleEmployee(int $cycleId, int $employeeId): ?array
+    {
+        return $this
+            ->where('appraisal_cycle_id', $cycleId)
+            ->where('employee_id', $employeeId)
+            ->first();
+    }
+
+    public function getEmployeeFinalScore(int $cycleId, int $employeeId): ?array
+    {
         return $this->builder()
             ->select([
                 'appraisal_employee_final_scores.*',
@@ -84,12 +117,8 @@ class AppraisalEmployeeFinalScoreModel extends Model
             ->getRowArray();
     }
 
-    /**
-     * Get all employee final scores for cycle.
-     */
-    public function getCycleFinalScores(
-        int $cycleId
-    ): array {
+    public function getCycleFinalScores(int $cycleId): array
+    {
         return $this->builder()
             ->select([
                 'appraisal_employee_final_scores.*',
@@ -136,13 +165,8 @@ class AppraisalEmployeeFinalScoreModel extends Model
             ->getResultArray();
     }
 
-    /**
-     * Check whether employee final score exists.
-     */
-    public function exists(
-        int $cycleId,
-        int $employeeId
-    ): bool {
+    public function exists(int $cycleId, int $employeeId): bool
+    {
         return $this->builder()
             ->where(
                 'appraisal_cycle_id',
@@ -155,42 +179,32 @@ class AppraisalEmployeeFinalScoreModel extends Model
             ->countAllResults() > 0;
     }
 
-    /**
-     * Get cycle score record.
-     */
-    public function getFinalScore(
-        int $id
-    ): ?array {
+    public function getFinalScore(int $id): ?array
+    {
         return $this
             ->where('id', $id)
             ->first();
     }
 
-    /**
-     * Create or update final score.
-     */
-    public function saveFinalScore(
-        int $cycleId,
-        int $employeeId,
-        array $data
-    ): bool {
-        $existing = $this->builder()
-            ->select('id')
-            ->where('appraisal_cycle_id', $cycleId)
-            ->where('employee_id', $employeeId)
-            ->get()
-            ->getRowArray();
+    // public function saveFinalScore(int $cycleId, int $employeeId,): bool
+    // {
+    //     $existing = $this->builder()
+    //         ->select('id')
+    //         ->where('appraisal_cycle_id', $cycleId)
+    //         ->where('employee_id', $employeeId)
+    //         ->get()
+    //         ->getRowArray();
 
-        if ($existing !== null) {
-            return $this->update(
-                (int)$existing['id'],
-                $data
-            );
-        }
+    //     if ($existing !== null) {
+    //         return $this->update(
+    //             (int)$existing['id'],
+    //             $data
+    //         );
+    //     }
 
-        $data['appraisal_cycle_id'] = $cycleId;
-        $data['employee_id'] = $employeeId;
+    //     $data['appraisal_cycle_id'] = $cycleId;
+    //     $data['employee_id'] = $employeeId;
 
-        return $this->insert($data) !== false;
-    }
+    //     return $this->insert($data) !== false;
+    // }
 }

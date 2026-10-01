@@ -16,50 +16,61 @@ class AuthController extends BaseController
     public function login()
     {
         return view('auth/login', [
-            'title' => 'Login'
+            'title' => 'Login',
         ]);
     }
 
-    public function authenticate()
+    public function requestOtp()
     {
         try {
-            $this->authService->login(
-                $this->request->getPost('email'),
-                $this->request->getPost('password'),
+            $email = (string) $this->request->getPost('email');
+
+            $this->authService->requestOtp($email);
+
+            return redirect()->to('/login')
+                ->with('success', 'If an active account exists for this email, a login code will be sent.')
+                ->with('otp_email', trim($email));
+        } catch (\Throwable $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Step 2: Verify the submitted OTP and log the user in.
+     */
+    public function verifyOtp()
+    {
+        try {
+            $email = (string) $this->request->getPost('email');
+            $otp = (string) $this->request->getPost('otp');
+
+            $this->authService->verifyOtp(
+                $email,
+                $otp,
                 $this->request->getIPAddress()
             );
 
             return redirect()->to('/dashboard');
         } catch (\Throwable $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
-    }
-
-    public function forgotPassword()
-    {
-        return view('auth/forgot_password', [
-            'title' => 'Forgot Password'
-        ]);
-    }
-
-    public function resetPassword($token = null)
-    {
-        return view('auth/reset_password', [
-            'title' => 'Reset Password',
-            'token' => $token
-        ]);
     }
 
     public function profile()
     {
         return view('auth/profile', [
-            'title' => 'Profile'
+            'title' => 'Profile',
         ]);
     }
 
     public function logout()
     {
         $this->authService->logout();
+
         return redirect()->to('/');
     }
 }
